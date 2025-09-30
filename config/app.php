@@ -157,20 +157,9 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        /*
-         * Acacha AdminLTE template provider
-         */
-        Acacha\AdminLTETemplateLaravel\Providers\AdminLTETemplateServiceProvider::class,
 
-        /*
-         * Entrust ACL
-         */
-        Zizaco\Entrust\EntrustServiceProvider::class,
 
-        /*
-         * Slack
-         */
-        Maknz\Slack\Laravel\ServiceProvider::class,
+    // Legacy third-party providers removed during upgrade (AdminLTE, Entrust, Slack).
     ],
 
     /*
@@ -217,20 +206,9 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
-        /*
-        * Acacha AdminLTE template alias
-        */
-        'AdminLTE' => Acacha\AdminLTETemplateLaravel\Facades\AdminLTE::class,
 
-        /*
-         * Entrust ACL
-         */
-        'Entrust'  => Zizaco\Entrust\EntrustFacade::class,
 
-        /*
-         * Slack
-         */
-        'Slack' => Maknz\Slack\Laravel\Facade::class,
+    // Aliases for removed legacy packages (AdminLTE, Entrust, Slack) removed.
 
     ],
 
