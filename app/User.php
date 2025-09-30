@@ -3,11 +3,11 @@
 namespace App;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Zizaco\Entrust\Traits\EntrustUserTrait;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-  use EntrustUserTrait;
+  use HasRoles;
   /**
    * The attributes that are mass assignable.
    *
