@@ -1,0 +1,33 @@
+{
+    "name": "laravel/laravel",
+    "description": "The Laravel Framework (upgrade candidate).",
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^10.0",
+    "guzzlehttp/guzzle": "^7.0",
+    "spatie/laravel-permission": "^5.0"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.20",
+        "mockery/mockery": "^1.5",
+        "phpunit/phpunit": "^9.5",
+        "symfony/css-selector": "^6.0",
+        "symfony/dom-crawler": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "classmap": ["database"],
+        "files": ["app/Http/helpers.php"]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "kylekatarnls/update-helper": true
+        }
+    }
+}
