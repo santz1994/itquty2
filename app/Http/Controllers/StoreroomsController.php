@@ -25,21 +25,26 @@ class StoreroomsController extends Controller
 
   public function update(UpdateStoreroomRequest $request)
   {
-    $oldStoreroom = Location::where('storeroom', 1)->first();
-    if(isset($oldStoreroom))
-    {
-      $oldStoreroom->storeroom = 0;
-      $oldStoreroom->update();
-    }
+  $oldStoreroom = Location::where('storeroom', 1)->first();
+  if (isset($oldStoreroom)) {
+    $oldStoreroom->storeroom = 0;
+    $oldStoreroom->update();
+  }
 
-    $location = Location::where('id', $request->store)->first();
+  $location = Location::where('id', $request->store)->first();
+  if ($location) {
     $location->storeroom = 1;
     $location->update();
 
     Session::flash('status', 'success');
     Session::flash('title', 'New Default Storeroom Saved');
     Session::flash('message', $location->location_name);
+  } else {
+    Session::flash('status', 'error');
+    Session::flash('title', 'Storeroom Not Found');
+    Session::flash('message', 'The selected storeroom does not exist.');
+  }
 
-    return redirect()->route('admin.storeroom.index');
+  return redirect()->route('admin.storeroom.index');
   }
 }

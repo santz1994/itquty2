@@ -10,6 +10,13 @@ class SupplierTest extends TestCase
 {
   use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+      parent::setUp();
+      // Seed locations table for supplier tests (needed for foreign key integrity)
+      $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\LocationsTableSeeder']);
+    }
+
   public function testUserCannotAccessSuppliersView()
   {
     $user = User::where('name', 'User User')->get()->first();

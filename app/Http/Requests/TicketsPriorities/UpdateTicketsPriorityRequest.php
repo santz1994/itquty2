@@ -23,10 +23,12 @@ class UpdateTicketsPriorityRequest extends Request
      */
     public function rules()
     {
-      $ticketsPriority = $this->route()->parameter('ticketsPriority');
-
+      $ticketsPriority = $this->route('ticketsPriority');
+      if (is_string($ticketsPriority)) {
+        $ticketsPriority = \App\TicketsPriority::find($ticketsPriority);
+      }
       return [
-        'priority' => 'required|unique:tickets_priorities,priority,'.$ticketsPriority->id
+        'priority' => 'required|unique:tickets_priorities,priority,' . ($ticketsPriority ? $ticketsPriority->id : 'NULL')
       ];
     }
 

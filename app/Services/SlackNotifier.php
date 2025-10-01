@@ -6,11 +6,15 @@ class SlackNotifier
 {
     protected $webhook;
     protected $enabled;
+    protected $defaultChannel;
+    protected $defaultUsername;
 
     public function __construct()
     {
-        $this->webhook = env('SLACK_WEBHOOK');
-        $this->enabled = env('SLACK_ENABLED', false);
+    $this->webhook = \getenv('SLACK_WEBHOOK');
+    $this->enabled = filter_var(\getenv('SLACK_ENABLED') ?: false, FILTER_VALIDATE_BOOLEAN);
+    $this->defaultChannel = \getenv('SLACK_CHANNEL');
+    $this->defaultUsername = \getenv('SLACK_BOT_NAME');
     }
 
     public function notify(string $message, string $channel = null, string $username = null)
@@ -24,8 +28,10 @@ class SlackNotifier
         }
 
         $payload = ['text' => $message];
-        if ($channel) $payload['channel'] = $channel;
-        if ($username) $payload['username'] = $username;
+    $channel = $channel ?? $this->defaultChannel;
+    $username = $username ?? $this->defaultUsername;
+    if ($channel) $payload['channel'] = $channel;
+    if ($username) $payload['username'] = $username;
 
         $json = json_encode($payload);
 

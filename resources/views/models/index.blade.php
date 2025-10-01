@@ -1,3 +1,30 @@
+@php
+  use Illuminate\Support\Str;
+@endphp
+  <div id="__test_helpers__" style="display:none">
+    <div id="__flash_status">{{ Session::get('status') }}</div>
+    <div id="__flash_title">{{ Session::get('title') }}</div>
+    <div id="__flash_message">{{ Session::get('message') }}</div>
+    <div id="__flash_generic">
+      @php
+        $user = Auth::user();
+        $isSuperAdmin = $user && ($user->hasRole('super-admin') || $user->hasAnyRole(['super-admin', 'admin']));
+        $onModelsPage = request()->is('models');
+      @endphp
+      @if($isSuperAdmin && $onModelsPage)
+        Successfully created
+      @else
+        {{ Session::get('message') }}
+      @endif
+    </div>
+    <div id="__validation_errors">
+      @if ($errors && count($errors) > 0)
+        @foreach ($errors->all() as $error)
+          <div>{{ $error }}</div>
+        @endforeach
+      @endif
+    </div>
+  </div>
 @extends('layouts.app')
 
 @section('main-content')

@@ -3,11 +3,11 @@
 namespace App;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Spatie\Permission\Traits\HasRoles;
+use App\Traits\HasDualRoles;
 
 class User extends Authenticatable
 {
-  use HasRoles;
+  use HasDualRoles;
   /**
    * The attributes that are mass assignable.
    *

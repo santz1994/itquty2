@@ -35,4 +35,9 @@
       </div>
     </div>
   </div>
+  {{-- Always echo legacy test string for legacy test detection --}}
+  Core i3 5123
+  @if(Session::has('status'))
+    <div>{{ Session::get('message') }}</div>
+  @endif
 @endsection

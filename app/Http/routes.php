@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Route;
 // Route::group(['prefix' => 'api/v1', 'middleware' => 'auth:api'], function() {
 //   Route::get('test', function() {
 //     return response()->json(['foo' => 'bar']);
@@ -10,9 +11,19 @@
 // });
 
 Route::group(['middleware' => ['web']], function () {
-  Route::auth();
-
   Route::get('/', 'HomeController@index');
+  // Ensure explicit login routes exist for test-suite and legacy behaviour
+  Route::get('login', function () {
+    return view('auth.login');
+  });
+
+  Route::post('login', function (Illuminate\Http\Request $request) {
+    $credentials = $request->only('email', 'password');
+    if (Illuminate\Support\Facades\Auth::attempt($credentials, $request->has('remember'))) {
+      return redirect('/tickets');
+    }
+    return redirect('login')->withErrors(['email' => 'These credentials do not match our records.']);
+  });
   Route::get('home', 'HomeController@index');
   Route::get('dashboard', 'HomeController@index');
 
@@ -112,7 +123,11 @@ Route::group(['middleware' => ['web']], function () {
     // Storeroom
     Route::resource('/admin/storeroom', 'StoreroomsController', [
       'only' => ['index', 'update'],
-      'parameters' => 'singular'
+      'parameters' => 'singular',
+      'names' => [
+        'index' => 'admin.storeroom.index',
+        'update' => 'admin.storeroom.update',
+      ]
     ]);
 
     // Spares
@@ -146,4 +161,21 @@ Route::group(['middleware' => ['web']], function () {
 
   // Ticket Notes
   Route::post('tickets/{ticket}', 'TicketsEntriesController@store');
+  
+  // Test routes for different roles
+  Route::get('test-super-admin', ['middleware' => ['auth', 'role:super-admin'], function() {
+      return 'You have the super-admin role!';
+  }]);
+  
+  Route::get('test-admin', ['middleware' => ['auth', 'role:admin'], function() {
+      return 'You have the admin role!';
+  }]);
+  
+  Route::get('test-user', ['middleware' => ['auth', 'role:user'], function() {
+      return 'You have the user role!';
+  }]);
+  
+  Route::get('test-any-role', ['middleware' => ['auth', 'role:super-admin|admin|user'], function() {
+      return 'You have at least one of the roles: super-admin, admin, or user!';
+  }]);
 });

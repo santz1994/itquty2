@@ -5,7 +5,7 @@
     <div class="col-md-9">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title">{{$pageTitle}}</h3>
+          <h3 class="box-title">Ticket Types</h3>
         </div>
         <div class="box-body">
           <table id="table" class="table table-striped table-bordered table-hover">
@@ -60,11 +60,14 @@
         } );
       } );
     </script>
-    @if(Session::has('status'))
-      <script>
-        $(document).ready(function() {
-          Command: toastr["{{Session::get('status')}}"]("{{Session::get('message')}}", "{{Session::get('title')}}");
-        });
-      </script>
-    @endif
+      @if(Session::has('status'))
+        <div class="alert alert-success" style="margin-top:10px;">
+          {{ Session::get('message') }}
+        </div>
+        <script>
+          $(document).ready(function() {
+            Command: toastr["{{Session::get('status')}}"]("{{Session::get('message')}}", "{{Session::get('title')}}");
+          });
+        </script>
+      @endif
 @endsection

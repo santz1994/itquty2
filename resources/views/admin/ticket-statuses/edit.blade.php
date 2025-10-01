@@ -5,7 +5,7 @@
     <div class="col-md-6">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title">{{$pageTitle}}</h3>
+          <h3 class="box-title">Edit Ticket Status</h3>
         </div>
         <div class="box-body">
           <form method="POST" action="/admin/ticket-statuses/{{$ticketsStatus->id}}">
@@ -39,4 +39,14 @@
       </div>
     </div>
   </div>
-@endsection
+  @endsection
+  @if(Session::has('status'))
+    <div class="alert alert-success" style="margin-top:10px;">
+      {{ Session::get('message') }}
+    </div>
+    <script>
+      $(document).ready(function() {
+        Command: toastr["{{Session::get('status')}}"]("{{Session::get('message')}}", "{{Session::get('title')}}");
+      });
+    </script>
+  @endif

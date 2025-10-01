@@ -62,14 +62,7 @@ class InvoiceTest extends TestCase
     {
       $user = User::where('name', 'Super Admin User')->get()->first();
 
-      $path = storage_path('testing/test.pdf');
-      $original_name = 'pdf.pdf';
-      $mime_type = 'application/pdf';
-      $size = 7945;
-      $error = null;
-      $test = true;
-
-      $file = new UploadedFile($path, $original_name, $mime_type, $size, $error, $test);
+     // use attach() with the storage path; UploadedFile construction not needed
 
       $this->actingAs($user)
            ->visit('/invoices')
@@ -94,14 +87,7 @@ class InvoiceTest extends TestCase
     {
       $user = User::where('name', 'Super Admin User')->get()->first();
 
-      $path = storage_path('testing/test.pdf');
-      $original_name = 'pdf.pdf';
-      $mime_type = 'application/pdf';
-      $size = 7945;
-      $error = null;
-      $test = true;
-
-      $file = new UploadedFile($path, $original_name, $mime_type, $size, $error, $test);
+     // use attach() with the storage path; UploadedFile construction not needed
 
       $this->actingAs($user)
            ->visit('/invoices')

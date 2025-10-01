@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
       $this->call(WarrantyTypesTableSeeder::class);
       $this->call(AssetTypesTableSeeder::class);
       $this->call(ManufacturersTableSeeder::class);
-      $this->call(RolesTableSeeder::class);
+  $this->call(\Database\Seeders\RolesTableSeeder::class);
       $this->call(PermissionsTableSeeder::class);
       $this->call(AddPermissionsTableSeeder::class);
       $this->call(UsersTableSeeder::class);
@@ -32,10 +32,10 @@ class DatabaseSeeder extends Seeder
        * Uncomment those you'd like to seed before running 'artisan db:seed'.
        */
 
-      // $this->call(TestUsersTableSeeder::class);
+  // $this->call(\Database\Seeders\TestUsersTableSeeder::class);
       // $this->call(TestAssignRolesTableSeeder::class);
       // $this->call(DivisionsTableSeeder::class);
-      // $this->call(LocationsTableSeeder::class);
+    $this->call(LocationsTableSeeder::class);
       // $this->call(SuppliersTableSeeder::class);
       // $this->call(PcspecsTableSeeder::class);
       // $this->call(AssetModelsTableSeeder::class);

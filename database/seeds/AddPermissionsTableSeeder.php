@@ -22,10 +22,42 @@ class AddPermissionsTableSeeder extends Seeder
 
       // Super Administrator
       $superAdmin = Role::where('name', '=', 'super-admin')->first();
-      $superAdmin->attachPermissions(array($createUser, $editUser, $changeRole, $createAsset, $editAsset));
 
-      // Administrator
-      $admin = Role::where('name', '=', 'admin')->first();
-      $admin->attachPermissions(array($createAsset, $editAsset));
+      // If roles has guard_name, assume Spatie package and use givePermissionTo
+      if (\Illuminate\Support\Facades\Schema::hasColumn('roles', 'guard_name')) {
+        if ($superAdmin) {
+          $superAdmin->givePermissionTo([$createUser, $editUser, $changeRole, $createAsset, $editAsset]);
+        }
+
+        // Administrator
+        $admin = Role::where('name', '=', 'admin')->first();
+        if ($admin) {
+          $admin->givePermissionTo([$createAsset, $editAsset]);
+        }
+      } else {
+        // Legacy Entrust-like pivot table role_has_permissions
+        if ($superAdmin) {
+          foreach (array($createUser, $editUser, $changeRole, $createAsset, $editAsset) as $perm) {
+            if ($perm) {
+              \Illuminate\Support\Facades\DB::table('role_has_permissions')->updateOrInsert([
+                'permission_id' => $perm->id,
+                'role_id' => $superAdmin->id,
+              ], []);
+            }
+          }
+        }
+
+        $admin = Role::where('name', '=', 'admin')->first();
+        if ($admin) {
+          foreach (array($createAsset, $editAsset) as $perm) {
+            if ($perm) {
+              \Illuminate\Support\Facades\DB::table('role_has_permissions')->updateOrInsert([
+                'permission_id' => $perm->id,
+                'role_id' => $admin->id,
+              ], []);
+            }
+          }
+        }
+      }
     }
 }

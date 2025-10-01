@@ -23,10 +23,12 @@ class UpdateTicketsStatusRequest extends Request
      */
     public function rules()
     {
-      $ticketsStatus = $this->route()->parameter('ticketsStatus');
-
+      $ticketsStatus = $this->route('ticketsStatus');
+      if (is_string($ticketsStatus)) {
+        $ticketsStatus = \App\TicketsStatus::find($ticketsStatus);
+      }
       return [
-        'status' => 'required|unique:tickets_statuses,status,'.$ticketsStatus->id
+        'status' => 'required|unique:tickets_statuses,status,' . ($ticketsStatus ? $ticketsStatus->id : 'NULL')
       ];
     }
 

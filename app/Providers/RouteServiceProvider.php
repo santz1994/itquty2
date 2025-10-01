@@ -22,18 +22,17 @@ class RouteServiceProvider extends ServiceProvider
          */
         public function boot()
         {
-                parent::boot();
-        }
+            parent::boot();
 
-    /**
-     * Define the routes for the application.
-     *
-     * @return void
-     */
-    public function map()
-    {
-        $this->routes(function () {
-            require base_path('routes/web.php');
-        });
-    }
+            // Register the application's routes. In older Laravel versions the
+            // RouteServiceProvider used a `map()` method; modern frameworks expect
+            // route registration to happen during `boot()` via $this->routes().
+            $this->routes(function () {
+                // Use the legacy controller namespace so older route files that
+                // reference controllers by short class name continue to work.
+                \Illuminate\Support\Facades\Route::namespace($this->namespace)->group(function () {
+                    require base_path('routes/web.php');
+                });
+            });
+        }
 }

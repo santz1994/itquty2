@@ -24,9 +24,13 @@ class UpdateStatusRequest extends Request
     public function rules()
     {
       $status = $this->route()->parameter('status');
-
+      // If $status is a string (id), fetch the model
+      if (is_string($status)) {
+        $status = \App\Status::find($status);
+      }
+      $statusId = $status ? $status->id : null;
       return [
-        'name' => 'required|unique:statuses,name,'.$status->id
+        'name' => 'required|unique:statuses,name,' . $statusId
       ];
     }
 

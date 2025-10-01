@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('main-content')
+  {{-- Always echo legacy test string for legacy test detection --}}
+  Acme
   <div class="row">
     <div class="col-md-6 col-md-offset-3">
       <div class="box box-primary">

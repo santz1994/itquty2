@@ -11,6 +11,6 @@ class AssetModelsTableSeeder extends Seeder
      */
     public function run()
     {
-      factory(App\AssetModel::class, 4)->create();
+      \App\AssetModel::factory()->count(4)->create();
     }
 }

@@ -19,6 +19,9 @@ class StatusesController extends Controller
 
   public function index()
   {
+    if (!auth()->user() || !auth()->user()->hasRole('super-admin')) {
+      abort(403, 'Unauthorized');
+    }
     $pageTitle = 'Statuses';
     $statuses = Status::all();
     return view('admin.assets-statuses.index', compact('statuses', 'pageTitle'));
@@ -38,6 +41,9 @@ class StatusesController extends Controller
 
   public function edit(Status $status)
   {
+    if (!auth()->user() || !auth()->user()->hasRole('super-admin')) {
+      abort(403, 'Unauthorized');
+    }
     $pageTitle = 'Edit Status - ' . $status->name;
     return view('admin.assets-statuses.edit', compact('status', 'pageTitle'));
   }

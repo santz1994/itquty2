@@ -23,10 +23,12 @@ class UpdateTicketsTypeRequest extends Request
      */
     public function rules()
     {
-      $ticketsType = $this->route()->parameter('ticketsType');
-
+      $ticketsType = $this->route('ticketsType');
+      if (is_string($ticketsType)) {
+        $ticketsType = \App\TicketsType::find($ticketsType);
+      }
       return [
-        'type' => 'required|unique:tickets_types,type,'.$ticketsType->id
+        'type' => 'required|unique:tickets_types,type,' . ($ticketsType ? $ticketsType->id : 'NULL')
       ];
     }
 

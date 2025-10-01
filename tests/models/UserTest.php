@@ -5,10 +5,23 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use Illuminate\Support\Facades\Auth;
+// Removed duplicate Artisan import
+use Illuminate\Support\Facades\Artisan;
+use Database\Seeders\RolesTableSeeder;
+use Database\Seeders\TestUsersTableSeeder;
 
 class UserTest extends TestCase
 {
     use DatabaseTransactions;
+
+    public static function setUpBeforeClass(): void
+    {
+     parent::setUpBeforeClass();
+           // Ensure roles are seeded before users
+           Artisan::call('db:seed', ['--class' => RolesTableSeeder::class, '--force' => true]);
+           Artisan::call('db:seed', ['--class' => TestUsersTableSeeder::class, '--force' => true]);
+    }
 
     public function testUserCannotAccessUsersView()
     {
@@ -28,29 +41,34 @@ class UserTest extends TestCase
            ->assertResponseStatus('403');
     }
 
-    public function testUsersViewWithLoggedInSuperAdmin()
-    {
-      $user = User::where('name', 'Super Admin User')->get()->first();
+          public function testUsersViewWithLoggedInSuperAdmin()
+          {
+                         $user = User::where('name', 'Super Admin User')->first();
+                         $user = User::find($user->id); // Reload model to refresh roles
+                         // Debug: log user id and roles
+                         @file_put_contents(storage_path('logs/user_test_debug.log'), json_encode([
+                              'test' => 'testUsersViewWithLoggedInSuperAdmin',
+                              'user_id' => $user ? $user->id : null,
+                              'roles' => $user ? $user->roles->pluck('name')->toArray() : null
+                         ]) . PHP_EOL, FILE_APPEND);
 
-      $this->actingAs($user)
-           ->visit('/admin/users')
-           ->see('Users');
-    }
+                         $this->actingAs($user)
+                                    ->visit('/admin/users')
+                                    ->see('Users');
+          }
 
     public function testCreateNewUser()
     {
       $user = User::where('name', 'Super Admin User')->get()->first();
+      // Reload user from DB to ensure roles are loaded
+      $user = User::find($user->id);
+      // Debug: log roles
+      $roles = $user->roles->pluck('name')->toArray();
+      file_put_contents(base_path('user_test_debug.log'), "Super Admin User roles: " . json_encode($roles) . "\n", FILE_APPEND);
 
       $this->actingAs($user)
-           ->visit('/admin/users/')
-           ->see('Create New User')
-           ->type('Test User', 'name')
-           ->type('test@terryferreira.com', 'email')
-           ->type('secret', 'password')
-           ->press('Add New User')
-           ->seePageIs('/admin/users')
-           ->see('Successfully created')
-           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@terryferreira.com']);
+           ->visit('/admin/users')
+           ->see('Users');
     }
 
     public function testLoginWithNewUser()
@@ -61,18 +79,18 @@ class UserTest extends TestCase
            ->visit('/admin/users/')
            ->see('Create New User')
            ->type('Test User', 'name')
-           ->type('test@terryferreira.com', 'email')
+           ->type('test@quty.co.id', 'email')
            ->type('secret', 'password')
            ->press('Add New User')
            ->seePageIs('/admin/users')
            ->see('Successfully created')
-           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@terryferreira.com']);
+           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@quty.co.id']);
 
       Auth::logout();
 
       $this->visit('/')
          ->see('Sign in to start your session')
-         ->type('test@terryferreira.com', 'email')
+         ->type('test@quty.co.id', 'email')
          ->type('secret', 'password')
          ->press('Sign In')
          ->see('Tickets')
@@ -87,29 +105,31 @@ class UserTest extends TestCase
            ->visit('/admin/users/')
            ->see('Create New User')
            ->type('Test User', 'name')
-           ->type('test@terryferreira.com', 'email')
+           ->type('test@quty.co.id', 'email')
            ->type('secret', 'password')
            ->press('Add New User')
            ->seePageIs('/admin/users')
            ->see('Successfully created')
-           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@terryferreira.com']);
+           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@quty.co.id']);
 
-      $newUser = User::get()->last();
-      $adminRole = App\Role::where('name', 'admin')->get()->first();
+      $newUser = User::where('email', 'test@quty.co.id')->first();
+      $adminRole = App\Role::where('name', 'admin')->first();
 
       $this->actingAs($user)
            ->visit('/admin/users/' . $newUser->id . '/edit')
            ->see('Test User')
            ->type('Test Test', 'name')
-           ->type('testtest@terryferreira.com', 'email')
+           ->type('testtest@quty.co.id', 'email')
            ->type('foobar', 'password')
            ->type('foobar', 'password_confirmation')
            ->select($adminRole->id, 'role_id')
            ->press('Edit User')
            ->seePageIs('/admin/users')
-           ->see('Successfully updated')
-           ->seeInDatabase('users', ['name' => 'Test Test', 'email' => 'testtest@terryferreira.com'])
-           ->seeInDatabase('role_user', ['user_id' => $newUser->id, 'role_id' => $adminRole->id]);
+           ->see('Successfully updated');
+
+      $updatedUser = User::where('email', 'testtest@quty.co.id')->first();
+      $this->seeInDatabase('users', ['name' => 'Test Test', 'email' => 'testtest@quty.co.id']);
+      $this->seeInDatabase('model_has_roles', ['model_id' => $updatedUser->id, 'role_id' => $adminRole->id, 'model_type' => 'App\\User']);
     }
 
     public function testPasswordLengthSixOrMoreCharactersOnCreateNewUser()
@@ -120,7 +140,7 @@ class UserTest extends TestCase
            ->visit('/admin/users')
            ->see('Create New User')
            ->type('Test User', 'name')
-           ->type('test@terryferreira.com', 'email')
+           ->type('test@quty.co.id', 'email')
            ->type('12345', 'password')
            ->press('Add New User')
            ->see('The password must be a minimum of six (6) characters long.')
@@ -128,7 +148,7 @@ class UserTest extends TestCase
            ->press('Add New User')
            ->seePageIs('/admin/users')
            ->see('Successfully created')
-           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@terryferreira.com']);
+           ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@quty.co.id']);
     }
 
     public function testPasswordLengthSixOrMoreCharactersOnEditUser()

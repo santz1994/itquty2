@@ -48,7 +48,9 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'database' => database_path('database.sqlite'),
+            // Allow phpunit.xml (DB_DATABASE) to control the sqlite database path during tests.
+            // If DB_DATABASE is not set, fall back to the default database_path('database.sqlite').
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
         ],
 

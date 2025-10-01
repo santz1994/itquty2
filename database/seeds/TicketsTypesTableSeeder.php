@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class TicketsTypesTableSeeder extends Seeder
 {
@@ -11,10 +12,11 @@ class TicketsTypesTableSeeder extends Seeder
      */
     public function run()
     {
-      DB::table('tickets_types')->insert([
-        ['type' => 'Incident'],
-        ['type' => 'Problem'],
-        ['type' => 'Loan'],
+  DB::table('tickets_types')->delete();
+  DB::table('tickets_types')->insert([
+        ['id' => 1, 'type' => 'Incident'],
+        ['id' => 2, 'type' => 'Problem'],
+        ['id' => 3, 'type' => 'Loan'],
       ]);
     }
 }

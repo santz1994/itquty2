@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class LocationsTableSeeder extends Seeder
 {
@@ -11,6 +12,16 @@ class LocationsTableSeeder extends Seeder
      */
     public function run()
     {
-      factory(App\Location::class, 4)->create();
+      // Clear locations table and reset auto-increment
+  DB::table('locations')->delete();
+      // Insert location with id = 1
+      DB::table('locations')->insert([
+        'id' => 1,
+        'building' => 'Main',
+        'office' => 'HQ',
+        'location_name' => 'Default Location',
+        'storeroom' => 0
+      ]);
+      // Optionally add more locations if needed
     }
 }

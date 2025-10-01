@@ -12,9 +12,9 @@ use App\Location;
 use App\Status;
 use App\WarrantyType;
 use App\Invoice;
-use Auth;
-use DB;
-use Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Slack;
 
 class AssetRepository implements AssetRepositoryInterface {
@@ -115,7 +115,8 @@ class AssetRepository implements AssetRepositoryInterface {
     $this->flashSuccessCreate($this->find($asset->id)->asset_tag);
 
     if (env('SLACK_ENABLED')) {
-      $this->slackCreate();
+      $notifier = app(\App\Services\SlackNotifier::class);
+      $notifier->notify('New Asset Created - ' . $this->getLatest()->asset_tag, env('SLACK_CHANNEL'), env('SLACK_BOT_NAME'));
     }
 
     return redirect()->route('assets.index');
@@ -157,7 +158,8 @@ class AssetRepository implements AssetRepositoryInterface {
     $this->flashSuccessUpdate($this->find($asset->id)->asset_tag);
 
     if (env('SLACK_ENABLED')) {
-      $this->slackUpdate($asset->id);
+      $notifier = app(\App\Services\SlackNotifier::class);
+      $notifier->notify('Asset Updated - ' . $this->find($asset->id)->asset_tag, env('SLACK_CHANNEL'), env('SLACK_BOT_NAME'));
     }
 
     return redirect()->route('assets.index');
@@ -243,51 +245,39 @@ class AssetRepository implements AssetRepositoryInterface {
     Session::flash('message', 'Successfully updated');
   }
 
+  // Slack attachments replaced by simple webhook notifier
+  /**
+   * Notify Slack on create (compat shim).
+   *
+   * @return void
+   */
   public function slackCreate()
   {
-    Slack::attach([
-      'title' => 'New Asset Created',
-      'title_link' => url('/assets/'),
-      'fallback' => 'New Asset Created',
-      'color' => 'good',
-      'fields' => [
-        [
-          'title' => 'Asset Tag',
-          'value' => $this->getLatest()->asset_tag
-        ],
-        [
-          'title' => 'Serial Number',
-          'value' => $this->getLatest()->serial_number
-        ],
-        [
-          'title' => 'Model',
-          'value' => $this->getLatest()->model->manufacturer->name . ' - ' . $this->getLatest()->model->asset_model
-        ]
-      ]
-    ])->send();
+    if (env('SLACK_ENABLED')) {
+      try {
+        $notifier = app(\App\Services\SlackNotifier::class);
+        $notifier->notify('Resource created', env('SLACK_CHANNEL'), env('SLACK_BOT_NAME'));
+      } catch (\Throwable $e) {
+        // Swallow notifier errors during bootstrap/test runs
+      }
+    }
   }
 
+  /**
+   * Notify Slack on update (compat shim).
+   *
+   * @param mixed $id
+   * @return void
+   */
   public function slackUpdate($id)
   {
-    Slack::attach([
-      'title' => 'Asset Updated',
-      'title_link' => url('/assets/'),
-      'fallback' => 'Asset Updated',
-      'color' => 'good',
-      'fields' => [
-        [
-          'title' => 'Asset Tag',
-          'value' => $this->find($id)->asset_tag
-        ],
-        [
-          'title' => 'Serial Number',
-          'value' => $this->find($id)->serial_number
-        ],
-        [
-          'title' => 'Model',
-          'value' => $this->find($id)->model->manufacturer->name . ' - ' . $this->find($id)->model->asset_model
-        ]
-      ]
-    ])->send();
+    if (env('SLACK_ENABLED')) {
+      try {
+        $notifier = app(\App\Services\SlackNotifier::class);
+        $notifier->notify('Resource updated: ' . $id, env('SLACK_CHANNEL'), env('SLACK_BOT_NAME'));
+      } catch (\Throwable $e) {
+        // ignore
+      }
+    }
   }
 }

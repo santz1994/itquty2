@@ -15,16 +15,21 @@ use App\Http\Requests;
 
 class AssetModelsController extends Controller
 {
-  public function __construct(AssetModelRepositoryInterface $assetModel)
-  {
-      $this->middleware('auth');
-      $this->assetModel = $assetModel;
-  }
+    /**
+     * @var AssetModelRepositoryInterface
+     */
+    protected $assetModel;
+
+    public function __construct(AssetModelRepositoryInterface $assetModel)
+    {
+        $this->middleware('auth');
+        $this->assetModel = $assetModel;
+    }
 
   public function index()
   {
     $pageTitle = 'View Models';
-    $asset_models = $this->assetModel->getAll();
+      $asset_models = $this->assetModel->getAll(); // Ensure consistent property name
     $manufacturers = $this->assetModel->getAllOrderBy('App\Manufacturer', 'name');
     $asset_types = $this->assetModel->getAllOrderBy('App\AssetType', 'type_name');
     $pcspecs = $this->assetModel->getAllOrderBy('App\Pcspec', 'cpu');
@@ -42,7 +47,9 @@ class AssetModelsController extends Controller
 
   public function edit(AssetModel $asset_model)
   {
-    $pageTitle = 'Edit Model - ' . $asset_model->manufacturer->name .  ' ' . $asset_model->asset_model;
+    $manufacturerName = ($asset_model && $asset_model->manufacturer) ? $asset_model->manufacturer->name : '';
+    $modelName = ($asset_model && $asset_model->asset_model) ? $asset_model->asset_model : '';
+    $pageTitle = 'Edit Model - ' . $manufacturerName . ' ' . $modelName;
     $manufacturers = $this->assetModel->getAllOrderBy('App\Manufacturer', 'name');
     $asset_types = $this->assetModel->getAllOrderBy('App\AssetType', 'type_name');
     $pcspecs = $this->assetModel->getAllOrderBy('App\Pcspec', 'cpu');

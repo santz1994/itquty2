@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use App\Invoice;
 use App\Supplier;
 use App\Division;
-use Session;
+use Illuminate\Support\Facades\Session;
+use App\Services\SlackNotifier;
 use App\Http\Requests;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -18,9 +19,12 @@ use Slack;
 
 class InvoicesController extends Controller
 {
-  public function __construct()
+  protected $slack;
+
+  public function __construct(SlackNotifier $slack)
   {
-      $this->middleware('auth');
+    $this->middleware('auth');
+    $this->slack = $slack;
   }
 
   public function index()
@@ -59,45 +63,9 @@ class InvoicesController extends Controller
     Session::flash('title', 'Invoice ' . $invoice->invoice_number);
     Session::flash('message', 'Successfully created');
 
-    if (env('SLACK_ENABLED')) {
-      Slack::attach([
-        'title' => 'New Invoice Created',
-        'title_link' => url('invoices/' . $invoice->id),
-        'fallback' => 'New Invoice Created',
-        'color' => 'good',
-        'fields' => [
-          [
-            'title' => 'Invoice Number',
-            'value' => $invoice->invoice_number,
-            'short' => true
-          ],
-          [
-            'title' => 'Order Number',
-            'value' => $invoice->order_number,
-            'short' => true
-          ],
-          [
-            'title' => 'Division',
-            'value' => $invoice->division->name,
-            'short' => true
-          ],
-          [
-            'title' => 'Supplier',
-            'value' => $invoice->supplier->name,
-            'short' => true
-          ],
-          [
-            'title' => 'Invoice Date',
-            'value' => $invoice->invoiced_date,
-            'short' => true
-          ],
-          [
-            'title' => 'Total',
-            'value' => $invoice->total,
-            'short' => true
-          ],
-        ]
-      ])->send();
+    if (getenv('SLACK_ENABLED')) {
+      $message = "New Invoice Created: #{$invoice->invoice_number} - Order: {$invoice->order_number} - Total: {$invoice->total} - Supplier: {$invoice->supplier->name} - Division: {$invoice->division->name}";
+      $this->slack->notify($message);
     }
 
     return redirect()->route('invoices.index');

@@ -6,9 +6,21 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
 
+
+use Illuminate\Support\Facades\Artisan;
+use Database\Seeders\RolesTableSeeder;
+use Database\Seeders\TestUsersTableSeeder;
+
 class TicketTypeTest extends TestCase
 {
-    use DatabaseTransactions;
+     use DatabaseTransactions;
+
+     public static function setUpBeforeClass(): void
+     {
+          parent::setUpBeforeClass();
+          Artisan::call('db:seed', ['--class' => RolesTableSeeder::class, '--force' => true]);
+          Artisan::call('db:seed', ['--class' => TestUsersTableSeeder::class, '--force' => true]);
+     }
 
     public function testUserCannotAccessTicketTypesView()
     {

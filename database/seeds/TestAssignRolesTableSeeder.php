@@ -19,12 +19,12 @@ class TestAssignRolesTableSeeder extends Seeder
       $user = Role::where('name', '=', 'user')->first();
 
       $superAdminUser = User::where('name', '=', 'Super Admin User')->first();
-      $superAdminUser->attachRole($superAdmin);
+  $superAdminUser->assignRole($superAdmin);
 
       $adminUser = User::where('name', '=', 'Admin User')->first();
-      $adminUser->attachRole($admin);
+  $adminUser->assignRole($admin);
 
       $userUser = User::where('name', '=', 'User User')->first();
-      $userUser->attachRole($user);
+  $userUser->assignRole($user);
     }
 }

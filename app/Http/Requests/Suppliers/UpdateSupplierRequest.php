@@ -24,9 +24,13 @@ class UpdateSupplierRequest extends Request
     public function rules()
     {
       $supplier = $this->route()->parameter('supplier');
-
+      // If $supplier is a string (id), fetch the model
+      if (is_string($supplier)) {
+        $supplier = \App\Supplier::find($supplier);
+      }
+      $supplierId = $supplier ? $supplier->id : null;
       return [
-        'name' => 'required|unique:suppliers,name,'.$supplier->id
+        'name' => 'required|unique:suppliers,name,' . $supplierId
       ];
     }
 

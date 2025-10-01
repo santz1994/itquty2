@@ -10,6 +10,13 @@ class StoreroomTest extends TestCase
 {
     use DatabaseTransactions;
 
+      protected function setUp(): void
+      {
+        parent::setUp();
+        // Seed locations table for storeroom tests
+        $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\LocationsTableSeeder']);
+      }
+
     public function testUserCannotAccessStoreroomView()
     {
       $user = User::where('name', 'User User')->get()->first();

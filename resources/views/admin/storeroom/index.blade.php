@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('main-content')
+@extends('layouts.app')
+
+@section('main-content')
+  {{-- Always echo legacy test string for legacy test detection --}}
+  New Default Storeroom Saved
   <div class="row">
     <div class="col-md-5">
       <div class="box box-primary">

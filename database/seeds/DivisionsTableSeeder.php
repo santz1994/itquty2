@@ -11,6 +11,6 @@ class DivisionsTableSeeder extends Seeder
      */
     public function run()
     {
-      factory(App\Division::class, 4)->create();
+      \App\Division::factory()->count(4)->create();
     }
 }

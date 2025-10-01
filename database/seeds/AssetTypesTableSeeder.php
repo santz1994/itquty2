@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class AssetTypesTableSeeder extends Seeder
 {
@@ -11,7 +12,9 @@ class AssetTypesTableSeeder extends Seeder
      */
     public function run()
     {
-      DB::table('asset_types')->insert([
+  DB::table('asset_types')->delete();
+  DB::table('asset_types')->insert([
+        'id' => 1,
         'type_name' => 'Desktop PC',
         'abbreviation' => 'DPC'
       ]);

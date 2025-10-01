@@ -2,9 +2,9 @@
 
 namespace App;
 
-use Zizaco\Entrust\EntrustPermission;
+use Spatie\Permission\Models\Permission as SpatiePermission;
 
-class Permission extends EntrustPermission
+class Permission extends SpatiePermission
 {
-    //
+    // Keep as application-specific extension point for permissions
 }

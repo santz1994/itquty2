@@ -4,6 +4,8 @@ FROM php:7.4-apache
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
+    sqlite3 \
+    libsqlite3-dev \
     libzip-dev \
     libpng-dev \
     libjpeg-dev \
@@ -16,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 
 # PHP extensions
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype && \
-    docker-php-ext-install pdo pdo_mysql zip gd mbstring xml intl
+    docker-php-ext-install pdo pdo_mysql pdo_sqlite zip gd mbstring xml intl
 
 # Install composer (copy from official composer image)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

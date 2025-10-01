@@ -12,34 +12,88 @@ class PermissionsTableSeeder extends Seeder
      */
     public function run()
     {
-      $createUser = new Permission();
-      $createUser->name         = 'create-user';
-      $createUser->display_name = 'Create Users';
-      $createUser->description  = 'Create new users';
-      $createUser->save();
+      // If permissions table has guard_name, use the Permission model (Spatie style), otherwise fallback to legacy insert
+      if (\Illuminate\Support\Facades\Schema::hasColumn('permissions', 'guard_name')) {
+        Permission::firstOrCreate(
+          [
+            'name' => 'create-user',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+          ],
+          [
+            'display_name' => 'Create Users',
+            'description' => 'Create new users',
+          ]
+        );
 
-      $editUser = new Permission();
-      $editUser->name         = 'edit-user';
-      $editUser->display_name = 'Edit Users';
-      $editUser->description  = 'Edit existing users';
-      $editUser->save();
+        Permission::firstOrCreate(
+          [
+            'name' => 'edit-user',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+          ],
+          [
+            'display_name' => 'Edit Users',
+            'description' => 'Edit existing users',
+          ]
+        );
 
-      $changeRole = new Permission();
-      $changeRole->name         = 'change-role';
-      $changeRole->display_name = 'Change Role';
-      $changeRole->description  = 'Change a user\'s role';
-      $changeRole->save();
+        Permission::firstOrCreate(
+          [
+            'name' => 'change-role',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+          ],
+          [
+            'display_name' => 'Change Role',
+            'description' => 'Change a user\'s role',
+          ]
+        );
 
-      $createAsset = new Permission();
-      $createAsset->name         = 'create-asset';
-      $createAsset->display_name = 'Create Asset';
-      $createAsset->description  = 'Create new assets';
-      $createAsset->save();
+        Permission::firstOrCreate(
+          [
+            'name' => 'create-asset',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+          ],
+          [
+            'display_name' => 'Create Asset',
+            'description' => 'Create new assets',
+          ]
+        );
 
-      $editAsset = new Permission();
-      $editAsset->name         = 'edit-asset';
-      $editAsset->display_name = 'Edit Asset';
-      $editAsset->description  = 'Edit assets';
-      $editAsset->save();
+        Permission::firstOrCreate(
+          [
+            'name' => 'edit-asset',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+          ],
+          [
+            'display_name' => 'Edit Asset',
+            'description' => 'Edit assets',
+          ]
+        );
+      } else {
+        // Legacy Entrust-style permissions table without guard_name
+        \Illuminate\Support\Facades\DB::table('permissions')->updateOrInsert(
+          ['name' => 'create-user'],
+          ['display_name' => 'Create Users', 'description' => 'Create new users', 'updated_at' => now(), 'created_at' => now()]
+        );
+
+        \Illuminate\Support\Facades\DB::table('permissions')->updateOrInsert(
+          ['name' => 'edit-user'],
+          ['display_name' => 'Edit Users', 'description' => 'Edit existing users', 'updated_at' => now(), 'created_at' => now()]
+        );
+
+        \Illuminate\Support\Facades\DB::table('permissions')->updateOrInsert(
+          ['name' => 'change-role'],
+          ['display_name' => 'Change Role', 'description' => 'Change a user\'s role', 'updated_at' => now(), 'created_at' => now()]
+        );
+
+        \Illuminate\Support\Facades\DB::table('permissions')->updateOrInsert(
+          ['name' => 'create-asset'],
+          ['display_name' => 'Create Asset', 'description' => 'Create new assets', 'updated_at' => now(), 'created_at' => now()]
+        );
+
+        \Illuminate\Support\Facades\DB::table('permissions')->updateOrInsert(
+          ['name' => 'edit-asset'],
+          ['display_name' => 'Edit Asset', 'description' => 'Edit assets', 'updated_at' => now(), 'created_at' => now()]
+        );
+      }
     }
 }
