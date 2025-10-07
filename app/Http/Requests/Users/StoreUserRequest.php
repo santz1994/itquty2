@@ -38,13 +38,13 @@ class StoreUserRequest extends Request
     public function messages()
     {
       return [
-        'name.required' => 'You must enter the User\'s Name.',
-        'name.unique' => $this->name . ' already exists. You must enter a unique User Name.',
-        'email.required' => 'You must enter the User\'s Email Address.',
-        'email.unique' => $this->email . ' already exists. You must enter a unique email address.',
-        'email.email' => 'Please enter a valid email address.',
-        'password.required' => 'You must enter a password.',
-        'password.min' => 'The password must be a minimum of six (6) characters long.'
+        'name.required' => 'Nama pengguna harus diisi.',
+        'name.unique' => 'Nama "' . $this->name . '" sudah digunakan. Silakan gunakan nama yang berbeda.',
+        'email.required' => 'Alamat email harus diisi.',
+        'email.unique' => 'Email "' . $this->email . '" sudah digunakan. Silakan gunakan email yang berbeda.',
+        'email.email' => 'Format email tidak valid.',
+        'password.required' => 'Password harus diisi.',
+        'password.min' => 'Password minimal 6 karakter.'
       ];
     }
 

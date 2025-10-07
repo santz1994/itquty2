@@ -83,13 +83,17 @@ class TicketController extends BaseController
      */
     public function create()
     {
-        $priorities = TicketsPriority::all();
-        $types = TicketsType::all();
-        $locations = Location::all();
+        // Get dropdown data with correct variable names expected by the view
+        $users = User::select('id', 'name')->orderBy('name')->get();
+        $locations = Location::select('id', 'location_name')->orderBy('location_name')->get();
+        $ticketsStatuses = TicketsStatus::select('id', 'status')->orderBy('status')->get();
+        $ticketsTypes = TicketsType::select('id', 'type')->orderBy('type')->get();
+        $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
         $assets = Asset::where('assigned_to', auth()->id())->get(); // Only user's assets
         $pageTitle = 'Create New Ticket';
 
-        return view('tickets.create', compact('priorities', 'types', 'locations', 'assets', 'pageTitle'));
+        return view('tickets.create', compact('users', 'locations', 'ticketsStatuses', 'ticketsTypes', 
+                                            'ticketsPriorities', 'assets', 'pageTitle'));
     }
 
     /**
@@ -137,7 +141,15 @@ class TicketController extends BaseController
         // Get ticket entries for the view (the view expects this variable)
         $ticketEntries = $ticket->ticket_entries;
         
-        return view('tickets.show', compact('ticket', 'pageTitle', 'ticketEntries'));
+        // Get dropdown data required by the view
+        $users = User::select('id', 'name')->orderBy('name')->get();
+        $locations = Location::select('id', 'location_name')->orderBy('location_name')->get();
+        $ticketsStatuses = TicketsStatus::select('id', 'status')->orderBy('status')->get();
+        $ticketsTypes = TicketsType::select('id', 'type')->orderBy('type')->get();
+        $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
+        
+        return view('tickets.show', compact('ticket', 'pageTitle', 'ticketEntries', 
+                                          'users', 'locations', 'ticketsStatuses', 'ticketsTypes', 'ticketsPriorities'));
     }
 
     /**

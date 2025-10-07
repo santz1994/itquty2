@@ -22,30 +22,28 @@ class TicketFormComposer
     public function compose(View $view)
     {
         $view->with([
-            'ticketsPriorities' => Cache::remember('ticket_priorities_dropdown', 3600, function () {
-                return TicketsPriority::orderBy('priority')->pluck('priority', 'id');
+            'ticketsPriorities' => Cache::remember('ticket_priorities_objects', 3600, function () {
+                return TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
             }),
-            'ticketsStatuses' => Cache::remember('ticket_statuses_dropdown', 3600, function () {
-                return TicketsStatus::orderBy('status')->pluck('status', 'id');
+            'ticketsStatuses' => Cache::remember('ticket_statuses_objects', 3600, function () {
+                return TicketsStatus::select('id', 'status')->orderBy('status')->get();
             }),
-            'ticketsTypes' => Cache::remember('ticket_types_dropdown', 3600, function () {
-                return TicketsType::orderBy('type')->pluck('type', 'id');
+            'ticketsTypes' => Cache::remember('ticket_types_objects', 3600, function () {
+                return TicketsType::select('id', 'type')->orderBy('type')->get();
             }),
-            'users' => Cache::remember('users_dropdown', 1800, function () {
-                return User::orderBy('name')->pluck('name', 'id');
+            'users' => Cache::remember('users_objects', 1800, function () {
+                return User::select('id', 'name')->orderBy('name')->get();
             }),
-            'locations' => Cache::remember('locations_dropdown', 3600, function () {
-                return Location::orderBy('location_name')->pluck('location_name', 'id');
+            'locations' => Cache::remember('locations_objects', 3600, function () {
+                return Location::select('id', 'location_name')->orderBy('location_name')->get();
             }),
-            'assets' => Cache::remember('assets_for_tickets_dropdown', 1800, function () {
-                return Asset::with('assetModel')->get()->mapWithKeys(function($asset) {
-                    return [$asset->id => ($asset->assetModel ? $asset->assetModel->name : 'Unknown Model') . ' - ' . $asset->asset_tag];
-                });
+            'assets' => Cache::remember('assets_for_tickets_objects', 1800, function () {
+                return Asset::select('id', 'asset_tag')->with('assetModel:id,name')->get();
             }),
-            'assignableUsers' => Cache::remember('assignable_users_dropdown', 1800, function () {
-                return User::whereHas('roles', function($q) {
+            'assignableUsers' => Cache::remember('assignable_users_objects', 1800, function () {
+                return User::select('id', 'name')->whereHas('roles', function($q) {
                     $q->whereIn('name', ['admin', 'super-admin']);
-                })->orderBy('name')->pluck('name', 'id');
+                })->orderBy('name')->get();
             }),
         ]);
     }

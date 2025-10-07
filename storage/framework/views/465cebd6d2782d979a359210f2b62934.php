@@ -49,7 +49,12 @@
                             <li class="user-footer">
                                 
                                 <div class="pull-right">
-                                    <a href="<?php echo e(url('/logout')); ?>" class="btn btn-default btn-flat">Sign out</a>
+                                    <form method="POST" action="<?php echo e(route('logout')); ?>" style="display: inline;">
+                                        <?php echo csrf_field(); ?>
+                                        <button type="submit" class="btn btn-default btn-flat" style="border: none; background: transparent; color: inherit; cursor: pointer;">
+                                            Sign out
+                                        </button>
+                                    </form>
                                 </div>
                             </li>
                         </ul>

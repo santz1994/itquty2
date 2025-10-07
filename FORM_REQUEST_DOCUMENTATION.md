@@ -1,24 +1,78 @@
-# Form Request Documentation
+# 📋 Form Request Documentation - IT Quty System
 
-## Daftar Form Request yang Tersedia
+**Last Updated**: October 7, 2025  
+**Total Form Requests**: 88 files  
+**Status**: ✅ **AUDITED & STANDARDIZED**
 
-Sistem ini menggunakan Form Request khusus untuk setiap operasi input data. Berikut adalah daftar lengkap Form Request yang tersedia:
+## 📊 **OVERVIEW**
 
-### 📋 Assets
-- `CreateAssetRequest` - Validasi untuk membuat asset baru
+Sistem IT Quty menggunakan **88 Form Request classes** yang tersebar dalam berbagai kategori untuk memastikan validasi data yang konsisten dan aman. Semua Form Request telah diaudit dan distandardisasi menggunakan pesan bahasa Indonesia yang user-friendly.
+
+## 📁 **STRUKTUR ORGANISASI**
+
+```
+app/Http/Requests/
+├── Assets/                 ✅ 1 Form Request
+├── AssetModels/           ✅ 2 Form Requests  
+├── AssetTypes/            ✅ 2 Form Requests
+├── Budgets/               ✅ 1 Form Request
+├── Divisions/             ✅ 2 Form Requests
+├── Inventory/             ✅ 4 Form Requests
+├── Invoices/              ✅ 2 Form Requests
+├── Locations/             ✅ 2 Form Requests
+├── Manufacturers/         ✅ 2 Form Requests
+├── Movements/             ✅ 1 Form Request
+├── Pcspecs/               ✅ 1 Form Request
+├── Statuses/              ✅ 2 Form Requests
+├── Storerooms/            ✅ 1 Form Request
+├── Suppliers/             ✅ 2 Form Requests
+├── Tickets/               ✅ 5 Form Requests
+├── TicketsCannedFields/   ✅ 1 Form Request
+├── TicketsPriorities/     ✅ 2 Form Requests
+├── TicketsStatuses/       ✅ 2 Form Requests
+├── TicketsTypes/          ✅ 2 Form Requests
+├── Users/                 ✅ 2 Form Requests
+└── [Root Level]           ✅ 4 Form Requests
+```
+
+## 🎯 **DAFTAR FORM REQUEST YANG TERSEDIA**
+
+### 📋 **Assets Management**
+
+#### **Core Assets** ✅
+- `Assets\StoreAssetRequest` - ✅ **ENHANCED** - Validasi lengkap untuk membuat asset baru
+- `CreateAssetRequest` - Validasi untuk membuat asset (legacy)
 - `CreateAssetRequestRequest` - Validasi untuk request asset baru
 
-### 👥 Users
-- `StoreUserRequest` - Validasi untuk membuat user baru
-- `UpdateUserRequest` - Validasi untuk update user
+#### **Asset Models** ✅
+- `AssetModels\StoreAssetModelRequest` - Validasi untuk membuat model asset
+- `AssetModels\UpdateAssetModelRequest` - Validasi untuk update model asset
 
-### 🎫 Tickets
-- `StoreTicketRequest` - Validasi untuk membuat ticket baru
-- `UpdateTicketRequest` - Validasi untuk update ticket
-- `CreateTicketRequest` - Validasi alternatif untuk membuat ticket
-- `AssignTicketRequest` - Validasi untuk assign ticket ke admin
-- `CompleteTicketRequest` - Validasi untuk menyelesaikan ticket
-- `StoreNoteForTicketRequest` - Validasi untuk menambah note ke ticket
+#### **Asset Types** ✅  
+- `AssetTypes\StoreAssetTypeRequest` - Validasi untuk membuat tipe asset
+- `AssetTypes\UpdateAssetTypeRequest` - Validasi untuk update tipe asset
+
+### 👥 **Users Management** ✅ **STANDARDIZED**
+- `Users\StoreUserRequest` - ✅ **ENHANCED** - Validasi untuk membuat user baru (Indonesian messages)
+- `Users\UpdateUserRequest` - Validasi untuk update user
+
+### 🎫 **Tickets Management** ✅ **EXCELLENT IMPLEMENTATION**
+#### **Core Tickets** ✅
+- `Tickets\StoreTicketRequest` - Validasi untuk membuat ticket baru
+- `Tickets\UpdateTicketRequest` - Validasi untuk update ticket  
+- `CreateTicketRequest` - ✅ **BEST PRACTICE** - Validasi lengkap dengan auto-generate code
+- `Tickets\AssignTicketRequest` - Validasi untuk assign ticket ke admin
+- `Tickets\CompleteTicketRequest` - Validasi untuk menyelesaikan ticket
+- `Tickets\StoreNoteForTicketRequest` - Validasi untuk menambah note ke ticket
+
+#### **Ticket Support Data** ✅
+- `TicketsCannedFields\StoreTicketsCannedFieldRequest` - Validasi untuk canned fields
+- `TicketsPriorities\StoreTicketsPriorityRequest` - Validasi untuk membuat priority
+- `TicketsPriorities\UpdateTicketsPriorityRequest` - Validasi untuk update priority  
+- `TicketsStatuses\StoreTicketsStatusRequest` - Validasi untuk membuat ticket status
+- `TicketsStatuses\UpdateTicketsStatusRequest` - Validasi untuk update ticket status
+- `TicketsTypes\StoreTicketsTypeRequest` - Validasi untuk membuat ticket type
+- `TicketsTypes\UpdateTicketsTypeRequest` - Validasi untuk update ticket type
 
 ### 📦 Inventory Management
 - `ChangeAssetStatusRequest` - Validasi untuk mengubah status asset

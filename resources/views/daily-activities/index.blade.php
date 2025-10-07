@@ -123,11 +123,19 @@
                                 <tr>
                                     <td>
                                         <span class="label label-info">
-                                            {{ $activity->activity_date->format('d/m/Y') }}
+                                            @if($activity->activity_date)
+                                                {{ \Carbon\Carbon::parse($activity->activity_date)->format('d/m/Y') }}
+                                            @else
+                                                -
+                                            @endif
                                         </span>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $activity->created_at->format('H:i') }}
+                                            @if($activity->created_at)
+                                                {{ \Carbon\Carbon::parse($activity->created_at)->format('H:i') }}
+                                            @else
+                                                -
+                                            @endif
                                         </small>
                                     </td>
                                     <td>
@@ -137,7 +145,7 @@
                                     </td>
                                     <td>
                                         <div class="activity-description">
-                                            {{ Str::limit($activity->description, 150) }}
+                                            {{ \Illuminate\Support\Str::limit($activity->description, 150) }}
                                             @if(strlen($activity->description) > 150)
                                                 <a href="#" class="show-full-description" data-description="{{ $activity->description }}">
                                                     <i class="fa fa-expand"></i> Show more

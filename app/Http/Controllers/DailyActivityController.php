@@ -25,39 +25,45 @@ class DailyActivityController extends Controller
      */
     public function index(Request $request)
     {
-        $query = DailyActivity::withRelations();
+        $query = DailyActivity::with('user') // Eager load the user relationship
+                             ->latest('activity_date')
+                             ->latest();
 
-        // Filter by date range using scope
-        if ($request->has('date_from') && $request->has('date_to') && 
-            $request->date_from !== '' && $request->date_to !== '') {
-            $query->dateRange($request->date_from, $request->date_to);
-        } elseif ($request->has('date_from') && $request->date_from !== '') {
-            $query->whereDate('activity_date', '>=', $request->date_from);
-        } elseif ($request->has('date_to') && $request->date_to !== '') {
-            $query->whereDate('activity_date', '<=', $request->date_to);
-        }
+        // Use when() for cleaner conditional queries
+        $query->when($request->filled(['date_from', 'date_to']), function ($q) use ($request) {
+            return $q->dateRange($request->date_from, $request->date_to);
+        });
 
-        // Filter by user (admin only)
-        if ($request->has('user_id') && $request->user_id !== '' && $this->hasRole('admin')) {
-            $query->forUser($request->user_id);
-        }
+        $query->when($request->filled('date_from') && !$request->filled('date_to'), function ($q) use ($request) {
+            return $q->whereDate('activity_date', '>=', $request->date_from);
+        });
 
-        // Filter by activity type using scope
-        if ($request->has('activity_type') && $request->activity_type !== '') {
-            $query->byType($request->activity_type);
-        }
+        $query->when($request->filled('date_to') && !$request->filled('date_from'), function ($q) use ($request) {
+            return $q->whereDate('activity_date', '<=', $request->date_to);
+        });
+
+        $query->when($request->filled('user_id') && $this->hasAnyRole(['admin', 'super-admin']), function ($q) use ($request) {
+            return $q->forUser($request->user_id);
+        });
+
+        $query->when($request->filled('activity_type'), function ($q) use ($request) {
+            return $q->byType($request->activity_type);
+        });
 
         // If regular user, only show their activities
         if (!$this->hasAnyRole(['admin', 'super-admin'])) {
             $query->where('user_id', Auth::id());
         }
 
-        $activities = $query->orderBy('activity_date', 'desc')
-                           ->orderBy('created_at', 'desc')
-                           ->paginate(20);
+        $activities = $query->paginate(20);
 
-        // Get filter options
-        $users = $this->hasAnyRole(['admin', 'super-admin']) ? User::all() : collect();
+        // More efficient and cached user query
+        $users = cache()->remember('daily_activities_users', 300, function () { // 5 minutes cache
+            return $this->hasAnyRole(['admin', 'super-admin']) 
+                ? User::select('id', 'name')->orderBy('name')->get()
+                : collect();
+        });
+        
         $activityTypes = DailyActivity::select('type as activity_type')
                                      ->distinct()
                                      ->pluck('activity_type');

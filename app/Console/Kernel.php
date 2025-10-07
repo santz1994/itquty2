@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\TestDatabaseColumns::class,
         Commands\TestViewFixes::class,
+        Commands\TestAllViewFixes::class,
+        Commands\TestCriticalFixes::class,
     ];
 
     /**

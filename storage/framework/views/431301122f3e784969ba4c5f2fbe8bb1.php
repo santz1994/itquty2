@@ -4,7 +4,7 @@
 Daily Activities Calendar
 <?php $__env->stopSection(); ?>
 
-<?php $__env->startSection('content'); ?>
+<?php $__env->startSection('main-content'); ?>
 <div class="row">
     <div class="col-md-12">
         <div class="box box-primary">

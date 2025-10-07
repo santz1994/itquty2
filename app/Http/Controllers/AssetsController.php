@@ -85,8 +85,10 @@ class AssetsController extends Controller
      */
     public function create()
     {
+        $pageTitle = 'Create New Asset';
+        
         // ViewComposer will provide dropdown data
-        return view('assets.create');
+        return view('assets.create', compact('pageTitle'));
     }
 
     /**

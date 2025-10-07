@@ -11,6 +11,7 @@ use App\Manufacturer;
 use App\Supplier;
 use App\AssetType;
 use App\WarrantyType;
+use App\Invoice;
 use Illuminate\Support\Facades\Cache;
 
 class AssetFormComposer
@@ -24,31 +25,35 @@ class AssetFormComposer
     public function compose(View $view)
     {
         $view->with([
-            'divisions' => Cache::remember('divisions_dropdown', 3600, function () {
-                return Division::orderBy('name')->pluck('name', 'id');
+            'divisions' => Cache::remember('divisions_objects', 3600, function () {
+                return Division::select('id', 'name')->orderBy('name')->get();
             }),
-            'locations' => Cache::remember('locations_dropdown', 3600, function () {
-                return Location::orderBy('location_name')->pluck('location_name', 'id');
+            'locations' => Cache::remember('locations_objects', 3600, function () {
+                return Location::select('id', 'location_name')->orderBy('location_name')->get();
             }),
-            'statuses' => Cache::remember('asset_statuses_dropdown', 3600, function () {
-                return Status::orderBy('name')->pluck('name', 'id');
+            'statuses' => Cache::remember('asset_statuses_objects', 3600, function () {
+                return Status::select('id', 'name')->orderBy('name')->get();
             }),
-            'assetModels' => Cache::remember('asset_models_dropdown', 3600, function () {
-                return AssetModel::with('manufacturer')->get()->mapWithKeys(function($model) {
-                    return [$model->id => $model->manufacturer->name . ' - ' . $model->name];
-                });
+            'asset_models' => Cache::remember('asset_models_objects', 3600, function () {
+                return AssetModel::select('id', 'asset_model', 'manufacturer_id')->with('manufacturer:id,name')->get();
             }),
-            'manufacturers' => Cache::remember('manufacturers_dropdown', 3600, function () {
-                return Manufacturer::orderBy('name')->pluck('name', 'id');
+            'manufacturers' => Cache::remember('manufacturers_objects', 3600, function () {
+                return Manufacturer::select('id', 'name')->orderBy('name')->get();
             }),
-            'suppliers' => Cache::remember('suppliers_dropdown', 3600, function () {
-                return Supplier::orderBy('name')->pluck('name', 'id');
+            'suppliers' => Cache::remember('suppliers_objects', 3600, function () {
+                return Supplier::select('id', 'name')->orderBy('name')->get();
             }),
-            'assetTypes' => Cache::remember('asset_types_dropdown', 3600, function () {
-                return AssetType::orderBy('type_name')->pluck('type_name', 'id');
+            'assetTypes' => Cache::remember('asset_types_objects', 3600, function () {
+                return AssetType::select('id', 'type_name')->orderBy('type_name')->get();
             }),
-            'warrantyTypes' => Cache::remember('warranty_types_dropdown', 7200, function () {
-                return WarrantyType::orderBy('name')->pluck('name', 'id');
+            'warranty_types' => Cache::remember('warranty_types_objects', 7200, function () {
+                return WarrantyType::select('id', 'name')->orderBy('name')->get();
+            }),
+            'invoices' => Cache::remember('invoices_objects', 3600, function () {
+                return Invoice::select('id', 'invoice_number', 'invoiced_date', 'total', 'supplier_id')
+                              ->with('supplier:id,name')
+                              ->orderBy('invoiced_date', 'desc')
+                              ->get();
             }),
         ]);
     }

@@ -13,9 +13,9 @@
             <div class="form-group">
               <label for="user_id">@if ($errors->has('user_id'))<span class="text-red">Agent <small>'{{ $errors->first('user_id') }}'</small></span>@else Agent @endif</label>
               <select class="form-control user_id" name="user_id">
-                <option value = "{{$ticket->user_id or ''}}">{{$ticket->user_id or ''}}</option>
+                <option value="">Select Agent</option>
                 @foreach($users as $user)
-                    <option value="{{$user->id}}">{{$user->name}}</option>
+                    <option value="{{$user->id}}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{$user->name}}</option>
                 @endforeach
               </select>
             </div>

@@ -5,6 +5,23 @@ namespace App;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * App\User
+ * 
+ * @method bool hasRole($roles)
+ * @method bool hasAnyRole($roles)
+ * @method bool hasAllRoles($roles)
+ * @method \Illuminate\Support\Collection getRoleNames()
+ * @method mixed assignRole($roles)
+ * @method mixed removeRole($roles)
+ * @method mixed syncRoles($roles)
+ * @method bool hasPermissionTo($permission)
+ * @method bool hasAnyPermission($permissions)
+ * @method bool hasAllPermissions($permissions)
+ * @method mixed givePermissionTo($permissions)
+ * @method mixed revokePermissionTo($permissions)
+ * @method mixed syncPermissions($permissions)
+ */
 class User extends Authenticatable
 {
   use HasRoles;

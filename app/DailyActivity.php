@@ -10,7 +10,9 @@ class DailyActivity extends Model
         'user_id', 'activity_date', 'description', 'ticket_id', 'type', 'activity_type'
     ];
 
-    protected $dates = ['activity_date'];
+    protected $casts = [
+        'activity_date' => 'date',
+    ];
 
     // Relationships
     public function user()

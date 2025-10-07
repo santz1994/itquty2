@@ -49,12 +49,12 @@ class AppServiceProvider extends ServiceProvider
             'asset-requests.create',
         ], \App\Http\ViewComposers\AssetFormComposer::class);
         
-        // Daily activities composer for calendar and activity forms
-        view()->composer([
-            'daily-activities.create',
-            'daily-activities.edit',
-            'daily-activities.calendar',
-        ], \App\Http\ViewComposers\FormDataComposer::class);
+        // Daily activities composer for activity forms only (not calendar)
+        // Temporarily disabled to investigate blank page issues
+        // view()->composer([
+        //     'daily-activities.create',
+        //     'daily-activities.edit',
+        // ], \App\Http\ViewComposers\FormDataComposer::class);
     }
 
     /**

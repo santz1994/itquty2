@@ -101,7 +101,7 @@
                                             {{ $ticket->ticket_code }}
                                         </a>
                                     </td>
-                                    <td>{{ Str::limit($ticket->subject, 30) }}</td>
+                                    <td>{{ \Illuminate\Support\Str::limit($ticket->subject, 30) }}</td>
                                     <td>
                                         @if($ticket->ticket_priority)
                                             <span class="label label-{{ $ticket->ticket_priority->color ?? 'default' }}">
@@ -240,7 +240,7 @@
                                     @endif
                                 </h3>
                                 <div class="timeline-body">
-                                    {{ Str::limit($activity->description, 150) }}
+                                    {{ \Illuminate\Support\Str::limit($activity->description, 150) }}
                                 </div>
                             </div>
                         </div>
@@ -275,7 +275,7 @@
                     @foreach($slaAlerts as $alert)
                     <div class="alert alert-{{ $alert->sla_status_color }} alert-dismissible">
                         <h4>{{ $alert->ticket_code }}</h4>
-                        <p>{{ Str::limit($alert->subject, 50) }}</p>
+                        <p>{{ \Illuminate\Support\Str::limit($alert->subject, 50) }}</p>
                         <small>Due: {{ $alert->sla_due->format('d/m H:i') }}</small>
                     </div>
                     @endforeach
