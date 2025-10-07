@@ -8,6 +8,8 @@ use App\Repositories\Assets\AssetRepositoryInterface;
 
 class AssetsController extends Controller
 {
+  protected $asset;
+
   public function __construct(AssetRepositoryInterface $asset)
   {
       $this->middleware('auth');
@@ -37,5 +39,13 @@ class AssetsController extends Controller
   public function update(StoreAssetRequest $request, Asset $asset)
   {
     return $this->asset->update($request, $asset);
+  }
+
+  public function history(Asset $asset)
+  {
+    $ticketHistory = $asset->getTicketHistory();
+    $recentIssues = $asset->getRecentIssues();
+    
+    return view('admin.assets.history', compact('asset', 'ticketHistory', 'recentIssues'));
   }
 }

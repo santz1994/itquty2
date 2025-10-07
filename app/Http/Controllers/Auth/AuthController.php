@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
-use Validator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\ThrottlesLogins;
-use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 
 class AuthController extends Controller
 {
@@ -16,12 +16,9 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     |
     | This controller handles the registration of new users, as well as the
-    | authentication of existing users. By default, this controller uses
-    | a simple trait to add these behaviors. Why don't you explore it?
+    | authentication of existing users. Updated for Laravel 10 compatibility.
     |
     */
-
-    use AuthenticatesAndRegistersUsers, ThrottlesLogins;
 
     /**
      * Where to redirect users after login / registration.
@@ -37,47 +34,60 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware($this->guestMiddleware(), ['except' => 'logout']);
+        $this->middleware('guest')->except('logout');
     }
 
     /**
-     * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
+     * Show the application's login form.
      */
-    protected function validator(array $data)
+    public function showLoginForm()
     {
-        return Validator::make($data, [
-            'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|confirmed|min:6',
-        ]);
+        return view('auth.login');
     }
 
     /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return User
+     * Handle a login request to the application.
      */
-    protected function create(array $data)
+    public function login(Request $request)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
+        $this->validate($request, [
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
+
+        if (Auth::attempt($request->only('email', 'password'), $request->filled('remember'))) {
+            return redirect()->intended($this->redirectTo);
+        }
+
+        return back()->withInput($request->only('email', 'remember'))
+                     ->withErrors(['email' => 'These credentials do not match our records.']);
     }
 
+    /**
+     * Log the user out of the application.
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/login');
+    }
+
+    /**
+     * Show the application registration form (disabled).
+     */
     public function showRegistrationForm()
     {
         return redirect('login');
     }
 
-    public function register()
+    /**
+     * Handle a registration request (disabled).
+     */
+    public function register(Request $request)
     {
-      return redirect('login');
+        return redirect('login');
     }
 
 }

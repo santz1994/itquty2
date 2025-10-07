@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Navbar Treeview Test - IVD Assets</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="css/all.css" rel="stylesheet" type="text/css" />
+    <link href="css/responsive-fix.css" rel="stylesheet" type="text/css" />
+    <script src="plugins/jQuery/jQuery-2.1.4.min.js"></script>
+</head>
+<body class="skin-blue sidebar-mini">
+    <div class="wrapper">
+        <!-- Main Header -->
+        <header class="main-header">
+            <a href="#" class="logo">
+                <span class="logo-mini">IVD</span>
+                <span class="logo-lg"><b>IVD</b>Assets</span>
+            </a>
+            <nav class="navbar navbar-static-top" role="navigation">
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <li><a href="#"><span>Test User</span></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Left side column -->
+        <aside class="main-sidebar">
+            <section class="sidebar">
+                <ul class="sidebar-menu">
+                    <li class="header">NAVIGATION</li>
+                    <li><a href="#"><i class='fa fa-home'></i> <span>Home</span></a></li>
+                    <li><a href="#"><i class='fa fa-tags'></i> <span>Assets</span></a></li>
+                    
+                    <!-- This is the problematic treeview menu -->
+                    <li class="treeview">
+                        <a href="#"><i class='fa fa-desktop'></i> <span>Models</span> <i class="fa fa-angle-left pull-right"></i></a>
+                        <ul class="treeview-menu">
+                            <li><a href="#">Models</a></li>
+                            <li><a href="#">PC Specifications</a></li>
+                            <li><a href="#">Manufacturers</a></li>
+                            <li><a href="#">Asset Types</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li class="treeview">
+                        <a href="#"><i class='fa fa-cog'></i> <span>Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
+                        <ul class="treeview-menu">
+                            <li><a href="#">Users</a></li>
+                            <li><a href="#">Roles</a></li>
+                            <li><a href="#">Permissions</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li><a href="#"><i class='fa fa-ticket'></i> <span>Tickets</span></a></li>
+                </ul>
+            </section>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Navbar Treeview Test</h3>
+                            </div>
+                            <div class="box-body">
+                                <h4>Test Instructions:</h4>
+                                <ol>
+                                    <li><strong>Click "Models" menu item</strong> - Should toggle submenu without auto-cascading</li>
+                                    <li><strong>Click "Settings" menu item</strong> - Should close Models and open Settings</li>
+                                    <li><strong>Toggle sidebar</strong> - Menu behavior should adapt to collapsed/expanded state</li>
+                                    <li><strong>Test on different screen sizes</strong> - Behavior should be consistent</li>
+                                </ol>
+                                
+                                <div class="alert alert-info">
+                                    <h4>Expected Behavior:</h4>
+                                    <ul>
+                                        <li>Menu should only open when clicked, not automatically</li>
+                                        <li>Only one submenu should be open at a time</li>
+                                        <li>Arrow should rotate when menu is expanded</li>
+                                        <li>In collapsed sidebar, submenu should appear as overlay</li>
+                                    </ul>
+                                </div>
+                                
+                                <p><strong>Sidebar State:</strong> <span id="sidebar-state"></span></p>
+                                <p><strong>Active Menus:</strong> <span id="active-menus"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/all.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Update status display
+        function updateStatus() {
+            var isCollapsed = $('body').hasClass('sidebar-collapse');
+            var isMini = $('body').hasClass('sidebar-mini');
+            $('#sidebar-state').text(isCollapsed ? 'Collapsed' : 'Expanded' + (isMini ? ' (Mini)' : ''));
+            
+            var activeMenus = [];
+            $('.sidebar-menu .treeview.active').each(function() {
+                activeMenus.push($(this).find('> a span').text());
+            });
+            $('#active-menus').text(activeMenus.length ? activeMenus.join(', ') : 'None');
+        }
+        
+        // Initialize status
+        updateStatus();
+        
+        // Initialize AdminLTE
+        if (typeof $.AdminLTE !== 'undefined') {
+            $.AdminLTE.layout.activate();
+            $.AdminLTE.pushMenu.activate('[data-toggle="offcanvas"]');
+            
+            // Custom sidebar toggle handler
+            $('[data-toggle="offcanvas"]').click(function(e) {
+                e.preventDefault();
+                var windowWidth = $(window).width();
+                
+                if (windowWidth > 767) {
+                    if ($('body').hasClass('sidebar-collapse')) {
+                        $('body').removeClass('sidebar-collapse');
+                    } else {
+                        $('body').addClass('sidebar-collapse');
+                    }
+                } else {
+                    if ($('body').hasClass('sidebar-open')) {
+                        $('body').removeClass('sidebar-open');
+                    } else {
+                        $('body').addClass('sidebar-open');
+                    }
+                }
+                updateStatus();
+            });
+        }
+        
+        // Remove existing AdminLTE tree handlers
+        $('.sidebar-menu').off('click', 'li a');
+        
+        // Add custom treeview handler
+        $('.sidebar-menu').on('click', '.treeview > a', function(e) {
+            var $this = $(this);
+            var $parent = $this.parent();
+            var $menu = $this.next('.treeview-menu');
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var isCollapsed = $('body').hasClass('sidebar-collapse');
+            
+            if (!isCollapsed) {
+                // Normal sidebar behavior
+                if ($menu.is(':visible')) {
+                    $menu.slideUp(300, function() {
+                        $menu.removeClass('menu-open');
+                    });
+                    $parent.removeClass('active');
+                } else {
+                    // Close all other menus first
+                    var $siblings = $parent.siblings('.treeview');
+                    $siblings.find('.treeview-menu:visible').slideUp(300);
+                    $siblings.find('.treeview-menu').removeClass('menu-open');
+                    $siblings.removeClass('active');
+                    
+                    // Open this menu
+                    $menu.slideDown(300, function() {
+                        $menu.addClass('menu-open');
+                    });
+                    $parent.addClass('active');
+                }
+            } else {
+                // Collapsed sidebar - show menu as overlay
+                if ($parent.hasClass('active')) {
+                    $parent.removeClass('active');
+                    $menu.hide();
+                } else {
+                    $('.sidebar-menu .treeview').removeClass('active');
+                    $('.sidebar-menu .treeview-menu').hide();
+                    $parent.addClass('active');
+                    $menu.show();
+                }
+            }
+            
+            updateStatus();
+        });
+        
+        // Handle clicks outside to close overlay menus
+        $(document).on('click', function(e) {
+            if ($('body').hasClass('sidebar-collapse')) {
+                if (!$(e.target).closest('.treeview').length) {
+                    $('.sidebar-menu .treeview').removeClass('active');
+                    $('.sidebar-menu .treeview-menu').hide();
+                    updateStatus();
+                }
+            }
+        });
+        
+        // Update status on any change
+        $('.sidebar-menu .treeview').on('DOMSubtreeModified', updateStatus);
+        setInterval(updateStatus, 1000); // Fallback update
+    });
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@ use App\Status;
 use App\Budget;
 use App\Invoice;
 use App\Division;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 
@@ -36,8 +36,6 @@ class HomeController extends Controller
 
     /**
      * Show the application dashboard.
-     *
-     * @return Response
      */
     public function index()
     {

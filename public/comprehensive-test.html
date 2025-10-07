@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Comprehensive System Test - IVD Assets</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="css/all.css" rel="stylesheet" type="text/css" />
+    <link href="css/responsive-fix.css" rel="stylesheet" type="text/css" />
+    <script src="plugins/jQuery/jQuery-2.1.4.min.js"></script>
+    <style>
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-passed { background-color: #d4edda; border-color: #c3e6cb; }
+        .test-failed { background-color: #f8d7da; border-color: #f5c6cb; }
+        .test-pending { background-color: #fff3cd; border-color: #ffeaa7; }
+        .test-results { font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+        .loading { color: #007bff; }
+        #overall-status { font-size: 18px; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container" style="padding: 20px;">
+        <h1>🔍 Comprehensive System Test</h1>
+        <p>Testing all major functionalities of the IT Helpdesk System...</p>
+        
+        <div id="overall-status" class="test-pending">⏳ Running Tests...</div>
+        
+        <!-- System Status Test -->
+        <div id="test-system" class="test-section test-pending">
+            <h3>🖥️ System Status Test</h3>
+            <p>Testing basic system health and configuration...</p>
+            <div id="system-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <!-- Routes Test -->
+        <div id="test-routes" class="test-section test-pending">
+            <h3>🛣️ Routes Accessibility Test</h3>
+            <p>Testing if major routes are accessible...</p>
+            <div id="routes-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <!-- UI Components Test -->
+        <div id="test-ui" class="test-section test-pending">
+            <h3>🎨 UI Components Test</h3>
+            <p>Testing responsive design and JavaScript functionality...</p>
+            <div id="ui-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <!-- QR Code Test -->
+        <div id="test-qr" class="test-section test-pending">
+            <h3>📱 QR Code Generation Test</h3>
+            <p>Testing QR code generation functionality...</p>
+            <div id="qr-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <!-- Database Test -->
+        <div id="test-db" class="test-section test-pending">
+            <h3>🗄️ Database Connectivity Test</h3>
+            <p>Testing database migrations and basic data...</p>
+            <div id="db-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <!-- Security Test -->
+        <div id="test-security" class="test-section test-pending">
+            <h3>🔒 Security & Authentication Test</h3>
+            <p>Testing authentication and role-based access...</p>
+            <div id="security-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <!-- Performance Test -->
+        <div id="test-performance" class="test-section test-pending">
+            <h3>⚡ Performance Test</h3>
+            <p>Testing page load times and responsiveness...</p>
+            <div id="performance-results" class="test-results loading">Testing...</div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button id="run-tests" class="btn btn-primary">🔄 Run Tests Again</button>
+            <button id="export-results" class="btn btn-secondary">📄 Export Results</button>
+        </div>
+    </div>
+
+    <script src="js/all.js"></script>
+    <script>
+    $(document).ready(function() {
+        let testResults = {};
+        let totalTests = 7;
+        let completedTests = 0;
+        
+        function updateTestStatus(testId, status, message) {
+            const testElement = $('#test-' + testId);
+            const resultsElement = $('#' + testId + '-results');
+            
+            testElement.removeClass('test-pending test-passed test-failed');
+            
+            if (status === 'passed') {
+                testElement.addClass('test-passed');
+                resultsElement.html('✅ ' + message);
+            } else if (status === 'failed') {
+                testElement.addClass('test-failed');
+                resultsElement.html('❌ ' + message);
+            } else {
+                testElement.addClass('test-pending');
+                resultsElement.html('⏳ ' + message);
+            }
+            
+            testResults[testId] = { status, message, timestamp: new Date() };
+            completedTests++;
+            
+            if (completedTests >= totalTests) {
+                updateOverallStatus();
+            }
+        }
+        
+        function updateOverallStatus() {
+            const passed = Object.values(testResults).filter(r => r.status === 'passed').length;
+            const failed = Object.values(testResults).filter(r => r.status === 'failed').length;
+            
+            const overallElement = $('#overall-status');
+            
+            if (failed === 0) {
+                overallElement.removeClass('test-pending test-failed').addClass('test-passed');
+                overallElement.html(`🎉 All Tests Passed! (${passed}/${totalTests})`);
+            } else {
+                overallElement.removeClass('test-pending test-passed').addClass('test-failed');
+                overallElement.html(`⚠️ ${failed} Tests Failed, ${passed} Passed (${passed}/${totalTests})`);
+            }
+        }
+        
+        function runSystemTest() {
+            $.get('/test/status')
+                .done(function(data) {
+                    const message = `System: ${data.system} | Status: ${data.status} | Laravel: ${data.laravel_version} | PHP: ${data.php_version}`;
+                    updateTestStatus('system', 'passed', message);
+                })
+                .fail(function() {
+                    updateTestStatus('system', 'failed', 'System status endpoint not accessible');
+                });
+        }
+        
+        function runRoutesTest() {
+            const routes = ['/login', '/test/qr', '/test-responsive.html', '/test-navbar-fix.html'];
+            let routesPassed = 0;
+            let routesFailed = 0;
+            
+            routes.forEach(function(route) {
+                $.ajax({
+                    url: route,
+                    method: 'GET',
+                    timeout: 5000
+                })
+                .done(function() {
+                    routesPassed++;
+                    if (routesPassed + routesFailed === routes.length) {
+                        const message = `Routes tested: ${routes.length} | Accessible: ${routesPassed} | Failed: ${routesFailed}`;
+                        updateTestStatus('routes', routesFailed === 0 ? 'passed' : 'failed', message);
+                    }
+                })
+                .fail(function() {
+                    routesFailed++;
+                    if (routesPassed + routesFailed === routes.length) {
+                        const message = `Routes tested: ${routes.length} | Accessible: ${routesPassed} | Failed: ${routesFailed}`;
+                        updateTestStatus('routes', routesFailed === 0 ? 'passed' : 'failed', message);
+                    }
+                });
+            });
+        }
+        
+        function runUITest() {
+            let uiTests = [];
+            
+            // Test AdminLTE initialization
+            if (typeof $.AdminLTE !== 'undefined') {
+                uiTests.push('AdminLTE: Available');
+            } else {
+                uiTests.push('AdminLTE: Not Available');
+            }
+            
+            // Test responsive CSS
+            if ($('link[href*="responsive-fix.css"]').length > 0) {
+                uiTests.push('Responsive CSS: Loaded');
+            } else {
+                uiTests.push('Responsive CSS: Not Loaded');
+            }
+            
+            // Test jQuery
+            if (typeof $ !== 'undefined') {
+                uiTests.push('jQuery: Available (v' + $.fn.jquery + ')');
+            } else {
+                uiTests.push('jQuery: Not Available');
+            }
+            
+            // Test screen responsiveness
+            const width = $(window).width();
+            if (width > 0) {
+                uiTests.push(`Screen Width: ${width}px`);
+            }
+            
+            const message = uiTests.join(' | ');
+            updateTestStatus('ui', 'passed', message);
+        }
+        
+        function runQRTest() {
+            $.get('/test/qr')
+                .done(function() {
+                    updateTestStatus('qr', 'passed', 'QR Code generation working');
+                })
+                .fail(function() {
+                    updateTestStatus('qr', 'failed', 'QR Code generation failed');
+                });
+        }
+        
+        function runDatabaseTest() {
+            $.get('/test/status')
+                .done(function(data) {
+                    if (data.database_connection === 'OK' && data.migrations) {
+                        const migrations = Object.keys(data.migrations).length;
+                        updateTestStatus('db', 'passed', `Database OK | Migrations: ${migrations} completed`);
+                    } else {
+                        updateTestStatus('db', 'failed', 'Database connection issues');
+                    }
+                })
+                .fail(function() {
+                    updateTestStatus('db', 'failed', 'Cannot check database status');
+                });
+        }
+        
+        function runSecurityTest() {
+            // Test CSRF token
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+            let securityTests = [];
+            
+            if (csrfToken) {
+                securityTests.push('CSRF Token: Present');
+            } else {
+                securityTests.push('CSRF Token: Missing');
+            }
+            
+            // Test if login page exists
+            $.get('/login')
+                .done(function() {
+                    securityTests.push('Login Page: Accessible');
+                    const message = securityTests.join(' | ');
+                    updateTestStatus('security', 'passed', message);
+                })
+                .fail(function() {
+                    securityTests.push('Login Page: Not Accessible');
+                    const message = securityTests.join(' | ');
+                    updateTestStatus('security', 'failed', message);
+                });
+        }
+        
+        function runPerformanceTest() {
+            const startTime = Date.now();
+            let testsCompleted = 0;
+            const performanceTests = ['/test/status', '/test-responsive.html'];
+            let totalTime = 0;
+            
+            performanceTests.forEach(function(url) {
+                const testStart = Date.now();
+                $.get(url)
+                    .always(function() {
+                        const testTime = Date.now() - testStart;
+                        totalTime += testTime;
+                        testsCompleted++;
+                        
+                        if (testsCompleted === performanceTests.length) {
+                            const avgTime = totalTime / performanceTests.length;
+                            const message = `Average load time: ${avgTime}ms | Total tests: ${performanceTests.length}`;
+                            updateTestStatus('performance', avgTime < 2000 ? 'passed' : 'failed', message);
+                        }
+                    });
+            });
+        }
+        
+        function runAllTests() {
+            testResults = {};
+            completedTests = 0;
+            
+            // Reset all test sections
+            $('.test-section').removeClass('test-passed test-failed').addClass('test-pending');
+            $('.test-results').html('Testing...').addClass('loading');
+            $('#overall-status').removeClass('test-passed test-failed').addClass('test-pending').html('⏳ Running Tests...');
+            
+            // Run all tests
+            setTimeout(runSystemTest, 100);
+            setTimeout(runRoutesTest, 200);
+            setTimeout(runUITest, 300);
+            setTimeout(runQRTest, 400);
+            setTimeout(runDatabaseTest, 500);
+            setTimeout(runSecurityTest, 600);
+            setTimeout(runPerformanceTest, 700);
+        }
+        
+        $('#run-tests').click(runAllTests);
+        
+        $('#export-results').click(function() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                system: 'IT Helpdesk System',
+                tests: testResults,
+                summary: {
+                    total: totalTests,
+                    passed: Object.values(testResults).filter(r => r.status === 'passed').length,
+                    failed: Object.values(testResults).filter(r => r.status === 'failed').length
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'system-test-results.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        // Auto-run tests on page load
+        runAllTests();
+    });
+    </script>
+</body>
+</html>

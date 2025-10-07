@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Responsive Test - IVD Assets</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="css/all.css" rel="stylesheet" type="text/css" />
+    <link href="css/responsive-fix.css" rel="stylesheet" type="text/css" />
+    <script src="plugins/jQuery/jQuery-2.1.4.min.js"></script>
+</head>
+<body class="skin-blue sidebar-mini sidebar-collapse">
+    <div class="wrapper">
+        <!-- Main Header -->
+        <header class="main-header">
+            <!-- Logo -->
+            <a href="#" class="logo">
+                <span class="logo-mini">IVD</span>
+                <span class="logo-lg"><b>IVD</b>Assets</span>
+            </a>
+            <!-- Header Navbar -->
+            <nav class="navbar navbar-static-top" role="navigation">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <!-- Navbar Right Menu -->
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown user user-menu">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="hidden-xs">Test User</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Left side column -->
+        <aside class="main-sidebar">
+            <section class="sidebar">
+                <ul class="sidebar-menu">
+                    <li class="header">NAVIGATION</li>
+                    <li><a href="#"><i class='fa fa-home'></i> <span>Home</span></a></li>
+                    <li><a href="#"><i class='fa fa-tags'></i> <span>Assets</span></a></li>
+                    <li class="treeview">
+                        <a href="#"><i class='fa fa-desktop'></i> <span>Models</span> <i class="fa fa-angle-left pull-right"></i></a>
+                        <ul class="treeview-menu">
+                            <li><a href="#">Models</a></li>
+                            <li><a href="#">PC Specifications</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Responsive Test</h3>
+                            </div>
+                            <div class="box-body">
+                                <p>This is a test page to verify responsive behavior:</p>
+                                <ul>
+                                    <li><strong>Desktop (>992px):</strong> Sidebar should be collapsible with mini icons</li>
+                                    <li><strong>Tablet (768-991px):</strong> Sidebar should auto-collapse to mini mode</li>
+                                    <li><strong>Mobile (<768px):</strong> Sidebar should be hidden with toggle overlay</li>
+                                </ul>
+                                <p><strong>Current screen width:</strong> <span id="screen-width"></span>px</p>
+                                <p><strong>Body classes:</strong> <span id="body-classes"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/all.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Display current screen width and body classes
+        function updateInfo() {
+            $('#screen-width').text($(window).width());
+            $('#body-classes').text($('body').attr('class'));
+        }
+        
+        updateInfo();
+        $(window).resize(updateInfo);
+        
+        // Initialize AdminLTE if available
+        if (typeof $.AdminLTE !== 'undefined') {
+            $.AdminLTE.layout.activate();
+            $.AdminLTE.pushMenu.activate('[data-toggle="offcanvas"]');
+            $.AdminLTE.tree('.sidebar');
+            
+            // Handle responsive behavior
+            function handleResponsiveLayout() {
+                var windowWidth = $(window).width();
+                
+                if (windowWidth <= 767) {
+                    $('body').removeClass('sidebar-mini sidebar-collapse')
+                            .addClass('sidebar-collapse');
+                } else if (windowWidth >= 768 && windowWidth <= 991) {
+                    $('body').addClass('sidebar-mini sidebar-collapse');
+                } else {
+                    if (!$('body').hasClass('sidebar-mini')) {
+                        $('body').addClass('sidebar-mini');
+                    }
+                }
+                updateInfo();
+            }
+            
+            handleResponsiveLayout();
+            $(window).resize(handleResponsiveLayout);
+            
+            // Handle sidebar toggle
+            $('[data-toggle="offcanvas"]').click(function(e) {
+                e.preventDefault();
+                var windowWidth = $(window).width();
+                
+                if (windowWidth > 767) {
+                    if ($('body').hasClass('sidebar-collapse')) {
+                        $('body').removeClass('sidebar-collapse');
+                    } else {
+                        $('body').addClass('sidebar-collapse');
+                    }
+                } else {
+                    if ($('body').hasClass('sidebar-open')) {
+                        $('body').removeClass('sidebar-open');
+                    } else {
+                        $('body').addClass('sidebar-open');
+                    }
+                }
+                updateInfo();
+            });
+        }
+    });
+    </script>
+</body>
+</html>

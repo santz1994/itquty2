@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Mail;
+use Illuminate\Support\Facades\Mail;
 use App\Ticket;
 use App\TicketsEntry;
 use App\TicketsPriority;
@@ -12,12 +12,10 @@ use App\Location;
 use App\User;
 use App\TicketsCannedField;
 use Carbon\Carbon;
-use Session;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Requests\Tickets\StoreTicketRequest;
 use App\Http\Requests\Tickets\UpdateTicketRequest;
-
-use App\Http\Requests;
 
 class TicketsController extends Controller
 {
@@ -31,8 +29,6 @@ class TicketsController extends Controller
 
   /**
    * Show all tickets
-   *
-   * @return view 'All Tickets'
    */
   public function index()
   {
@@ -43,8 +39,6 @@ class TicketsController extends Controller
 
   /**
    * Show the Ticket
-   * @param  Ticket $ticket The supplied Ticket
-   * @return view
    */
   public function show(Ticket $ticket)
   {
@@ -73,7 +67,11 @@ class TicketsController extends Controller
     $locations = Location::all();
     $users = User::all();
     $ticketsCannedFields = TicketsCannedField::all();
-    return view('tickets.create', compact('ticketsPriorities', 'ticketsStatuses', 'ticketsTypes', 'locations', 'users', 'ticketsCannedFields', 'pageTitle'));
+    // Always pass a Ticket object (empty) to avoid null errors in Blade
+    $ticket = new \stdClass();
+    $ticket->user_id = '';
+    // Add other properties if needed for the view
+    return view('tickets.create', compact('ticketsPriorities', 'ticketsStatuses', 'ticketsTypes', 'locations', 'users', 'ticketsCannedFields', 'pageTitle', 'ticket'));
   }
 
   /**

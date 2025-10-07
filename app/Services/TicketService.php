@@ -1,0 +1,249 @@
+<?php
+
+namespace App\Services;
+
+use App\Ticket;
+use App\DailyActivity;
+use App\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
+class TicketService
+{
+    /**
+     * Generate unique ticket code: Prefix-Date-SequentialNumber
+     */
+    public function generateTicketCode($prefix = 'TIK')
+    {
+        $date = Carbon::now()->format('Ymd');
+        
+        // Get today's ticket count for sequential number
+        $todayTicketCount = Ticket::whereDate('created_at', Carbon::today())->count();
+        $sequentialNumber = str_pad($todayTicketCount + 1, 3, '0', STR_PAD_LEFT);
+        
+        return "{$prefix}-{$date}-{$sequentialNumber}";
+    }
+
+    /**
+     * Auto-assign ticket to available admin (simplified version)
+     */
+    public function autoAssignTicketSimple(Ticket $ticket)
+    {
+        // Get available admins (users with admin or super-admin role)
+        $admins = User::role(['admin', 'super-admin'])->get();
+        
+        if ($admins->isNotEmpty()) {
+            $randomAdmin = $admins->random();
+            
+            $ticket->update([
+                'assigned_to' => $randomAdmin->id,
+                'assigned_at' => Carbon::now(),
+                'assignment_type' => 'auto'
+            ]);
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Create a new ticket with auto-assignment
+     */
+    public function createTicket(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+            // Generate ticket code
+            $data['ticket_code'] = $this->generateTicketCode();
+            
+            // Create ticket
+            $ticket = Ticket::create($data);
+            
+            // Auto-assign to available admin
+            $this->autoAssignTicket($ticket);
+            
+            // Log maintenance activity if ticket is related to an asset
+            if (isset($data['asset_id']) && $data['asset_id']) {
+                $asset = \App\Asset::find($data['asset_id']);
+                if ($asset) {
+                    $description = "Ticket created: {$ticket->title}";
+                    $asset->logMaintenanceActivity($description, $ticket->user_id);
+                }
+            }
+            
+            // Send notification (implement later with Reverb)
+            // $this->sendTicketCreatedNotification($ticket);
+            
+            return $ticket;
+        });
+    }
+
+    /**
+     * Auto assign ticket to random online admin
+     */
+    public function autoAssignTicket(Ticket $ticket)
+    {
+        $onlineAdmins = AdminOnlineStatus::getOnlineAdmins();
+        
+        if ($onlineAdmins->isEmpty()) {
+            Log::info("No online admins available for ticket {$ticket->ticket_code}");
+            return false;
+        }
+
+        // Random assignment among online admins
+        $selectedAdmin = $onlineAdmins->random();
+        
+        return $this->assignTicket($ticket, $selectedAdmin->user_id, 'auto');
+    }
+
+    /**
+     * Manually assign ticket
+     */
+    public function assignTicket(Ticket $ticket, $adminId, $type = 'manual')
+    {
+        $admin = User::find($adminId);
+        
+        if (!$admin || !$admin->hasRole(['admin', 'superadmin'])) {
+            throw new \Exception('Invalid admin for assignment');
+        }
+
+        $ticket->update([
+            'assigned_to' => $adminId,
+            'assigned_at' => now(),
+            'assignment_type' => $type
+        ]);
+
+        Log::info("Ticket {$ticket->ticket_code} assigned to admin {$admin->name}");
+        
+        return true;
+    }
+
+    /**
+     * Self-assign ticket by admin
+     */
+    public function selfAssignTicket(Ticket $ticket, $adminId)
+    {
+        if ($ticket->assigned_to) {
+            throw new \Exception('Ticket already assigned');
+        }
+
+        return $this->assignTicket($ticket, $adminId, 'manual');
+    }
+
+    /**
+     * Complete ticket and create daily activity
+     */
+    public function completeTicket(Ticket $ticket, $resolution = null)
+    {
+        return DB::transaction(function () use ($ticket, $resolution) {
+            $ticket->update([
+                'resolved_at' => now(),
+                'ticket_status_id' => 3, // Assuming 3 = Resolved
+                'closed' => now()
+            ]);
+
+            // Auto-create daily activity
+            if ($ticket->assigned_to) {
+                DailyActivity::createFromTicketCompletion($ticket);
+            }
+
+            return $ticket;
+        });
+    }
+
+    /**
+     * Get tickets near SLA deadline
+     */
+    public function getTicketsNearDeadline($hours = 2)
+    {
+        return Ticket::nearDeadline($hours)
+                    ->with(['user', 'assignedTo', 'ticket_priority'])
+                    ->orderBy('sla_due', 'asc')
+                    ->get();
+    }
+
+    /**
+     * Get overdue tickets
+     */
+    public function getOverdueTickets()
+    {
+        return Ticket::overdue()
+                    ->with(['user', 'assignedTo', 'ticket_priority'])
+                    ->orderBy('sla_due', 'asc')
+                    ->get();
+    }
+
+    /**
+     * Get unassigned tickets
+     */
+    public function getUnassignedTickets()
+    {
+        return Ticket::unassigned()
+                    ->with(['user', 'ticket_priority', 'ticket_type'])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+    }
+
+    /**
+     * Update admin activity status
+     */
+    public function updateAdminActivity($userId)
+    {
+        return AdminOnlineStatus::updateActivity($userId);
+    }
+
+    /**
+     * Get admin performance metrics
+     */
+    public function getAdminPerformance($adminId, $startDate = null, $endDate = null)
+    {
+        $startDate = $startDate ?: now()->subMonth();
+        $endDate = $endDate ?: now();
+
+        $tickets = Ticket::where('assigned_to', $adminId)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+
+        return [
+            'total_assigned' => $tickets->count(),
+            'completed' => $tickets->whereNotNull('resolved_at')->count(),
+            'overdue' => $tickets->where('sla_due', '<', now())
+                              ->whereNull('resolved_at')->count(),
+            'avg_resolution_time' => $this->calculateAverageResolutionTime($adminId, $startDate, $endDate),
+            'completion_rate' => $this->calculateCompletionRate($adminId, $startDate, $endDate)
+        ];
+    }
+
+    private function calculateAverageResolutionTime($adminId, $startDate, $endDate)
+    {
+        $resolvedTickets = Ticket::where('assigned_to', $adminId)
+                                ->whereBetween('created_at', [$startDate, $endDate])
+                                ->whereNotNull('resolved_at')
+                                ->get();
+
+        if ($resolvedTickets->isEmpty()) return 0;
+
+        $totalMinutes = $resolvedTickets->sum(function ($ticket) {
+            return $ticket->created_at->diffInMinutes($ticket->resolved_at);
+        });
+
+        return round($totalMinutes / $resolvedTickets->count() / 60, 2); // Return in hours
+    }
+
+    private function calculateCompletionRate($adminId, $startDate, $endDate)
+    {
+        $totalTickets = Ticket::where('assigned_to', $adminId)
+                             ->whereBetween('created_at', [$startDate, $endDate])
+                             ->count();
+
+        if ($totalTickets === 0) return 0;
+
+        $completedTickets = Ticket::where('assigned_to', $adminId)
+                                 ->whereBetween('created_at', [$startDate, $endDate])
+                                 ->whereNotNull('resolved_at')
+                                 ->count();
+
+        return round(($completedTickets / $totalTickets) * 100, 2);
+    }
+}

@@ -1,0 +1,259 @@
+
+
+<?php $__env->startSection('main-content'); ?>
+<div class="row">
+    <div class="col-md-12">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">
+                    <i class="fa fa-calendar-check-o"></i> Daily Activities
+                </h3>
+                <div class="box-tools pull-right">
+                    <a href="<?php echo e(route('daily-activities.create')); ?>" class="btn btn-primary btn-sm">
+                        <i class="fa fa-plus"></i> Add Activity
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <i class="fa fa-download"></i> Reports <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="<?php echo e(route('daily-activities.daily-report')); ?>?date=<?php echo e(request('date', today())); ?>">
+                                <i class="fa fa-file-text-o"></i> Daily Report
+                            </a></li>
+                            <li><a href="<?php echo e(route('daily-activities.weekly-report')); ?>">
+                                <i class="fa fa-calendar"></i> Weekly Report
+                            </a></li>
+                            <li><a href="<?php echo e(route('daily-activities.export-pdf')); ?>?date=<?php echo e(request('date', today())); ?>">
+                                <i class="fa fa-file-pdf-o"></i> Export PDF
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="box-body">
+                <form method="GET" class="form-inline mb-3">
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="date" name="date" class="form-control" 
+                               value="<?php echo e(request('date', today()->format('Y-m-d'))); ?>">
+                    </div>
+                    
+                    <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['super-admin', 'admin'])): ?>
+                    <div class="form-group">
+                        <label>User:</label>
+                        <select name="user_id" class="form-control">
+                            <option value="">All Users</option>
+                            <?php $__currentLoopData = $users ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($user->id); ?>" <?php echo e(request('user_id') == $user->id ? 'selected' : ''); ?>>
+                                    <?php echo e($user->name); ?>
+
+                                </option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <button type="submit" class="btn btn-info">
+                        <i class="fa fa-filter"></i> Filter
+                    </button>
+                    <a href="<?php echo e(route('daily-activities.index')); ?>" class="btn btn-default">
+                        <i class="fa fa-refresh"></i> Reset
+                    </a>
+                </form>
+                
+                <!-- Statistics -->
+                <?php if(isset($stats)): ?>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-blue"><i class="fa fa-tasks"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Activities</span>
+                                <span class="info-box-number"><?php echo e($stats['total_activities']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-green"><i class="fa fa-edit"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Manual Entries</span>
+                                <span class="info-box-number"><?php echo e($stats['manual_activities']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-yellow"><i class="fa fa-cogs"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Auto Generated</span>
+                                <span class="info-box-number"><?php echo e($stats['auto_activities']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-red"><i class="fa fa-ticket"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Tickets Completed</span>
+                                <span class="info-box-number"><?php echo e($stats['tickets_completed']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Activities List -->
+                <?php if($activities->count() > 0): ?>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="120">Date</th>
+                                    <th width="150">User</th>
+                                    <th>Description</th>
+                                    <th width="120">Type</th>
+                                    <th width="120">Related Ticket</th>
+                                    <th width="100">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $__currentLoopData = $activities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $activity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <tr>
+                                    <td>
+                                        <span class="label label-info">
+                                            <?php echo e($activity->activity_date->format('d/m/Y')); ?>
+
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <?php echo e($activity->created_at->format('H:i')); ?>
+
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong><?php echo e($activity->user->name); ?></strong>
+                                        <br>
+                                        <small class="text-muted"><?php echo e($activity->user->email); ?></small>
+                                    </td>
+                                    <td>
+                                        <div class="activity-description">
+                                            <?php echo e(Str::limit($activity->description, 150)); ?>
+
+                                            <?php if(strlen($activity->description) > 150): ?>
+                                                <a href="#" class="show-full-description" data-description="<?php echo e($activity->description); ?>">
+                                                    <i class="fa fa-expand"></i> Show more
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?php if($activity->type === 'manual'): ?>
+                                            <span class="label label-primary">
+                                                <i class="fa fa-edit"></i> Manual
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="label label-success">
+                                                <i class="fa fa-cogs"></i> Auto
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if($activity->ticket): ?>
+                                            <a href="<?php echo e(route('tickets.show', $activity->ticket->id)); ?>" 
+                                               class="btn btn-xs btn-info">
+                                                <?php echo e($activity->ticket->ticket_code); ?>
+
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-xs">
+                                            <a href="<?php echo e(route('daily-activities.show', $activity->id)); ?>" 
+                                               class="btn btn-info" title="View">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <?php if($activity->type === 'manual' && ($activity->user_id === Auth::id() || Auth::user()->hasRole(['super-admin', 'admin']))): ?>
+                                                <a href="<?php echo e(route('daily-activities.edit', $activity->id)); ?>" 
+                                                   class="btn btn-warning" title="Edit">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                                <form action="<?php echo e(route('daily-activities.destroy', $activity->id)); ?>" 
+                                                      method="POST" style="display: inline;">
+                                                    <?php echo csrf_field(); ?>
+                                                    <?php echo method_field('DELETE'); ?>
+                                                    <button type="submit" class="btn btn-danger" title="Delete"
+                                                            onclick="return confirm('Are you sure you want to delete this activity?')">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="text-center">
+                        <?php echo e($activities->appends(request()->query())->links()); ?>
+
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-info text-center">
+                        <h4><i class="fa fa-info-circle"></i> No Activities Found</h4>
+                        <p>No daily activities found for the selected date and filters.</p>
+                        <a href="<?php echo e(route('daily-activities.create')); ?>" class="btn btn-primary">
+                            <i class="fa fa-plus"></i> Add Your First Activity
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Description Modal -->
+<div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Activity Description</h4>
+            </div>
+            <div class="modal-body">
+                <p id="fullDescription"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('footer'); ?>
+<script>
+$(document).ready(function() {
+    // Show full description modal
+    $('.show-full-description').on('click', function(e) {
+        e.preventDefault();
+        var description = $(this).data('description');
+        $('#fullDescription').text(description);
+        $('#descriptionModal').modal('show');
+    });
+    
+    // Auto-refresh every 5 minutes for real-time updates
+    setTimeout(function() {
+        location.reload();
+    }, 300000); // 5 minutes
+});
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\Quty1\resources\views/daily-activities/index.blade.php ENDPATH**/ ?>

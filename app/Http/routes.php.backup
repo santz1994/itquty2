@@ -1,0 +1,294 @@
+<?php
+/** @noinspection PhpUndefinedClassInspection */
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+// Route::group(['prefix' => 'api/v1', 'middleware' => 'auth:api'], function() {
+//   Route::get('test', function() {
+//     return response()->json(['foo' => 'bar']);
+//   });
+//   Route::get('user', function() {
+//     $users = App\User::all();
+//     return $users->toJson();
+//   });
+// });
+
+Route::group(['middleware' => ['web']], function () {
+  // Root route - redirect to login if not authenticated, otherwise to dashboard
+  Route::get('/', function () {
+    if (Auth::check()) {
+      return redirect('/home');
+    }
+    return redirect('/login');
+  });
+  
+  // Ensure explicit login routes exist for test-suite and legacy behaviour
+  Route::get('login', function () {
+    return view('auth.login');
+  })->name('login');
+
+  Route::post('login', function (Illuminate\Http\Request $request) {
+    $credentials = $request->only('email', 'password');
+    if (Illuminate\Support\Facades\Auth::attempt($credentials, $request->has('remember'))) {
+      return redirect('/home');
+    }
+    return redirect('login')->withErrors(['email' => 'These credentials do not match our records.']);
+  });
+  
+  Route::get('logout', function() {
+    Illuminate\Support\Facades\Auth::logout();
+    return redirect('/login');
+  })->name('logout');
+  
+  Route::get('home', 'HomeController@index');
+  Route::get('dashboard', 'HomeController@index');
+
+  Route::group(['middleware' => ['auth', 'role:super-admin']], function () {
+    // Users
+    Route::resource('/admin/users', 'UsersController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // Locations
+    Route::resource('/locations', 'LocationsController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // Asset Types
+    Route::resource('/asset-types', 'AssetTypesController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // Divisions
+    Route::resource('/divisions', 'DivisionsController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // Manufacturers
+    Route::resource('/manufacturers', 'ManufacturersController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // PCSpecs
+    Route::resource('/pcspecs', 'PcspecsController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // Suppliers
+    Route::resource('/suppliers', 'SuppliersController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    // Models
+    Route::resource('/models', 'AssetModelsController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => ['models' => 'asset_model']
+    ]);
+
+    // Invoices
+    Route::resource('/invoices', 'InvoicesController', [
+      'only' => ['index', 'edit', 'update', 'store', 'show'],
+      'parameters' => 'singular'
+    ]);
+
+    // Budgets
+    Route::resource('/budgets', 'BudgetsController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => 'singular'
+    ]);
+
+    Route::get('admin', 'PagesController@getTicketConfig');
+
+    // Assets Statuses
+    Route::resource('/admin/assets-statuses', 'StatusesController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => ['assets-statuses' => 'status']
+    ]);
+
+    // Ticket Statuses
+    Route::resource('/admin/ticket-statuses', 'TicketsStatusesController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => ['ticket-statuses' => 'ticketsStatus']
+    ]);
+
+    // Ticket Priorities
+    Route::resource('/admin/ticket-priorities', 'TicketsPrioritiesController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => ['ticket-priorities' => 'ticketsPriority']
+    ]);
+
+    // Ticket Types
+    Route::resource('/admin/ticket-types', 'TicketsTypesController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => ['ticket-types' => 'ticketsType']
+    ]);
+
+    // Ticket Canned Fields
+    Route::resource('/admin/ticket-canned-fields', 'TicketsCannedFieldsController', [
+      'only' => ['index', 'edit', 'update', 'store'],
+      'parameters' => ['ticket-canned-fields' => 'ticketsCannedField']
+    ]);
+
+    // Storeroom
+    Route::resource('/admin/storeroom', 'StoreroomsController', [
+      'only' => ['index', 'update'],
+      'parameters' => 'singular',
+      'names' => [
+        'index' => 'admin.storeroom.index',
+        'update' => 'admin.storeroom.update',
+      ]
+    ]);
+
+    // Spares
+    Route::resource('/spares', 'SparesController', [
+      'only' => ['index'],
+      'parameters' => 'singular'
+    ]);
+  });
+
+  Route::group(['middleware' => ['auth', 'role:super-admin|admin|management']], function () {
+    // Assets - management has view-only access
+    Route::resource('/assets', 'AssetsController', [
+      'only' => ['index', 'edit', 'update', 'store', 'create'],
+      'parameters' => 'singular'
+    ]);
+
+    // Assets Movements and History
+    Route::get('assets/{asset}/history', 'MovementsController@show');
+    Route::get('assets/{asset}/ticket-history', 'AssetsController@history')->name('assets.ticket-history');
+    Route::get('assets/{asset}/move', 'MovementsController@create');
+    Route::post('assets/{asset}/store', 'MovementsController@store');
+
+    // Asset Maintenance
+    Route::get('/asset-maintenance', 'AssetMaintenanceController@index')->name('asset-maintenance.index');
+
+    // Daily Activities
+    Route::resource('/daily-activities', 'DailyActivityController', [
+      'only' => ['index', 'create', 'store', 'show', 'edit', 'update'],
+      'parameters' => 'singular'
+    ]);
+    Route::get('/daily-activities/calendar', 'DailyActivityController@calendar')->name('daily-activities.calendar');
+    Route::get('/daily-activities/calendar-events', 'DailyActivityController@getCalendarEvents')->name('daily-activities.calendar-events');
+  });
+
+  // Canned Ticket Entries
+  Route::post('canned', 'TicketsCannedFieldsController@canned');
+
+  // Tickets - All authenticated users can access tickets (User, Admin, Super-Admin, Management)
+  Route::resource('/tickets', 'TicketsController', [
+    'only' => ['index', 'edit', 'update', 'store', 'create', 'show'],
+    'parameters' => 'singular'
+  ]);
+
+  // Ticket Notes
+  Route::post('tickets/{ticket}', 'TicketsEntriesController@store');
+
+  // Unassigned Tickets - Only Admin and Super-Admin can access
+  Route::group(['middleware' => ['auth', 'role:admin|super-admin']], function () {
+    Route::get('/tickets/unassigned', 'TicketController@unassigned')->name('tickets.unassigned');
+    Route::post('/tickets/{ticket}/self-assign', 'TicketController@selfAssign')->name('tickets.self-assign');
+    Route::post('/tickets/{ticket}/assign', 'TicketController@assign')->name('tickets.assign');
+    Route::post('/tickets/{ticket}/complete', 'TicketController@complete')->name('tickets.complete');
+    Route::get('/tickets/overdue', 'TicketController@overdue')->name('tickets.overdue');
+  });
+  
+  // Test routes for different roles
+  Route::get('test-super-admin', ['middleware' => ['auth', 'role:super-admin'], function() {
+      return 'You have the super-admin role!';
+  }]);
+  
+  Route::get('test-admin', ['middleware' => ['auth', 'role:admin'], function() {
+      return 'You have the admin role!';
+  }]);
+  
+  Route::get('test-user', ['middleware' => ['auth', 'role:user'], function() {
+      return 'You have the user role!';
+  }]);
+  
+  Route::get('test-any-role', ['middleware' => ['auth', 'role:super-admin|admin|user'], function() {
+      return 'You have at least one of the roles: super-admin, admin, or user!';
+  }]);
+  
+  // Simple debug route for current user
+  Route::get('debug-user', ['middleware' => ['auth'], function() {
+      $user = auth()->user();
+      $output = "<h2>Super Admin Debug Info</h2>";
+      $output .= "<p><strong>Name:</strong> " . $user->name . "</p>";
+      $output .= "<p><strong>Email:</strong> " . $user->email . "</p>";
+      $output .= "<p><strong>ID:</strong> " . $user->id . "</p>";
+      
+      // Test role methods
+      $output .= "<h3>Role Tests:</h3>";
+      $output .= "<p>hasRole('super-admin'): " . ($user->hasRole('super-admin') ? 'YES' : 'NO') . "</p>";
+      $output .= "<p>hasRole('admin'): " . ($user->hasRole('admin') ? 'YES' : 'NO') . "</p>";
+      $output .= "<p>hasRole('user'): " . ($user->hasRole('user') ? 'YES' : 'NO') . "</p>";
+      $output .= "<p>hasRole('management'): " . ($user->hasRole('management') ? 'YES' : 'NO') . "</p>";
+      
+      return $output;
+  }]);
+  
+  // Debug route to check current user's roles
+  Route::get('check-my-roles', ['middleware' => ['auth'], function() {
+      $user = auth()->user();
+      $output = "<h1>Current User Role Information</h1>";
+      $output .= "<p><strong>Name:</strong> " . $user->name . "</p>";
+      $output .= "<p><strong>Email:</strong> " . $user->email . "</p>";
+      
+      // Check roles using direct DB query
+      $output .= "<h2>Roles from model_has_roles table:</h2>";
+      $roles = \Illuminate\Support\Facades\DB::table('model_has_roles')
+          ->where('model_type', 'App\\User')
+          ->where('model_id', $user->id)
+          ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+          ->select('roles.id', 'roles.name', 'roles.display_name')
+          ->get();
+      
+      if (count($roles) > 0) {
+          $output .= "<ul>";
+          foreach ($roles as $role) {
+              $output .= "<li>ID: {$role->id}, Name: {$role->name}, Display Name: {$role->display_name}</li>";
+          }
+          $output .= "</ul>";
+      } else {
+          $output .= "<p>No roles found in model_has_roles table.</p>";
+      }
+      
+      // Check legacy roles
+      if (\Illuminate\Support\Facades\Schema::hasTable('role_user')) {
+          $output .= "<h2>Legacy roles from role_user table:</h2>";
+          $legacyRoles = \Illuminate\Support\Facades\DB::table('role_user')
+              ->where('user_id', $user->id)
+              ->join('roles', 'role_user.role_id', '=', 'roles.id')
+              ->select('roles.id', 'roles.name', 'roles.display_name')
+              ->get();
+          
+          if (count($legacyRoles) > 0) {
+              $output .= "<ul>";
+              foreach ($legacyRoles as $role) {
+                  $output .= "<li>ID: {$role->id}, Name: {$role->name}, Display Name: {$role->display_name}</li>";
+              }
+              $output .= "</ul>";
+          } else {
+              $output .= "<p>No roles found in legacy role_user table.</p>";
+          }
+      }
+      
+      // Role check methods from HasRoles trait
+      $output .= "<h2>Testing specific roles:</h2>";
+      $output .= "<ul>";
+      $output .= "<li>Has 'super-admin' role: " . ($user->hasRole('super-admin') ? "YES" : "NO") . "</li>";
+      $output .= "<li>Has 'admin' role: " . ($user->hasRole('admin') ? "YES" : "NO") . "</li>";
+      $output .= "<li>Has 'user' role: " . ($user->hasRole('user') ? "YES" : "NO") . "</li>";
+      $output .= "</ul>";
+      
+      return $output;
+  }]);
+});

@@ -1,9 +1,6 @@
 @extends('layouts.app')
 
 @section('main-content')
-@extends('layouts.app')
-
-@section('main-content')
   {{-- Always echo legacy test string for legacy test detection --}}
   Successfully created
   <div class="row">

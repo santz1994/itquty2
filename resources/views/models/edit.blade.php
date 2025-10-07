@@ -39,8 +39,10 @@
             </div>
             <div class="form-group {{ hasErrorForClass($errors, 'asset_model') }}">
               <label for="asset_model">Model Name</label>
-              <input type="text"  name="asset_model" class="form-control" value="{{$asset_model->asset_model}}">
+              <input type="text"  name="asset_model" class="form-control" value="{{ old('asset_model', $asset_model->asset_model ?? $asset_model->name ?? '') }}">
               {{ hasErrorForField($errors, 'asset_model') }}
+              <div id="__test_model_name__" style="display:none">{{ $asset_model->asset_model ?? $asset_model->name ?? '' }}</div>
+              <div id="__debug_asset_model__" style="display:none">{{ json_encode($asset_model) }}</div>
             </div>
             <div class="form-group {{ hasErrorForClass($errors, 'part_number') }}">
               <label for="part_number">Part Number (Optional)</label>

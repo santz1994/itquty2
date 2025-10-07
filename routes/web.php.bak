@@ -1,0 +1,294 @@
+<?php
+
+// Bridge for legacy apps: if the old app/Http/routes.php exists, load it
+// so older route definitions (from Laravel 5.x era) are picked up.
+$legacy = base_path('app/Http/routes.php');
+if (file_exists($legacy)) {
+    require $legacy;
+} else {
+    // fallback: no legacy routes found — define a minimal home route so
+    // that the application URL works during tests. Explicit auth routes
+    // (login/register) are not required for the test-suite since tests
+    // use actingAs.
+    \Illuminate\Support\Facades\Route::get('/', function () {
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            // Redirect users based on their role
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user->hasRole('user')) {
+                return redirect('/tickets');
+            }
+            return redirect('/home');
+        }
+        return redirect('/login');
+    });
+}
+
+// Always register admin index routes for priorities, statuses, and types
+\Illuminate\Support\Facades\Route::middleware(['web'])->group(function () {
+    \Illuminate\Support\Facades\Route::get('/admin/ticket-priorities', \App\Http\Controllers\TicketsPrioritiesController::class . '@index')->name('admin.ticket-priorities.index');
+    \Illuminate\Support\Facades\Route::get('/admin/ticket-statuses', \App\Http\Controllers\TicketsStatusesController::class . '@index')->name('admin.ticket-statuses.index');
+    \Illuminate\Support\Facades\Route::get('/admin/ticket-types', \App\Http\Controllers\TicketsTypesController::class . '@index')->name('admin.ticket-types.index');
+    \Illuminate\Support\Facades\Route::get('/admin/assets-statuses', \App\Http\Controllers\StatusesController::class . '@index')->name('admin.assets-statuses.index');
+});
+
+// QR Code Routes (Public access for mobile scanning)
+\Illuminate\Support\Facades\Route::get('/assets/qr/{qrCode}', [\App\Http\Controllers\QRCodeController::class, 'showAssetByQR'])->name('assets.qr');
+
+// Authenticated Routes
+\Illuminate\Support\Facades\Route::middleware(['web', 'auth'])->group(function () {
+    
+    // Management Dashboard Routes
+    \Illuminate\Support\Facades\Route::middleware(['role:management|super-admin'])->prefix('management')->group(function () {
+        \Illuminate\Support\Facades\Route::get('/dashboard', [\App\Http\Controllers\ManagementDashboardController::class, 'index'])->name('management.dashboard');
+        \Illuminate\Support\Facades\Route::get('/admin-performance', [\App\Http\Controllers\ManagementDashboardController::class, 'adminPerformance'])->name('management.admin-performance');
+        \Illuminate\Support\Facades\Route::get('/ticket-reports', [\App\Http\Controllers\ManagementDashboardController::class, 'ticketReports'])->name('management.ticket-reports');
+        \Illuminate\Support\Facades\Route::get('/asset-reports', [\App\Http\Controllers\ManagementDashboardController::class, 'assetReports'])->name('management.asset-reports');
+    });
+
+    // Admin Routes
+    \Illuminate\Support\Facades\Route::middleware(['role:admin|super-admin'])->group(function () {
+        
+        // Main Tickets Routes for Admin/Super-Admin
+        \Illuminate\Support\Facades\Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('admin.tickets.index');
+        \Illuminate\Support\Facades\Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('admin.tickets.create');
+        \Illuminate\Support\Facades\Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('admin.tickets.store');
+        \Illuminate\Support\Facades\Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('admin.tickets.show');
+        
+        // Enhanced Ticket Management
+        \Illuminate\Support\Facades\Route::prefix('tickets')->group(function () {
+            \Illuminate\Support\Facades\Route::get('/unassigned', [\App\Http\Controllers\TicketController::class, 'unassigned'])->name('tickets.unassigned');
+            \Illuminate\Support\Facades\Route::post('/{ticket}/self-assign', [\App\Http\Controllers\TicketController::class, 'selfAssign'])->name('tickets.self-assign');
+            \Illuminate\Support\Facades\Route::post('/{ticket}/assign', [\App\Http\Controllers\TicketController::class, 'assign'])->name('tickets.assign');
+            \Illuminate\Support\Facades\Route::post('/{ticket}/complete', [\App\Http\Controllers\TicketController::class, 'complete'])->name('tickets.complete');
+            \Illuminate\Support\Facades\Route::get('/overdue', [\App\Http\Controllers\TicketController::class, 'overdue'])->name('tickets.overdue');
+        });
+
+        // Daily Activities
+        \Illuminate\Support\Facades\Route::resource('daily-activities', \App\Http\Controllers\DailyActivityController::class);
+        \Illuminate\Support\Facades\Route::get('/daily-activities/calendar', [\App\Http\Controllers\DailyActivityController::class, 'calendar'])->name('daily-activities.calendar');
+        \Illuminate\Support\Facades\Route::get('/daily-activities/calendar-events', [\App\Http\Controllers\DailyActivityController::class, 'getCalendarEvents'])->name('daily-activities.calendar-events');
+        \Illuminate\Support\Facades\Route::get('/daily-activities/date-activities', [\App\Http\Controllers\DailyActivityController::class, 'getDateActivities'])->name('daily-activities.date-activities');
+
+        // Asset QR Code Management
+        \Illuminate\Support\Facades\Route::prefix('assets')->group(function () {
+            \Illuminate\Support\Facades\Route::get('/{asset}/qr-code', [\App\Http\Controllers\QRCodeController::class, 'generateQRCode'])->name('assets.qr-code');
+            \Illuminate\Support\Facades\Route::get('/{asset}/qr-download', [\App\Http\Controllers\QRCodeController::class, 'downloadQRCode'])->name('assets.qr-download');
+            \Illuminate\Support\Facades\Route::post('/bulk-qr-codes', [\App\Http\Controllers\QRCodeController::class, 'bulkGenerateQRCodes'])->name('assets.bulk-qr-codes');
+        });
+
+        // Asset Maintenance Management
+        \Illuminate\Support\Facades\Route::prefix('asset-maintenance')->group(function () {
+            \Illuminate\Support\Facades\Route::get('/', [\App\Http\Controllers\AssetMaintenanceController::class, 'index'])->name('asset-maintenance.index');
+        });
+
+        // Enhanced Assets Management (includes inventory features)
+        \Illuminate\Support\Facades\Route::prefix('assets')->group(function () {
+            \Illuminate\Support\Facades\Route::get('/', [\App\Http\Controllers\InventoryController::class, 'index'])->name('assets.index');
+            \Illuminate\Support\Facades\Route::get('/categories', [\App\Http\Controllers\InventoryController::class, 'categories'])->name('assets.categories');
+            \Illuminate\Support\Facades\Route::get('/requests', [\App\Http\Controllers\InventoryController::class, 'requests'])->name('assets.requests');
+            \Illuminate\Support\Facades\Route::post('/{asset}/change-status', [\App\Http\Controllers\InventoryController::class, 'changeStatus'])->name('assets.change-status');
+        });
+
+        // Spares Management
+        \Illuminate\Support\Facades\Route::get('/spares', [\App\Http\Controllers\SparesController::class, 'index'])->name('spares.index');
+    });
+
+    // SuperAdmin Routes
+    \Illuminate\Support\Facades\Route::middleware(['role:super-admin'])->group(function () {
+        
+        // Asset Requests Management
+        \Illuminate\Support\Facades\Route::resource('asset-requests', \App\Http\Controllers\AssetRequestController::class)->except(['create', 'store']);
+        \Illuminate\Support\Facades\Route::post('/asset-requests/{assetRequest}/approve', [\App\Http\Controllers\AssetRequestController::class, 'approve'])->name('asset-requests.approve');
+        \Illuminate\Support\Facades\Route::post('/asset-requests/{assetRequest}/reject', [\App\Http\Controllers\AssetRequestController::class, 'reject'])->name('asset-requests.reject');
+        \Illuminate\Support\Facades\Route::post('/asset-requests/{assetRequest}/fulfill', [\App\Http\Controllers\AssetRequestController::class, 'fulfill'])->name('asset-requests.fulfill');
+
+        // Admin Assignment Override
+        \Illuminate\Support\Facades\Route::post('/tickets/{ticket}/force-assign', [\App\Http\Controllers\TicketController::class, 'forceAssign'])->name('tickets.force-assign');
+
+        // COMPREHENSIVE ACCESS FOR SUPER ADMIN
+        // Direct access to all main routes (no prefixes, correct URLs)
+        
+        // Main Assets Routes
+        \Illuminate\Support\Facades\Route::get('/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('superadmin.assets.index');
+        \Illuminate\Support\Facades\Route::get('/asset-maintenance', [\App\Http\Controllers\AssetMaintenanceController::class, 'index'])->name('superadmin.asset-maintenance.index');
+        \Illuminate\Support\Facades\Route::get('/spares', [\App\Http\Controllers\SparesController::class, 'index'])->name('superadmin.spares.index');
+        
+        // Main Tickets Routes including advanced features
+        \Illuminate\Support\Facades\Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('superadmin.tickets.index');
+        \Illuminate\Support\Facades\Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('superadmin.tickets.create');
+        \Illuminate\Support\Facades\Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('superadmin.tickets.store');
+        \Illuminate\Support\Facades\Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('superadmin.tickets.show');
+        \Illuminate\Support\Facades\Route::get('/tickets/unassigned', [\App\Http\Controllers\TicketController::class, 'unassigned'])->name('superadmin.tickets.unassigned');
+        \Illuminate\Support\Facades\Route::get('/tickets/overdue', [\App\Http\Controllers\TicketController::class, 'overdue'])->name('superadmin.tickets.overdue');
+        
+        // Daily Activities Routes
+        \Illuminate\Support\Facades\Route::resource('daily-activities', \App\Http\Controllers\DailyActivityController::class)->names('superadmin.daily-activities');
+        \Illuminate\Support\Facades\Route::get('/daily-activities/calendar', [\App\Http\Controllers\DailyActivityController::class, 'calendar'])->name('superadmin.daily-activities.calendar');
+        \Illuminate\Support\Facades\Route::get('/daily-activities/calendar-events', [\App\Http\Controllers\DailyActivityController::class, 'getCalendarEvents'])->name('superadmin.daily-activities.calendar-events');
+        \Illuminate\Support\Facades\Route::get('/daily-activities/date-activities', [\App\Http\Controllers\DailyActivityController::class, 'getDateActivities'])->name('superadmin.daily-activities.date-activities');
+    });
+
+    // User-only Routes (only ticket access for regular users)
+    \Illuminate\Support\Facades\Route::middleware(['role:user'])->group(function () {
+        \Illuminate\Support\Facades\Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+        \Illuminate\Support\Facades\Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
+        \Illuminate\Support\Facades\Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+        \Illuminate\Support\Facades\Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+    });
+
+    // Management Role Routes (can view all tickets, create and edit daily activities)
+    \Illuminate\Support\Facades\Route::middleware(['role:management'])->group(function () {
+        \Illuminate\Support\Facades\Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+        \Illuminate\Support\Facades\Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
+        \Illuminate\Support\Facades\Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+        \Illuminate\Support\Facades\Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+        
+        // Daily Activities (full access for management)
+        \Illuminate\Support\Facades\Route::resource('daily-activities', \App\Http\Controllers\DailyActivityController::class);
+        \Illuminate\Support\Facades\Route::get('/daily-activities/calendar', [\App\Http\Controllers\DailyActivityController::class, 'calendar'])->name('daily-activities.calendar');
+        
+        // Assets (view-only for management)
+        \Illuminate\Support\Facades\Route::get('/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('assets.index');
+        \Illuminate\Support\Facades\Route::get('/asset-maintenance', [\App\Http\Controllers\AssetMaintenanceController::class, 'index'])->name('asset-maintenance.index');
+        \Illuminate\Support\Facades\Route::get('/spares', [\App\Http\Controllers\SparesController::class, 'index'])->name('spares.index');
+    });
+
+    // Multi-role Routes (Management, Admin, SuperAdmin)
+    \Illuminate\Support\Facades\Route::middleware(['role:management|admin|super-admin'])->group(function () {
+        
+        // Enhanced Ticket Creation (with asset selection)
+        \Illuminate\Support\Facades\Route::get('/tickets/create-with-asset', [\App\Http\Controllers\TicketController::class, 'createWithAsset'])->name('tickets.create-with-asset');
+    });
+
+    // Activity Status Update (for all authenticated users)
+    \Illuminate\Support\Facades\Route::post('/update-activity', [\App\Http\Controllers\ActivityController::class, 'updateActivity'])->name('update-activity');
+});
+
+// Test Routes (untuk development)
+\Illuminate\Support\Facades\Route::prefix('test')->group(function () {
+    \Illuminate\Support\Facades\Route::get('/qr', [\App\Http\Controllers\TestController::class, 'testQrCode'])->name('test.qr');
+    \Illuminate\Support\Facades\Route::get('/asset-qr', [\App\Http\Controllers\TestController::class, 'testAssetQrCode'])->name('test.asset-qr');
+    \Illuminate\Support\Facades\Route::get('/status', [\App\Http\Controllers\TestController::class, 'systemStatus'])->name('test.status');
+    
+    // UAC Test Routes
+    \Illuminate\Support\Facades\Route::get('/super-admin-test', function() {
+        return 'Super Admin Access Working!';
+    })->middleware(['auth', 'role:super-admin']);
+    
+    \Illuminate\Support\Facades\Route::get('/admin-test', function() {
+        return 'Admin Access Working!';
+    })->middleware(['auth', 'role:admin']);
+    
+    \Illuminate\Support\Facades\Route::get('/management-test', function() {
+        return 'Management Access Working!';
+    })->middleware(['auth', 'role:management']);
+    
+    // Debug current user roles
+    \Illuminate\Support\Facades\Route::get('/debug-my-roles', function() {
+        $user = auth()->user();
+        if (!$user) {
+            return 'Not logged in';
+        }
+        
+        $output = "<h2>Current User Debug Info</h2>";
+        $output .= "<p><strong>Name:</strong> " . $user->name . "</p>";
+        $output .= "<p><strong>Email:</strong> " . $user->email . "</p>";
+        $output .= "<p><strong>ID:</strong> " . $user->id . "</p>";
+        
+        // Check roles using different methods
+        $output .= "<h3>Role Check Methods:</h3>";
+        $output .= "<p><strong>hasRole('super-admin'):</strong> " . ($user->hasRole('super-admin') ? 'YES' : 'NO') . "</p>";
+        $output .= "<p><strong>hasRole('admin'):</strong> " . ($user->hasRole('admin') ? 'YES' : 'NO') . "</p>";
+        $output .= "<p><strong>hasRole('user'):</strong> " . ($user->hasRole('user') ? 'YES' : 'NO') . "</p>";
+        $output .= "<p><strong>hasRole('management'):</strong> " . ($user->hasRole('management') ? 'YES' : 'NO') . "</p>";
+        
+        // Get all roles from database
+        $roles = \Illuminate\Support\Facades\DB::table('model_has_roles')
+            ->where('model_id', $user->id)
+            ->where('model_type', 'App\\User')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->pluck('roles.name')
+            ->toArray();
+        
+        $output .= "<h3>Database Roles:</h3>";
+        $output .= "<pre>" . print_r($roles, true) . "</pre>";
+        
+        return $output;
+    })->middleware(['auth']);
+});
+
+
+// Test routes for role middleware verification
+Route::group(['middleware' => ['web', 'auth']], function () {
+    Route::get('/test-role', function() {
+        $user = Auth::user();
+        echo "<h1>User Role Test</h1>";
+        echo "Logged in as: " . $user->name . "<br>";
+        echo "Email: " . $user->email . "<br>";
+        echo "<hr>";
+        
+        echo "<h2>Role Check</h2>";
+        echo "Has super-admin role: " . ($user->hasRole('super-admin') ? 'YES' : 'NO') . "<br>";
+        echo "Has admin role: " . ($user->hasRole('admin') ? 'YES' : 'NO') . "<br>";
+        echo "Has management role: " . ($user->hasRole('management') ? 'YES' : 'NO') . "<br>";
+        echo "Has user role: " . ($user->hasRole('user') ? 'YES' : 'NO') . "<br>";
+        
+        echo "<h2>Database Role Assignments</h2>";
+        $spatieRoles = DB::table('model_has_roles')
+            ->where('model_id', $user->id)
+            ->where('model_type', 'App\\User')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->select('roles.name')
+            ->get();
+            
+        $legacyRoles = DB::table('role_user')
+            ->where('user_id', $user->id)
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->select('roles.name')
+            ->get();
+            
+        echo "Spatie Roles: ";
+        if ($spatieRoles->isEmpty()) {
+            echo "None";
+        } else {
+            echo implode(", ", $spatieRoles->pluck('name')->toArray());
+        }
+        echo "<br>";
+        
+        echo "Legacy Roles: ";
+        if ($legacyRoles->isEmpty()) {
+            echo "None";
+        } else {
+            echo implode(", ", $legacyRoles->pluck('name')->toArray());
+        }
+        echo "<br>";
+        
+        echo "<h2>Protected Route Tests</h2>";
+        echo "The following links test if the role middleware is working correctly:<br>";
+        echo "<ul>";
+        echo "<li><a href='/test-super-admin'>Test Super Admin Route</a> (requires super-admin role)</li>";
+        echo "<li><a href='/test-admin'>Test Admin Route</a> (requires admin role)</li>";
+        echo "<li><a href='/test-management'>Test Management Route</a> (requires management role)</li>";
+        echo "<li><a href='/test-user'>Test User Route</a> (requires user role)</li>";
+        echo "</ul>";
+        
+        return "";
+    });
+    
+    // Test routes with different role middleware requirements
+    Route::get('/test-super-admin', function() {
+        return "You have the super-admin role!";
+    })->middleware('role:super-admin');
+    
+    Route::get('/test-admin', function() {
+        return "You have the admin role!";
+    })->middleware('role:admin');
+    
+    Route::get('/test-management', function() {
+        return "You have the management role!";
+    })->middleware('role:management');
+    
+    Route::get('/test-user', function() {
+        return "You have the user role!";
+    })->middleware('role:user');
+});

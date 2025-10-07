@@ -42,6 +42,35 @@ class RolesTableSeeder extends Seeder
         ['display_name' => 'Administrator', 'description' => 'Permission to view assets, but not edit them. Plus, same permissions as User role.', 'updated_at' => now(), 'created_at' => now()]
       );
     }
-    // ...existing code...
+
+    // Management Role
+    if (\Illuminate\Support\Facades\Schema::hasColumn('roles', 'guard_name')) {
+      $attrs = [
+        'display_name' => 'Management',
+        'description' => 'Management role with view-only access to most sections and full access to tickets and daily activities.',
+        'guard_name' => config('auth.defaults.guard', 'web'),
+      ];
+      $management = Role::firstOrCreate(['name' => 'management'], $attrs);
+    } else {
+      \Illuminate\Support\Facades\DB::table('roles')->updateOrInsert(
+        ['name' => 'management'],
+        ['display_name' => 'Management', 'description' => 'Management role with view-only access to most sections and full access to tickets and daily activities.', 'updated_at' => now(), 'created_at' => now()]
+      );
+    }
+
+    // User Role
+    if (\Illuminate\Support\Facades\Schema::hasColumn('roles', 'guard_name')) {
+      $attrs = [
+        'display_name' => 'User',
+        'description' => 'User role with limited access to create and view own tickets only.',
+        'guard_name' => config('auth.defaults.guard', 'web'),
+      ];
+      $user = Role::firstOrCreate(['name' => 'user'], $attrs);
+    } else {
+      \Illuminate\Support\Facades\DB::table('roles')->updateOrInsert(
+        ['name' => 'user'],
+        ['display_name' => 'User', 'description' => 'User role with limited access to create and view own tickets only.', 'updated_at' => now(), 'created_at' => now()]
+      );
+    }
     }
 }

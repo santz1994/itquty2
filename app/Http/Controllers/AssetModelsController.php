@@ -47,13 +47,17 @@ class AssetModelsController extends Controller
 
   public function edit(AssetModel $asset_model)
   {
-    $manufacturerName = ($asset_model && $asset_model->manufacturer) ? $asset_model->manufacturer->name : '';
-    $modelName = ($asset_model && $asset_model->asset_model) ? $asset_model->asset_model : '';
-    $pageTitle = 'Edit Model - ' . $manufacturerName . ' ' . $modelName;
-    $manufacturers = $this->assetModel->getAllOrderBy('App\Manufacturer', 'name');
-    $asset_types = $this->assetModel->getAllOrderBy('App\AssetType', 'type_name');
-    $pcspecs = $this->assetModel->getAllOrderBy('App\Pcspec', 'cpu');
-    return view('models.edit', compact('asset_model', 'manufacturers', 'asset_types', 'pcspecs', 'pageTitle'));
+  if (!$asset_model || !$asset_model->id) {
+    abort(404, 'Asset Model not found');
+  }
+  $asset_model = \App\AssetModel::find($asset_model->id);
+  $manufacturerName = ($asset_model && $asset_model->manufacturer) ? $asset_model->manufacturer->name : '';
+  $modelName = ($asset_model && $asset_model->asset_model) ? $asset_model->asset_model : '';
+  $pageTitle = 'Edit Model - ' . $manufacturerName . ' ' . $modelName;
+  $manufacturers = $this->assetModel->getAllOrderBy('App\Manufacturer', 'name');
+  $asset_types = $this->assetModel->getAllOrderBy('App\AssetType', 'type_name');
+  $pcspecs = $this->assetModel->getAllOrderBy('App\Pcspec', 'cpu');
+  return view('models.edit', compact('asset_model', 'manufacturers', 'asset_types', 'pcspecs', 'pageTitle'));
   }
 
   public function update(UpdateAssetModelRequest $request, AssetModel $asset_model)

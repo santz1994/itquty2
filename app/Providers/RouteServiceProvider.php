@@ -15,24 +15,21 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected $namespace = 'App\Http\Controllers';
 
-        /**
-         * Define your route model bindings, pattern filters, etc.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            parent::boot();
-
-            // Register the application's routes. In older Laravel versions the
-            // RouteServiceProvider used a `map()` method; modern frameworks expect
-            // route registration to happen during `boot()` via $this->routes().
-            $this->routes(function () {
-                // Use the legacy controller namespace so older route files that
-                // reference controllers by short class name continue to work.
-                \Illuminate\Support\Facades\Route::namespace($this->namespace)->group(function () {
-                    require base_path('routes/web.php');
-                });
-            });
+    /**
+     * Define your route model bindings, pattern filters, etc.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        // Register the application's routes. In newer Laravel versions
+        // route registration happens during `boot()` via $this->routes().
+        $this->routes(function () {
+            // Use the legacy controller namespace so older route files that
+            // reference controllers by short class name continue to work.
+            \Illuminate\Support\Facades\Route::middleware('web')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/web.php'));
+        });
         }
 }

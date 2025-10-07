@@ -6,6 +6,10 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <!-- Custom CSS style -->
     <link href="{{ asset('/css/all.css') }}" rel="stylesheet" type="text/css" />
+    
+    <!-- Responsive Fixes CSS -->
+    <link href="{{ asset('/css/responsive-fix.css') }}" rel="stylesheet" type="text/css" />
+    
     <script src="{{ asset('/plugins/jQuery/jQuery-2.1.4.min.js') }}"></script>
 
 

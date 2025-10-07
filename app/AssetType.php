@@ -3,7 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class AssetType extends Model
 {
@@ -13,6 +13,12 @@ class AssetType extends Model
   public function asset_model()
   {
     return $this->belongsTo(AssetModel::class);
+  }
+
+  // Relationship to assets through asset_models
+  public function assets()
+  {
+    return $this->hasManyThrough(Asset::class, AssetModel::class, 'asset_type_id', 'model_id');
   }
 
   // Returns the count for assets of a specific asset type, for a specific division, that is in the 'Storeroom' with Status 'Ready to Deploy'

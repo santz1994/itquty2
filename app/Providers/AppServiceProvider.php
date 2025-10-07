@@ -27,5 +27,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SlackNotifier::class, function ($app) {
             return new SlackNotifier();
         });
+        
+        // Bind Asset Repository
+        $this->app->bind(
+            \App\Repositories\Assets\AssetRepositoryInterface::class,
+            \App\Repositories\Assets\AssetRepository::class
+        );
     }
 }

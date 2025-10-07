@@ -12,6 +12,8 @@ use App\Http\Requests;
 
 class LocationsController extends Controller
 {
+  protected $location;
+
   public function __construct(LocationRepositoryInterface $location)
   {
       $this->middleware('auth');
