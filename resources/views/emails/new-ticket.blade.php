@@ -4,7 +4,7 @@
 
 <h3>Ticket Details</h3>
 <h4>Subject: {{$ticket->subject}}</h4>
-<p>Description: {!!$ticket->description!!}</p>
+<p>Description: {!! nl2br(e($ticket->description)) !!}</p>
 
 <hr>
 

@@ -15,7 +15,7 @@
                 <span class="mailbox-read-time pull-right">Ticket logged on {{$createdDate->format('l, j F Y, H:i')}}</span></h5>
             </div>
             <div class="mailbox-read-message">
-              {!! nl2br($ticket->description) !!}
+              {!! nl2br(e($ticket->description)) !!}
             </div>
             <!-- /.mailbox-read-message -->
             <hr>

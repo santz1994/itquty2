@@ -33,7 +33,16 @@ class TicketsController extends Controller
   public function index()
   {
     $pageTitle = 'Tickets';
-    $tickets = Ticket::all();
+    // Fix N+1 Query: Eager load all relations that will be used in the view
+    $tickets = Ticket::with([
+        'user',
+        'assignedTo', 
+        'ticket_status',
+        'ticket_priority',
+        'ticket_type',
+        'location',
+        'asset'
+    ])->get();
     return view('tickets.index', compact('tickets', 'pageTitle'));
   }
 

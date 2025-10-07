@@ -40,20 +40,27 @@ class HomeController extends Controller
     public function index()
     {
       $pageTitle = 'Dashboard';
-      $assets = Asset::all();
-      $locations = Location::all();
-      $statuses = Status::all();
-      $budgets = Budget::all();
-      $invoices = Invoice::all();
-      $divisions = Division::all();
-      $year = \Carbon\Carbon::now()->year;
-
+      
       // Get Authenticated User
       $user = Auth::user();
       if ($user->hasRole('user')) {
         return redirect()->route('tickets.index');
       } else {
-        $movements = Movement::orderBy('created_at', 'desc')->take(5)->get();
+        // Use eager loading for better performance
+        $assets = Asset::with(['assetModel', 'status', 'division'])->get();
+        $locations = Location::all();
+        $statuses = Status::all();
+        $budgets = Budget::all();
+        $invoices = Invoice::all();
+        $divisions = Division::all();
+        $year = \Carbon\Carbon::now()->year;
+        
+        // Load movements with relationships
+        $movements = Movement::with(['asset', 'location', 'user'])
+                            ->orderBy('created_at', 'desc')
+                            ->take(5)
+                            ->get();
+                            
         return view('home', compact('assets', 'movements', 'locations', 'statuses', 'budgets', 'invoices', 'divisions', 'year', 'pageTitle'));
       }
     }

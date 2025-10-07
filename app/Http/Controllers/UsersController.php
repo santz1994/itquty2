@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Mail;
 use App\User;
 use App\Role;
+use App\Services\UserService;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Users\StoreUserRequest;
@@ -17,26 +18,35 @@ use App\Http\Requests;
 
 class UsersController extends Controller
 {
-  public function __construct()
+  protected $userService;
+
+  public function __construct(UserService $userService)
   {
     $this->middleware('auth');
+    $this->userService = $userService;
   }
 
   public function sendEmailReminder(Request $request, $id)
   {
       $user = User::findOrFail($id);
-
-      Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
-          $m->from('terry.ferreira@nwu.ac.za', 'IVD IT Support');
-
-          $m->to($user->email, $user->name)->subject('Your Reminder!');
-      });
+      
+      if ($this->userService->sendEmailReminder($user)) {
+          Session::flash('status', 'success');
+          Session::flash('message', 'Email reminder sent successfully');
+      } else {
+          Session::flash('status', 'error');
+          Session::flash('message', 'Failed to send email reminder');
+      }
+      
+      return back();
   }
 
   public function index()
   {
     $pageTitle = 'Users';
-    $users = User::all();
+    // Use eager loading for better performance and add pagination
+    $users = User::with(['roles', 'division'])->paginate(20);
+    
     // Legacy views expect a `user_id` property (from old `role_user` table).
     // Provide compatibility by mapping `model_id` -> `user_id` on the returned rows.
     $usersRoles = DB::table('model_has_roles')->where('model_type', User::class)->get()

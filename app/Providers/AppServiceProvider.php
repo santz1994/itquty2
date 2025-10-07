@@ -33,5 +33,22 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Assets\AssetRepositoryInterface::class,
             \App\Repositories\Assets\AssetRepository::class
         );
+        
+        // Bind Ticket Repository
+        $this->app->bind(
+            \App\Repositories\Tickets\TicketRepositoryInterface::class,
+            \App\Repositories\Tickets\TicketRepository::class
+        );
+        
+        // Bind User Repository
+        $this->app->bind(
+            \App\Repositories\Users\UserRepositoryInterface::class,
+            \App\Repositories\Users\UserRepository::class
+        );
+        
+        // Bind Services
+        $this->app->singleton(\App\Services\TicketService::class);
+        $this->app->singleton(\App\Services\AssetService::class);
+        $this->app->singleton(\App\Services\UserService::class);
     }
 }

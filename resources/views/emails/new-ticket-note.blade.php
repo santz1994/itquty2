@@ -2,13 +2,13 @@
 
 <h4>A new ticket note has been added to Ticket Number: {{$ticket->id}}</h4>
 
-<p><b>Note:</b> {!!$ticketEntry->note!!}</p>
+<p><b>Note:</b> {!! nl2br(e($ticketEntry->note)) !!}</p>
 
 <hr>
 
 <h3>Ticket Details</h3>
 <h4>Subject: {{$ticket->subject}}</h4>
-<p>Description: {!!$ticket->description!!}</p>
+<p>Description: {!! nl2br(e($ticket->description)) !!}</p>
 
 <hr>
 
