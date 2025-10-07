@@ -112,46 +112,18 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Assets Routes
         Route::get('/assets/categories', [\App\Http\Controllers\InventoryController::class, 'categories'])->name('assets.categories');
         Route::get('/assets/requests', [\App\Http\Controllers\InventoryController::class, 'requests'])->name('assets.requests');
-        Route::get('/assets/{asset}/qr-code', [\App\Http\Controllers\QRCodeController::class, 'generateQRCode'])->name('assets.qr-code');
-        Route::get('/assets/{asset}/qr-download', [\App\Http\Controllers\QRCodeController::class, 'downloadQRCode'])->name('assets.qr-download');
+        Route::get('/assets/scan-qr', [\App\Http\Controllers\AssetsController::class, 'scanQR'])->name('assets.scan-qr');
+        Route::post('/assets/process-scan', [\App\Http\Controllers\AssetsController::class, 'processScan'])->name('assets.process-scan');
+        Route::get('/assets/my-assets', [\App\Http\Controllers\AssetsController::class, 'myAssets'])->name('assets.my-assets');
+        Route::get('/assets/{asset}/qr-code', [\App\Http\Controllers\AssetsController::class, 'generateQR'])->name('assets.qr-code');
+        Route::get('/assets/{asset}/qr-download', [\App\Http\Controllers\AssetsController::class, 'downloadQR'])->name('assets.qr-download');
         Route::get('/assets/{asset}/ticket-history', [\App\Http\Controllers\AssetsController::class, 'history'])->name('assets.ticket-history');
+        Route::get('/assets/{asset}/movements', [\App\Http\Controllers\AssetsController::class, 'movements'])->name('assets.movements');
+        Route::post('/assets/{asset}/assign', [\App\Http\Controllers\AssetsController::class, 'assign'])->name('assets.assign');
+        Route::post('/assets/{asset}/unassign', [\App\Http\Controllers\AssetsController::class, 'unassign'])->name('assets.unassign');
         Route::post('/assets/bulk-qr-codes', [\App\Http\Controllers\QRCodeController::class, 'bulkGenerateQRCodes'])->name('assets.bulk-qr-codes');
         Route::post('/assets/{asset}/change-status', [\App\Http\Controllers\InventoryController::class, 'changeStatus'])->name('assets.change-status');
-        Route::get('/assets', function() {
-            // Test step by step to find where it breaks
-            try {
-                // Step 1: Test basic data
-                $pageTitle = 'Inventory Management';
-                
-                // Step 2: Test simple stats
-                $stats = [
-                    'total_assets' => 0, // Hardcoded to avoid DB issues
-                    'active_assets' => 0,
-                    'maintenance_assets' => 0,
-                    'pending_requests' => 0
-                ];
-                
-                // Step 3: Test empty collections
-                $assets = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25); // Empty paginated collection
-                $categories = collect();
-                $statuses = collect();
-                $locations = collect();
-                $divisions = collect();
-                $categoryStats = collect();
-                
-                // Step 4: Test the view
-                return view('inventory.index', compact(
-                    'assets', 'categories', 'statuses', 'locations', 'divisions', 
-                    'stats', 'categoryStats', 'pageTitle'
-                ));
-                
-            } catch (\Exception $e) {
-                return '<h1>Error Found!</h1>' .
-                       '<p><strong>Error:</strong> ' . $e->getMessage() . '</p>' .
-                       '<p><strong>File:</strong> ' . $e->getFile() . '</p>' .
-                       '<p><strong>Line:</strong> ' . $e->getLine() . '</p>';
-            }
-        })->name('assets.index');
+        Route::get('/assets', [\App\Http\Controllers\AssetsController::class, 'index'])->name('assets.index');
         
         // Assets CRUD Routes
         Route::resource('assets', \App\Http\Controllers\AssetsController::class)->except(['index']);

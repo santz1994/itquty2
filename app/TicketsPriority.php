@@ -13,4 +13,10 @@ class TicketsPriority extends Model
   {
     return $this->hasMany(Ticket::class);
   }
+
+  // Accessor to provide consistent 'name' attribute
+  public function getNameAttribute()
+  {
+      return $this->priority;
+  }
 }

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Requests\Tickets\StoreTicketRequest;
 use App\Http\Requests\Tickets\UpdateTicketRequest;
+use App\Http\Requests\CreateTicketRequest;
 
 class TicketsController extends Controller
 {
@@ -79,25 +80,27 @@ class TicketsController extends Controller
 
   /**
    * Store the new Ticket
-   * @param  CreateTicketRequest $request
-   * @return [type]                       [description]
+   * @param  StoreTicketRequest $request
+   * @return \Illuminate\Http\RedirectResponse
    */
   public function store(StoreTicketRequest $request)
   {
-    Ticket::create($request->all());
-    $ticket = Ticket::get()->last();
+    try {
+      // Use TicketService instead of direct model creation
+      $ticketService = app(\App\Services\TicketService::class);
+      $ticket = $ticketService->createTicket($request->validated());
 
-    $user = User::findOrFail($ticket->user_id);
+      Session::flash('status', 'success');
+      Session::flash('title', 'Ticket #' . $ticket->ticket_code);
+      Session::flash('message', 'Ticket berhasil dibuat');
 
-    Mail::send('emails.new-ticket', ['user' => $user, 'ticket' => $ticket], function ($m) use ($user, $ticket) {
-      $m->to($user->email, $user->name)->subject('New Ticket: #' . $ticket->id . ' - ' . $ticket->subject);
-    });
-
-    Session::flash('status', 'success');
-    Session::flash('title', 'Ticket #' . $ticket->id);
-    Session::flash('message', 'Successfully logged');
-
-    return redirect()->route('tickets.show', $ticket->id);
+      return redirect()->route('tickets.show', $ticket->id);
+    } catch (\Exception $e) {
+      Session::flash('status', 'error');
+      Session::flash('message', 'Gagal membuat ticket: ' . $e->getMessage());
+      
+      return back()->withInput();
+    }
   }
 
   public function edit(Ticket $ticket)

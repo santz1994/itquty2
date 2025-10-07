@@ -17,7 +17,9 @@ Daily Activities Calendar
                         <select class="form-control" id="userFilter">
                             <option value="">All Users</option>
                             @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @if(is_object($user) && isset($user->id) && isset($user->name))
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                         <div class="input-group-btn">

@@ -17,7 +17,9 @@ Daily Activities Calendar
                         <select class="form-control" id="userFilter">
                             <option value="">All Users</option>
                             <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($user->id); ?>"><?php echo e($user->name); ?></option>
+                                <?php if(is_object($user) && isset($user->id) && isset($user->name)): ?>
+                                <option value="<?php echo e($user->id); ?>"><?php echo e($user->name); ?></option>
+                                <?php endif; ?>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                         <div class="input-group-btn">

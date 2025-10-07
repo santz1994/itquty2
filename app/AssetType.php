@@ -41,4 +41,10 @@ class AssetType extends Model
                      ->where('asset_type_id', $assetType)
                      ->count();
   }
+
+  // Accessor to provide consistent 'name' attribute
+  public function getNameAttribute()
+  {
+      return $this->type_name;
+  }
 }

@@ -35,4 +35,44 @@ class User extends Authenticatable
   {
     return $this->hasMany(Ticket::class);
   }
+
+  public function assignedTickets()
+  {
+    return $this->hasMany(Ticket::class, 'assigned_to');
+  }
+
+  public function assets()
+  {
+    return $this->hasMany(Asset::class, 'assigned_to');
+  }
+
+  public function dailyActivities()
+  {
+    return $this->hasMany(DailyActivity::class);
+  }
+
+  // Scopes
+  public function scopeWithRoles($query)
+  {
+    return $query->with('roles');
+  }
+
+  public function scopeAdmins($query)
+  {
+    return $query->whereHas('roles', function($q) {
+      $q->whereIn('name', ['admin', 'super-admin']);
+    });
+  }
+
+  public function scopeActiveUsers($query)
+  {
+    return $query->where('active', true);
+  }
+
+  public function scopeByRole($query, $roleName)
+  {
+    return $query->whereHas('roles', function($q) use ($roleName) {
+      $q->where('name', $roleName);
+    });
+  }
 }

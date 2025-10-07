@@ -23,26 +23,38 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerViewComposers()
     {
-        // General form data composer for admin forms
+        // General form data composer for user management forms only
         view()->composer([
             'admin.users.create',
             'admin.users.edit',
+            'users.create',
+            'users.edit',
         ], \App\Http\ViewComposers\FormDataComposer::class);
         
-        // Ticket-specific composer
+        // Ticket-specific composer for ticket-related views
         view()->composer([
             'tickets.create',
             'tickets.edit',
             'tickets.show',
+            'admin.tickets.create',
+            'admin.tickets.edit',
         ], \App\Http\ViewComposers\TicketFormComposer::class);
         
-        // Asset-specific composer
+        // Asset-specific composer for asset-related views
         view()->composer([
             'assets.create',
             'assets.edit',
             'admin.assets.create',
             'admin.assets.edit',
+            'asset-requests.create',
         ], \App\Http\ViewComposers\AssetFormComposer::class);
+        
+        // Daily activities composer for calendar and activity forms
+        view()->composer([
+            'daily-activities.create',
+            'daily-activities.edit',
+            'daily-activities.calendar',
+        ], \App\Http\ViewComposers\FormDataComposer::class);
     }
 
     /**

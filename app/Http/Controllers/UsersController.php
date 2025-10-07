@@ -26,10 +26,8 @@ class UsersController extends Controller
     $this->userService = $userService;
   }
 
-  public function sendEmailReminder(Request $request, $id)
+  public function sendEmailReminder(Request $request, User $user)
   {
-      $user = User::findOrFail($id);
-      
       if ($this->userService->sendEmailReminder($user)) {
           Session::flash('status', 'success');
           Session::flash('message', 'Email reminder sent successfully');

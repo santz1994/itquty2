@@ -6,14 +6,9 @@ use Illuminate\View\View;
 use App\Division;
 use App\Location;
 use App\Status;
-use App\AssetModel;
-use App\Manufacturer;
-use App\Supplier;
-use App\TicketsPriority;
-use App\TicketsStatus;
-use App\TicketsType;
 use App\User;
 use App\Role;
+use Illuminate\Support\Facades\Cache;
 
 class FormDataComposer
 {
@@ -25,19 +20,24 @@ class FormDataComposer
      */
     public function compose(View $view)
     {
-        // Common dropdown data that's used across multiple forms
+        // Only bind basic user management form data
+        // Use caching to improve performance
         $view->with([
-            'divisions' => Division::pluck('name', 'id'),
-            'locations' => Location::pluck('name', 'id'),
-            'statuses' => Status::pluck('name', 'id'),
-            'assetModels' => AssetModel::pluck('name', 'id'),
-            'manufacturers' => Manufacturer::pluck('name', 'id'),
-            'suppliers' => Supplier::pluck('name', 'id'),
-            'ticketsPriorities' => TicketsPriority::pluck('name', 'id'),
-            'ticketsStatuses' => TicketsStatus::pluck('name', 'id'),
-            'ticketsTypes' => TicketsType::pluck('name', 'id'),
-            'users' => User::pluck('name', 'id'),
-            'roles' => Role::pluck('display_name', 'id'),
+            'divisions' => Cache::remember('divisions_dropdown', 3600, function () {
+                return Division::orderBy('name')->pluck('name', 'id');
+            }),
+            'locations' => Cache::remember('locations_dropdown', 3600, function () {
+                return Location::orderBy('location_name')->pluck('location_name', 'id');
+            }),
+            'statuses' => Cache::remember('statuses_dropdown', 3600, function () {
+                return Status::orderBy('name')->pluck('name', 'id');
+            }),
+            'users' => Cache::remember('users_dropdown', 1800, function () {
+                return User::orderBy('name')->pluck('name', 'id');
+            }),
+            'roles' => Cache::remember('roles_dropdown', 7200, function () {
+                return Role::orderBy('display_name')->pluck('display_name', 'id');
+            }),
         ]);
     }
 }

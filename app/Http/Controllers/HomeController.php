@@ -48,22 +48,31 @@ class HomeController extends Controller
       if ($this->hasRole('user')) {
         return redirect()->route('tickets.index');
       } else {
-        // Use eager loading for better performance
-        $assets = Asset::with(['assetModel', 'status', 'division'])->get();
-        $locations = Location::all();
-        $statuses = Status::all();
-        $budgets = Budget::all();
-        $invoices = Invoice::all();
-        $divisions = Division::all();
+        // Get summary statistics instead of all records for better performance
+        $assetStats = [
+          'total_assets' => Asset::count(),
+          'active_assets' => Asset::inUse()->count(),
+          'available_assets' => Asset::inStock()->count(),
+          'maintenance_assets' => Asset::inRepair()->count(),
+        ];
+        
+        $locationCount = Location::count();
+        $divisionCount = Division::count();
         $year = \Carbon\Carbon::now()->year;
         
-        // Load movements with relationships
+        // Load only recent movements with relationships
         $movements = Movement::with(['asset', 'location', 'user'])
                             ->orderBy('created_at', 'desc')
                             ->take(5)
                             ->get();
+        
+        // Get recent assets with their relationships
+        $recentAssets = Asset::withRelations()
+                           ->orderBy('created_at', 'desc')
+                           ->take(10)
+                           ->get();
                             
-        return view('home', compact('assets', 'movements', 'locations', 'statuses', 'budgets', 'invoices', 'divisions', 'year', 'pageTitle'));
+        return view('home', compact('assetStats', 'movements', 'recentAssets', 'locationCount', 'divisionCount', 'year', 'pageTitle'));
       }
     }
 }

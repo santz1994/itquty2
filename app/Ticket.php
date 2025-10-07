@@ -184,6 +184,13 @@ class Ticket extends Model
     ]);
   }
 
+  public function scopeWithRelations($query)
+  {
+    return $query->with([
+      'user', 'assignedTo', 'ticket_status', 'ticket_priority', 'asset'
+    ]);
+  }
+
   // Accessors
   public function getIsOverdueAttribute()
   {

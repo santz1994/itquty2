@@ -39,7 +39,7 @@ class TicketController extends BaseController
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Ticket::with(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'asset']);
+        $query = Ticket::withRelations();
 
         // Role-based filtering using trait method
         $query = $this->applyRoleBasedFilters($query, $user);
@@ -69,10 +69,10 @@ class TicketController extends BaseController
 
         $tickets = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        // Get filter options
-        $statuses = TicketsStatus::all();
-        $priorities = TicketsPriority::all();
-        $admins = User::role('admin')->get();
+        // Get filter options - ViewComposer handles most dropdown data
+        $statuses = TicketsStatus::orderBy('status')->get();
+        $priorities = TicketsPriority::orderBy('priority')->get();
+        $admins = User::admins()->orderBy('name')->get();
         $pageTitle = 'Ticket Management';
 
         return view('tickets.index', compact('tickets', 'statuses', 'priorities', 'admins', 'pageTitle'));

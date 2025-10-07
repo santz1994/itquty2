@@ -40,6 +40,34 @@ class DailyActivity extends Model
                      ->whereMonth('activity_date', $month);
     }
 
+    public function scopeDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('activity_date', [$startDate, $endDate]);
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['user', 'ticket']);
+    }
+
+    public function scopeToday($query)
+    {
+        return $query->whereDate('activity_date', today());
+    }
+
+    public function scopeThisWeek($query)
+    {
+        return $query->whereBetween('activity_date', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
+        ]);
+    }
+
     // Static methods
     public static function createFromTicketCompletion(Ticket $ticket)
     {

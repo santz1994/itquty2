@@ -155,6 +155,11 @@ class Asset extends Model
     return $query->where('serial_number', 'LIKE', "%{$serial}%");
   }
 
+  public function scopeByStatus($query, $statusId)
+  {
+    return $query->where('status_id', $statusId);
+  }
+
   public function scopeWarrantyExpired($query)
   {
     return $query->whereRaw('DATE_ADD(purchase_date, INTERVAL warranty_months MONTH) < NOW()');

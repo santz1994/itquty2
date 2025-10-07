@@ -66,7 +66,8 @@ class AssetMaintenanceControllerSimple extends Controller
             'priority_id' => 'required|integer|exists:tickets_priorities,id'
         ]);
 
-        $ticket = Ticket::create([
+        $ticketService = app(\App\Services\TicketService::class);
+        $ticket = $ticketService->createTicket([
             'user_id' => Auth::id(),
             'asset_id' => $asset->id,
             'location_id' => $asset->location_id,
@@ -75,7 +76,6 @@ class AssetMaintenanceControllerSimple extends Controller
             'ticket_priority_id' => $request->priority_id,
             'subject' => $request->subject,
             'description' => $request->description,
-            'ticket_code' => 'MT-' . time() . '-' . $asset->id,
         ]);
 
         return redirect()

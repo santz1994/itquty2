@@ -25,25 +25,26 @@ class DailyActivityController extends Controller
      */
     public function index(Request $request)
     {
-        $query = DailyActivity::with(['user']);
+        $query = DailyActivity::withRelations();
 
-        // Filter by date range
-        if ($request->has('date_from') && $request->date_from !== '') {
+        // Filter by date range using scope
+        if ($request->has('date_from') && $request->has('date_to') && 
+            $request->date_from !== '' && $request->date_to !== '') {
+            $query->dateRange($request->date_from, $request->date_to);
+        } elseif ($request->has('date_from') && $request->date_from !== '') {
             $query->whereDate('activity_date', '>=', $request->date_from);
-        }
-
-        if ($request->has('date_to') && $request->date_to !== '') {
+        } elseif ($request->has('date_to') && $request->date_to !== '') {
             $query->whereDate('activity_date', '<=', $request->date_to);
         }
 
         // Filter by user (admin only)
         if ($request->has('user_id') && $request->user_id !== '' && $this->hasRole('admin')) {
-            $query->where('user_id', $request->user_id);
+            $query->forUser($request->user_id);
         }
 
-        // Filter by activity type
+        // Filter by activity type using scope
         if ($request->has('activity_type') && $request->activity_type !== '') {
-            $query->where('type', $request->activity_type);
+            $query->byType($request->activity_type);
         }
 
         // If regular user, only show their activities
@@ -289,8 +290,10 @@ class DailyActivityController extends Controller
      */
     public function calendar(Request $request)
     {
-        // Get users for filter (admin only)
-        $users = $this->hasAnyRole(["admin", "super-admin"]) ? User::all() : collect();
+        // Get users for filter (admin only) - ensure we have valid user objects
+        $users = $this->hasAnyRole(["admin", "super-admin"]) 
+            ? User::select('id', 'name')->whereNotNull('name')->get() 
+            : collect();
 
         return view('daily-activities.calendar', compact('users'));
     }
