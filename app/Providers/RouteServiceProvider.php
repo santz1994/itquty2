@@ -22,6 +22,11 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        parent::boot();
+        
+        // Define model bindings
+        $this->registerModelBindings();
+        
         // Register the application's routes. In newer Laravel versions
         // route registration happens during `boot()` via $this->routes().
         $this->routes(function () {
@@ -31,5 +36,28 @@ class RouteServiceProvider extends ServiceProvider
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
         });
-        }
+    }
+    
+    /**
+     * Register model bindings for route parameters
+     *
+     * @return void
+     */
+    protected function registerModelBindings()
+    {
+        \Illuminate\Support\Facades\Route::model('ticket', \App\Ticket::class);
+        \Illuminate\Support\Facades\Route::model('asset', \App\Asset::class);
+        \Illuminate\Support\Facades\Route::model('user', \App\User::class);
+        \Illuminate\Support\Facades\Route::model('location', \App\Location::class);
+        \Illuminate\Support\Facades\Route::model('division', \App\Division::class);
+        \Illuminate\Support\Facades\Route::model('manufacturer', \App\Manufacturer::class);
+        \Illuminate\Support\Facades\Route::model('assetModel', \App\AssetModel::class);
+        \Illuminate\Support\Facades\Route::model('supplier', \App\Supplier::class);
+        \Illuminate\Support\Facades\Route::model('budget', \App\Budget::class);
+        \Illuminate\Support\Facades\Route::model('invoice', \App\Invoice::class);
+        \Illuminate\Support\Facades\Route::model('dailyActivity', \App\DailyActivity::class);
+        \Illuminate\Support\Facades\Route::model('ticketStatus', \App\TicketsStatus::class);
+        \Illuminate\Support\Facades\Route::model('ticketPriority', \App\TicketsPriority::class);
+        \Illuminate\Support\Facades\Route::model('ticketType', \App\TicketsType::class);
+    }
 }

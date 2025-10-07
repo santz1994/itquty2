@@ -15,18 +15,35 @@ use App\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use App\Traits\RoleBasedAccessTrait;
 use Slack;
 
 class AssetRepository implements AssetRepositoryInterface {
   public function index()
   {
     $pageTitle = 'View Assets';
-    $assets = Asset::all();
-    $totalAssets = $this->count();
-    $deployed = $this->deployedCount();
-    $readyToDeploy = $this->readyToDeployCount();
-    $repairs = $this->repairsCount();
-    $writtenOff = $this->writtenOffCount();
+    
+    // Use scopes and eager loading for better performance
+    $user = Auth::user();
+    if ($user && $user->hasRole('user')) {
+      // Users only see assets assigned to them or from their division
+      $assets = Asset::withRelations()
+                    ->where(function($query) use ($user) {
+                      $query->assignedTo($user->id)
+                            ->orWhere('division_id', $user->division_id);
+                    })
+                    ->get();
+    } else {
+      // Admin/Management see all assets
+      $assets = Asset::withRelations()->get();
+    }
+    
+    // Use scopes for statistics
+    $totalAssets = Asset::count();
+    $deployed = Asset::assigned()->count();
+    $readyToDeploy = Asset::inStock()->count();
+    $repairs = Asset::inRepair()->count();
+    $writtenOff = Asset::disposed()->count();
 
     return view('assets.index', compact('assets', 'pageTitle', 'totalAssets', 'deployed', 'readyToDeploy', 'repairs', 'writtenOff'));
   }

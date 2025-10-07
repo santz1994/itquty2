@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Tickets\AssignTicketRequest;
+use App\Http\Requests\Tickets\CompleteTicketRequest;
 use App\Http\Requests\CreateTicketRequest;
 use App\Services\TicketService;
 use App\Ticket;
@@ -12,11 +14,14 @@ use App\Location;
 use App\TicketsPriority;
 use App\TicketsType;
 use App\TicketsStatus;
+use App\Traits\RoleBasedAccessTrait;
 
 use App\Http\Controllers\Controller as BaseController;
 
 class TicketController extends BaseController
 {
+    use RoleBasedAccessTrait;
+    
     protected $ticketService;
 
     public function __construct(TicketService $ticketService)
@@ -36,17 +41,8 @@ class TicketController extends BaseController
         $user = auth()->user();
         $query = Ticket::with(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'asset']);
 
-        // Role-based filtering
-        if ($user->hasRole('user')) {
-            // Users can only see their own tickets
-            $query->where('user_id', $user->id);
-        } elseif ($user->hasRole('management')) {
-            // Management can see all tickets but only view
-            // No additional filtering needed - they see all
-        } elseif ($user->hasRole(['admin', 'super-admin'])) {
-            // Admin and SuperAdmin can see all tickets
-            // No additional filtering needed - they see all
-        }
+        // Role-based filtering using trait method
+        $query = $this->applyRoleBasedFilters($query, $user);
 
         // Filter by status
         if ($request->has('status') && $request->status !== '') {
@@ -58,8 +54,8 @@ class TicketController extends BaseController
             $query->where('ticket_priority_id', $request->priority);
         }
 
-        // Filter by assigned admin (only for management, admin, super-admin)
-        if ($request->has('assigned_to') && $request->assigned_to !== '' && !$user->hasRole('user')) {
+        // Filter by assigned admin (only for management, admin, super-admin)  
+        if ($request->has('assigned_to') && $request->assigned_to !== '' && !$this->hasRole('user')) {
             $query->where('assigned_to', $request->assigned_to);
         }
 
@@ -172,12 +168,8 @@ class TicketController extends BaseController
     /**
      * Assign ticket to specific admin (SuperAdmin only)
      */
-    public function assign(Request $request, Ticket $ticket)
+    public function assign(AssignTicketRequest $request, Ticket $ticket)
     {
-        $request->validate([
-            'admin_id' => 'required|exists:users,id'
-        ]);
-
         try {
             $this->ticketService->assignTicket($ticket, $request->admin_id, 'super_admin');
             
@@ -191,12 +183,8 @@ class TicketController extends BaseController
     /**
      * Force assign ticket (SuperAdmin override)
      */
-    public function forceAssign(Request $request, Ticket $ticket)
+    public function forceAssign(AssignTicketRequest $request, Ticket $ticket)
     {
-        $request->validate([
-            'admin_id' => 'required|exists:users,id'
-        ]);
-
         try {
             $this->ticketService->assignTicket($ticket, $request->admin_id, 'super_admin');
             
@@ -210,12 +198,8 @@ class TicketController extends BaseController
     /**
      * Complete ticket
      */
-    public function complete(Request $request, Ticket $ticket)
+    public function complete(CompleteTicketRequest $request, Ticket $ticket)
     {
-        $request->validate([
-            'resolution' => 'nullable|string|max:1000'
-        ]);
-
         try {
             $this->ticketService->completeTicket($ticket, $request->resolution);
             

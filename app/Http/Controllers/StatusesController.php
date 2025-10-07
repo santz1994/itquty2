@@ -3,25 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Status;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Statuses\StoreStatusRequest;
 use App\Http\Requests\Statuses\UpdateStatusRequest;
 use Illuminate\Http\Request;
+use App\Traits\RoleBasedAccessTrait;
 
 use App\Http\Requests;
 
 class StatusesController extends Controller
 {
+  use RoleBasedAccessTrait;
+  
   public function __construct()
   {
       $this->middleware('auth');
+      $this->middleware('role:super-admin');
   }
 
   public function index()
   {
-    if (!auth()->user() || !auth()->user()->hasRole('super-admin')) {
-      abort(403, 'Unauthorized');
-    }
+    // No need for role check here - middleware handles it
     $pageTitle = 'Statuses';
     $statuses = Status::all();
     return view('admin.assets-statuses.index', compact('statuses', 'pageTitle'));
@@ -41,9 +43,7 @@ class StatusesController extends Controller
 
   public function edit(Status $status)
   {
-    if (!auth()->user() || !auth()->user()->hasRole('super-admin')) {
-      abort(403, 'Unauthorized');
-    }
+    // No need for role check here - middleware handles it
     $pageTitle = 'Edit Status - ' . $status->name;
     return view('admin.assets-statuses.edit', compact('status', 'pageTitle'));
   }

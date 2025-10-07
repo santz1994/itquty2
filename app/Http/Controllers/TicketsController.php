@@ -52,14 +52,11 @@ class TicketsController extends Controller
   public function show(Ticket $ticket)
   {
     $pageTitle = 'Viewing Ticket #' . $ticket->id;
-    $ticketsPriorities = TicketsPriority::all();
-    $ticketsStatuses = TicketsStatus::all();
-    $ticketsTypes = TicketsType::all();
-    $locations = Location::all();
-    $users = User::all();
     $now = new Carbon();
     $ticketEntries = TicketsEntry::where('ticket_id', $ticket->id)->orderBy('created_at', 'asc')->get();
-    return view('tickets.show', compact('ticket', 'ticketEntries', 'pageTitle', 'ticketsPriorities', 'ticketsStatuses', 'ticketsTypes', 'locations', 'users', 'now'));
+    
+    // View composer will provide dropdown data
+    return view('tickets.show', compact('ticket', 'ticketEntries', 'pageTitle', 'now'));
   }
 
   /**
@@ -70,17 +67,14 @@ class TicketsController extends Controller
   public function create()
   {
     $pageTitle = 'Create New Ticket';
-    $ticketsPriorities = TicketsPriority::all();
-    $ticketsStatuses = TicketsStatus::all();
-    $ticketsTypes = TicketsType::all();
-    $locations = Location::all();
-    $users = User::all();
     $ticketsCannedFields = TicketsCannedField::all();
-    // Always pass a Ticket object (empty) to avoid null errors in Blade
+    
+    // Create empty ticket object for form
     $ticket = new \stdClass();
     $ticket->user_id = '';
-    // Add other properties if needed for the view
-    return view('tickets.create', compact('ticketsPriorities', 'ticketsStatuses', 'ticketsTypes', 'locations', 'users', 'ticketsCannedFields', 'pageTitle', 'ticket'));
+    
+    // View composer will provide dropdown data
+    return view('tickets.create', compact('ticketsCannedFields', 'pageTitle', 'ticket'));
   }
 
   /**

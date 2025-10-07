@@ -3,14 +3,11 @@
 namespace App;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use App\Traits\HasDualRoles;
-// Make sure we're not directly using Spatie's HasRoles trait
-// use Spatie\Permission\Traits\HasRoles;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-  // Only use the HasDualRoles trait which already includes Spatie's HasRoles trait
-  use HasDualRoles;
+  use HasRoles;
   /**
    * The attributes that are mass assignable.
    *

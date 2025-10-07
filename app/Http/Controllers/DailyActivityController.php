@@ -8,9 +8,12 @@ use App\DailyActivity;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\RoleBasedAccessTrait;
 
 class DailyActivityController extends Controller
 {
+    use RoleBasedAccessTrait;
+
     public function __construct()
     {
         $this->middleware('auth');
@@ -34,7 +37,7 @@ class DailyActivityController extends Controller
         }
 
         // Filter by user (admin only)
-        if ($request->has('user_id') && $request->user_id !== '' && Auth::user()->hasRole('admin')) {
+        if ($request->has('user_id') && $request->user_id !== '' && $this->hasRole('admin')) {
             $query->where('user_id', $request->user_id);
         }
 
@@ -44,7 +47,7 @@ class DailyActivityController extends Controller
         }
 
         // If regular user, only show their activities
-        if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->hasAnyRole(['admin', 'super-admin'])) {
             $query->where('user_id', Auth::id());
         }
 
@@ -53,7 +56,7 @@ class DailyActivityController extends Controller
                            ->paginate(20);
 
         // Get filter options
-        $users = Auth::user()->hasRole(['admin', 'super_admin']) ? User::all() : collect();
+        $users = $this->hasAnyRole(['admin', 'super-admin']) ? User::all() : collect();
         $activityTypes = DailyActivity::select('type as activity_type')
                                      ->distinct()
                                      ->pluck('activity_type');
@@ -97,7 +100,7 @@ class DailyActivityController extends Controller
     public function show(DailyActivity $dailyActivity)
     {
         // Check if user can view this activity
-        if (!Auth::user()->hasRole(['admin', 'super_admin']) && $dailyActivity->user_id !== Auth::id()) {
+        if (!$this->hasAnyRole(["admin", "super-admin"]) && $dailyActivity->user_id !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk melihat aktivitas ini');
         }
 
@@ -112,7 +115,7 @@ class DailyActivityController extends Controller
     public function edit(DailyActivity $dailyActivity)
     {
         // Check if user can edit this activity
-        if (!Auth::user()->hasRole(['admin', 'super_admin']) && $dailyActivity->user_id !== Auth::id()) {
+        if (!$this->hasAnyRole(["admin", "super-admin"]) && $dailyActivity->user_id !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk mengedit aktivitas ini');
         }
 
@@ -120,7 +123,7 @@ class DailyActivityController extends Controller
         $activityDate = Carbon::parse($dailyActivity->activity_date);
         $cutoffDate = Carbon::yesterday();
         
-        if ($activityDate->lt($cutoffDate) && !Auth::user()->hasRole(['admin', 'super_admin'])) {
+        if ($activityDate->lt($cutoffDate) && !$this->hasAnyRole(["admin", "super-admin"])) {
             return back()->with('error', 'Hanya dapat mengedit aktivitas hari ini atau kemarin');
         }
 
@@ -133,7 +136,7 @@ class DailyActivityController extends Controller
     public function update(CreateDailyActivityRequest $request, DailyActivity $dailyActivity)
     {
         // Check if user can update this activity
-        if (!Auth::user()->hasRole(['admin', 'super_admin']) && $dailyActivity->user_id !== Auth::id()) {
+        if (!$this->hasAnyRole(["admin", "super-admin"]) && $dailyActivity->user_id !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk mengupdate aktivitas ini');
         }
 
@@ -141,7 +144,7 @@ class DailyActivityController extends Controller
             $data = $request->validated();
             
             // Don't allow changing user_id unless admin
-            if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
+            if (!$this->hasAnyRole(["admin", "super-admin"])) {
                 unset($data['user_id']);
             }
 
@@ -161,7 +164,7 @@ class DailyActivityController extends Controller
     public function destroy(DailyActivity $dailyActivity)
     {
         // Check if user can delete this activity
-        if (!Auth::user()->hasRole(['admin', 'super_admin']) && $dailyActivity->user_id !== Auth::id()) {
+        if (!$this->hasAnyRole(["admin", "super-admin"]) && $dailyActivity->user_id !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk menghapus aktivitas ini');
         }
 
@@ -186,7 +189,7 @@ class DailyActivityController extends Controller
                              ->whereDate('activity_date', $today);
 
         // If regular user, only show their activities
-        if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->hasAnyRole(["admin", "super-admin"])) {
             $query->where('user_id', Auth::id());
         }
 
@@ -207,7 +210,7 @@ class DailyActivityController extends Controller
                              ->whereBetween('activity_date', [$startOfWeek, $endOfWeek]);
 
         // If regular user, only show their activities
-        if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->hasAnyRole(["admin", "super-admin"])) {
             $query->where('user_id', Auth::id());
         }
 
@@ -239,12 +242,12 @@ class DailyActivityController extends Controller
             $query->whereDate('activity_date', '<=', $request->date_to);
         }
 
-        if ($request->has('user_id') && $request->user_id !== '' && Auth::user()->hasRole('admin')) {
+        if ($request->has('user_id') && $request->user_id !== '' && $this->hasRole('admin')) {
             $query->where('user_id', $request->user_id);
         }
 
         // If regular user, only export their activities
-        if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->hasAnyRole(["admin", "super-admin"])) {
             $query->where('user_id', Auth::id());
         }
 
@@ -287,7 +290,7 @@ class DailyActivityController extends Controller
     public function calendar(Request $request)
     {
         // Get users for filter (admin only)
-        $users = Auth::user()->hasRole(['admin', 'super-admin']) ? User::all() : collect();
+        $users = $this->hasAnyRole(["admin", "super-admin"]) ? User::all() : collect();
 
         return view('daily-activities.calendar', compact('users'));
     }
@@ -301,13 +304,13 @@ class DailyActivityController extends Controller
 
         // Filter by user
         if ($request->has('user_id') && $request->user_id !== '') {
-            if (Auth::user()->hasRole(['admin', 'super-admin'])) {
+            if ($this->hasAnyRole(["admin", "super-admin"])) {
                 $query->where('user_id', $request->user_id);
             }
         }
 
         // If regular user, only show their activities
-        if (!Auth::user()->hasRole(['admin', 'super-admin'])) {
+        if (!$this->hasAnyRole(["admin", "super-admin"])) {
             $query->where('user_id', Auth::id());
         }
 
@@ -356,12 +359,12 @@ class DailyActivityController extends Controller
                              ->whereDate('activity_date', $date);
 
         // Filter by user for admin
-        if ($request->has('user_id') && $request->user_id !== '' && Auth::user()->hasRole(['admin', 'super-admin'])) {
+        if ($request->has('user_id') && $request->user_id !== '' && $this->hasAnyRole(["admin", "super-admin"])) {
             $query->where('user_id', $request->user_id);
         }
 
         // If regular user, only show their activities
-        if (!Auth::user()->hasRole(['admin', 'super-admin'])) {
+        if (!$this->hasAnyRole(["admin", "super-admin"])) {
             $query->where('user_id', Auth::id());
         }
 

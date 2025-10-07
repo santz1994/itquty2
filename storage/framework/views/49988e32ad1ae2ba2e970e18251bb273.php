@@ -19,6 +19,9 @@
 
         <!-- Main content -->
         <section class="content">
+            <!-- Loading Spinner -->
+            <?php echo $__env->make('partials.loading-spinner', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+            
             <!-- Your Page Content Here -->
             <?php echo $__env->yieldContent('main-content'); ?>
 
@@ -51,6 +54,15 @@
 <?php $__env->startSection('scripts'); ?>
     <?php echo $__env->make('layouts.partials.scripts', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 <?php echo $__env->yieldSection(); ?>
+
+<!-- Toastr Notifications -->
+<?php echo $__env->make('partials.toastr-notifications', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+<!-- Custom Styles -->
+<?php echo $__env->yieldPushContent('styles'); ?>
+
+<!-- Custom Scripts -->
+<?php echo $__env->yieldPushContent('scripts'); ?>
 
 </body>
 </html>

@@ -19,6 +19,9 @@
 
         <!-- Main content -->
         <section class="content">
+            <!-- Loading Spinner -->
+            @include('partials.loading-spinner')
+            
             <!-- Your Page Content Here -->
             @yield('main-content')
 
@@ -51,6 +54,15 @@
 @section('scripts')
     @include('layouts.partials.scripts')
 @show
+
+<!-- Toastr Notifications -->
+@include('partials.toastr-notifications')
+
+<!-- Custom Styles -->
+@stack('styles')
+
+<!-- Custom Scripts -->
+@stack('scripts')
 
 </body>
 </html>

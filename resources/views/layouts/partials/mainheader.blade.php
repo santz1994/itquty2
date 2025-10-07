@@ -4,9 +4,9 @@
     <!-- Logo -->
     <a href="{{ url('/home') }}" class="logo">
         <!-- mini logo for sidebar mini 50x50 pixels -->
-        <span class="logo-mini">IVD Assets</span>
+        <span class="logo-mini">QUTY Assets</span>
         <!-- logo for regular state and mobile devices -->
-        <span class="logo-lg"><b>IVD</b>Assets </span>
+        <span class="logo-lg"><b>QUTY</b>Assets </span>
     </a>
 
     <!-- Header Navbar -->

@@ -120,6 +120,70 @@ class Ticket extends Model
                  ->whereNotIn('ticket_status_id', [3, 4]);
   }
 
+  public function scopeByStatus($query, $statusId)
+  {
+    return $query->where('ticket_status_id', $statusId);
+  }
+
+  public function scopeByPriority($query, $priorityId)
+  {
+    return $query->where('ticket_priority_id', $priorityId);
+  }
+
+  public function scopeByType($query, $typeId)
+  {
+    return $query->where('ticket_type_id', $typeId);
+  }
+
+  public function scopeAssignedTo($query, $userId)
+  {
+    return $query->where('assigned_to', $userId);
+  }
+
+  public function scopeForUser($query, $userId)
+  {
+    return $query->where('user_id', $userId);
+  }
+
+  public function scopeOpen($query)
+  {
+    return $query->whereNotIn('ticket_status_id', [3, 4]); // Not closed/resolved
+  }
+
+  public function scopeClosed($query)
+  {
+    return $query->whereIn('ticket_status_id', [3, 4]); // Closed/resolved
+  }
+
+  public function scopeUrgent($query)
+  {
+    return $query->where('ticket_priority_id', 1); // Assuming 1 = Urgent
+  }
+
+  public function scopeHigh($query)
+  {
+    return $query->where('ticket_priority_id', 2); // Assuming 2 = High
+  }
+
+  public function scopeCreatedBetween($query, $startDate, $endDate)
+  {
+    return $query->whereBetween('created_at', [$startDate, $endDate]);
+  }
+
+  public function scopeResolvedBetween($query, $startDate, $endDate)
+  {
+    return $query->whereBetween('resolved_at', [$startDate, $endDate])
+                 ->whereNotNull('resolved_at');
+  }
+
+  public function scopeWithAllRelations($query)
+  {
+    return $query->with([
+      'user', 'assignedTo', 'location', 'asset', 
+      'ticket_status', 'ticket_priority', 'ticket_type'
+    ]);
+  }
+
   // Accessors
   public function getIsOverdueAttribute()
   {

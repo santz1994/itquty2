@@ -3,6 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Inventory\{
+    ChangeAssetStatusRequest,
+    ApproveAssetRequestRequest,
+    RejectAssetRequestRequest,
+    FulfillAssetRequestRequest
+};
 use App\Asset;
 use App\AssetType;
 use App\Status;
@@ -89,12 +95,8 @@ class InventoryController extends Controller
     /**
      * Change asset status
      */
-    public function changeStatus(Request $request, Asset $asset)
+    public function changeStatus(ChangeAssetStatusRequest $request, Asset $asset)
     {
-        $request->validate([
-            'status' => 'required|string|in:active,maintenance,retired'
-        ]);
-
         // Map status names to status IDs (you might need to adjust these based on your status table)
         $statusMapping = [
             'active' => 1,      // Assuming Active status has ID 1
@@ -153,11 +155,8 @@ class InventoryController extends Controller
     /**
      * Approve asset request
      */
-    public function approveRequest(Request $request, AssetRequest $assetRequest)
+    public function approveRequest(ApproveAssetRequestRequest $request, AssetRequest $assetRequest)
     {
-        $request->validate([
-            'approval_notes' => 'nullable|string|max:500'
-        ]);
 
         $assetRequest->update([
             'status' => 'approved',
@@ -172,11 +171,8 @@ class InventoryController extends Controller
     /**
      * Reject asset request
      */
-    public function rejectRequest(Request $request, AssetRequest $assetRequest)
+    public function rejectRequest(RejectAssetRequestRequest $request, AssetRequest $assetRequest)
     {
-        $request->validate([
-            'approval_notes' => 'required|string|max:500'
-        ]);
 
         $assetRequest->update([
             'status' => 'rejected',
@@ -191,11 +187,8 @@ class InventoryController extends Controller
     /**
      * Fulfill asset request
      */
-    public function fulfillRequest(Request $request, AssetRequest $assetRequest)
+    public function fulfillRequest(FulfillAssetRequestRequest $request, AssetRequest $assetRequest)
     {
-        $request->validate([
-            'asset_id' => 'required|exists:assets,id'
-        ]);
 
         $assetRequest->update([
             'status' => 'fulfilled',

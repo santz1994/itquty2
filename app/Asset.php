@@ -125,6 +125,51 @@ class Asset extends Model
     return $query->where('status_id', 4); // Assuming 4 = Disposed
   }
 
+  public function scopeForDivision($query, $divisionId)
+  {
+    return $query->where('division_id', $divisionId);
+  }
+
+  public function scopeAssigned($query)
+  {
+    return $query->whereNotNull('assigned_to');
+  }
+
+  public function scopeUnassigned($query)
+  {
+    return $query->whereNull('assigned_to');
+  }
+
+  public function scopeAssignedTo($query, $userId)
+  {
+    return $query->where('assigned_to', $userId);
+  }
+
+  public function scopeByAssetTag($query, $assetTag)
+  {
+    return $query->where('asset_tag', 'LIKE', "%{$assetTag}%");
+  }
+
+  public function scopeBySerial($query, $serial)
+  {
+    return $query->where('serial_number', 'LIKE', "%{$serial}%");
+  }
+
+  public function scopeWarrantyExpired($query)
+  {
+    return $query->whereRaw('DATE_ADD(purchase_date, INTERVAL warranty_months MONTH) < NOW()');
+  }
+
+  public function scopeWarrantyExpiring($query, $days = 30)
+  {
+    return $query->whereRaw('DATE_ADD(purchase_date, INTERVAL warranty_months MONTH) BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ? DAY)', [$days]);
+  }
+
+  public function scopeWithRelations($query)
+  {
+    return $query->with(['model', 'division', 'status', 'assignedTo', 'supplier']);
+  }
+
   // Accessors
   public function getTicketHistoryAttribute()
   {

@@ -1,185 +1,288 @@
-# I.V.D. Assets
+# IT Quty - Advanced Asset Management System
 
-I.V.D. Assets is a web application developed with Laravel 5.2, that caters to the needs of I.T. Departments and Help Desks.
+Comprehensive IT Asset Management System built with Laravel Framework featuring modern architecture, role-based access control, and advanced management capabilities.
 
-* Manage all your I.T. assets
-* Ticketing System functionality
-* Different User Roles to safeguard Asset Information
+## 🚀 Features
 
-Work In Progress
+### Core Management
+- **Asset Management**: Complete lifecycle tracking with QR codes, maintenance scheduling, and assignment notifications
+- **User Management**: Role-based access control with Spatie Laravel Permission
+- **Ticket System**: Enhanced support ticket system with priorities, categories, and automated workflows
+- **Reporting & Analytics**: Comprehensive reporting with filters and data visualization
 
-* Slack Integration for notifications of new Tickets and Asset Movements
-* Reports (Currently DataTables can be filtered and exported as .csv, .xslx or copied)
-* More functionality for Tickets (Attachments, Reports)
+### Advanced Capabilities
+- **Service Layer Architecture**: Clean separation of business logic
+- **Repository Pattern**: Optimized data access with caching
+- **View Composers**: Centralized form data management
+- **Local Scopes**: Reusable query patterns for consistent data retrieval
+- **Form Request Validation**: Standardized input validation across the system
+- **Email Notifications**: Automated notifications for assignments and maintenance
 
-## Demo
+## 🛠 Technology Stack
 
-[I.V.D. Assets Demo](https://assets-demo.terryferreira.com)
+- **Framework**: Laravel (with modern architecture patterns)
+- **Database**: MySQL/SQLite
+- **Authentication**: Laravel built-in + Spatie Laravel Permission
+- **Frontend**: Blade templates with Bootstrap/AdminLTE
+- **Queue System**: Laravel Queues for background processing
+- **Email**: Laravel Mail with queue support
 
-The database is reset every 24 hours.
+## 📋 Requirements
 
-### Demo Accounts
+- PHP >= 7.4 (recommended 8.0+)
+- MySQL 5.7+ or SQLite
+- Composer 2.0+
+- Node.js & NPM (for asset compilation)
 
-#### Super Administrator
-Can use all functionality, and create/edit Locations, Divisions, Suppliers, Ticket Statuses, Priorities, Types and more.
+## 🔧 Installation
 
-* User Name: superadmin@terryferreira.com
-* Password: superadmin
-
-#### Administrator
-Can use Assets and Tickets functionality.
-
-* User Name: adminuser@terryferreira.com
-* Password: adminuser
-
-#### End User
-Can only use Tickets functionality.
-
-* User Name: useruser@terryferreira.com
-* Password: useruser
-
-## Install
-
-Clone the repository
-
+### Quick Setup
 ```bash
-git clone https://github.com/TTFerreira/ivd-assets.git
-```
+# Clone repository
+git clone <repository-url>
+cd Quty1
 
-Run composer install
-
-```bash
+# Install PHP dependencies
 composer install
-```
 
-Rename `.env.example` to `.env`
+# Install Node dependencies
+npm install
 
-Follow the 'Configuration' instructions on the [Official Laravel Documentation](https://laravel.com/docs/5.2#configuration) to complete the Laravel installation.
+# Environment setup
+cp .env.example .env
+# Configure database and mail settings in .env
 
-## Configuration
+# Generate application key
+php artisan key:generate
 
-### .env
-
-Open `.env` and complete your host, database and email settings.
-All lines that have nothing next to `=` must be completed.
-[Mailgun](http://www.mailgun.org) works extremely well and it is free.
-If you prefer not to use Mailgun, remove the 2 lines for Mailgun from the `.env` file.
-
-```php
-MAILGUN_DOMAIN=
-MAILGUN_SECRET=
-```
-
-### Slack Integration
-
-You will find 4 lines for Slack in the `.env` file.
-All that you are required to do to get slack to work is to [Create an Incoming Webhook here](https://my.slack.com/services/new/incoming-webhook).
-Simply create a new webhook on your slack account and copy and paste it next to `SLACK_WEBHOOK=` in the `.env` file, without any quotes.
-You're welcome to change the default channel and bot name there as well.
-
-Slack integration is disabled by default. If you want to use Slack, change `SLACK_ENABLED=flase` to `SLACK_ENABLED=true`
-You can also edit the Slack Integration in more detail within `app/config/slack.php`
-
-### Time Zone
-
-Open `config/app.php` and set your time zone.
-
-## Database Migration and Seeds
-
-### Migrate
-
-Run artisan migrate
-
-```bash
+# Database setup
 php artisan migrate
-```
-
-### Database Seeds
-
-We have included several database seeds to create items required for the application to work.
-
-* Asset Types
-* Manufacturers
-* Warranty Types
-* Ticket Types
-* Ticket Statuses
-* Ticket Priorities
-* Roles
-* Default Super Administrator Account
-* Super Administrator Role for the Account
-
-You must run the database seed in order for the application to function.
-
-However, we have also included several extra seeds that you can include if you want some demo content.
-The demo content is also required for the Unit Tests to function.
-
-So before running `db:seed` open the `database/seeds/DatabaseSeeder.php` file.
-Uncomment any extra seeds you would like to include, then run `db:seed`
-
-```bash
 php artisan db:seed
+
+# Install Spatie permissions
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+
+# Compile assets
+npm run dev
+
+# Start development server
+php artisan serve
 ```
 
-## Super Administrator User
+### Production Setup
+```bash
+# Additional production steps
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan optimize
 
-A Super Administrator account is created during the normal `db:seed` and the role of Super Administrator is assigned to the account.
-After logging in to the application, head over to `admin/users/` and edit the user account to match your name, email and password.
-Password must be a minimum of 6 characters long.
-There must also be one (1) Super Administrator user at all times. So you cannot change the role of the only Super Administrator user account.
+# Queue worker (recommended for production)
+php artisan queue:work --daemon
+```
 
-The login details for the account are as follows.
+## 👥 Default Users
 
-* User Name: superadmin@terryferreira.com
-* Password: superadmin
+After seeding, you can login with:
 
-## Tests
+- **Super Admin**: admin@example.com / password
+- **Admin**: manager@example.com / password  
+- **User**: user@example.com / password
 
-Create your test sqlite file.
-Within the `database` folder, create a file named `testing.sqlite`
-If you want to use a different file, make sure to change the `sqlite_testing` section within `config/database.php` to reflect your file.
+## 🏗 Architecture Overview
 
-Run `migrate` on the test Database
+### Service Layer
+```
+app/Services/
+├── UserService.php          # User management business logic
+├── AssetService.php         # Asset operations and notifications
+└── TicketService.php        # Ticket workflow management
+```
+
+### View Composers
+```
+app/Http/ViewComposers/
+├── FormDataComposer.php     # Global form dropdowns
+├── AssetFormComposer.php    # Asset-specific form data
+└── TicketFormComposer.php   # Ticket form data
+```
+
+### Model Scopes
+Enhanced query capabilities in models:
+```php
+// Asset queries
+Asset::inStock()->unassigned()->withRelations()->get();
+Asset::byDivision($divisionId)->needsMaintenance()->get();
+
+// Ticket queries  
+Ticket::overdue()->highPriority()->withRelations()->get();
+Ticket::byStatus('open')->recentlyUpdated()->get();
+```
+
+## 🔐 Role-Based Access Control
+
+### Available Roles
+- **Super Admin**: Full system access
+- **Admin**: Management access excluding user management
+- **Manager**: Department-level access  
+- **User**: Basic access to assigned resources
+
+### Usage Examples
+```php
+// In controllers
+use App\Traits\RoleBasedAccessTrait;
+
+class AssetController extends Controller
+{
+    use RoleBasedAccessTrait;
+    
+    public function destroy($id)
+    {
+        $this->requireRole(['admin', 'super_admin']);
+        // deletion logic
+    }
+}
+
+// In Blade templates
+@hasrole('admin')
+    <button class="btn btn-danger">Delete</button>
+@endhasrole
+```
+
+## 📧 Email Notifications
+
+Automated notifications for:
+- Asset assignments and returns
+- Maintenance reminders
+- Ticket status updates
+- System alerts
+
+Configure mail settings in `.env`:
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_USERNAME=your-email
+MAIL_PASSWORD=your-password
+```
+
+## 🧪 Testing
 
 ```bash
-php artisan migrate --database=sqlite_testing
+# Run all tests
+php artisan test
+
+# Run specific test types
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Generate coverage report
+php artisan test --coverage
 ```
-Edit `database/seeds/DatabaseSeeder.php`
-Uncomment ALL the Seeders
 
-Run `db:seed` on the test Database
+## 🚀 Deployment
 
+### Using Docker
 ```bash
-php artisan db:seed --database=sqlite_testing
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Run migrations in container
+docker-compose exec app php artisan migrate
 ```
 
-### PHPunit
+### Manual Deployment
+1. Upload files to server
+2. Run `composer install --no-dev --optimize-autoloader`
+3. Configure web server (Apache/Nginx)
+4. Set proper file permissions
+5. Configure environment variables
+6. Run migrations and optimizations
 
-Run `phpunit` from the root folder to run all the tests for the application.
+## 📊 Performance Optimization
 
-To run a specific test, first get the name of test file, and the name of the test, from within the `tests` folder.
-Then run the command as follows.
+### Database
+- Eager loading implemented in model scopes
+- Indexed foreign keys and frequently queried columns
+- Query optimization through repository pattern
 
+### Caching
 ```bash
-phpunit tests/folder/filename --filter=testname
+# Clear all caches
+php artisan optimize:clear
+
+# Rebuild caches
+php artisan optimize
 ```
 
-Example
-
+### Queue Processing
+Set up queue workers for better performance:
 ```bash
-phpunit tests/models/StatusTest --filter=testCreateNewStatus
+# Start queue worker
+php artisan queue:work
+
+# Monitor queue status
+php artisan queue:monitor
 ```
 
-There are currently 92 tests, with 526 assertions.
+## 🔧 Development
 
-## Credits/Packages
+### Adding New Features
+1. Follow the Service Layer pattern
+2. Use Form Requests for validation
+3. Implement proper authorization
+4. Add local scopes for reusable queries
+5. Write tests for new functionality
 
-* [Acacha AdminLTE Laravel](https://github.com/acacha/adminlte-laravel)
-* [Select2](https://select2.github.io/)
-* [DataTables](https://datatables.net/)
-* [toastr](http://codeseven.github.io/toastr/)
-* [slack-laravel](https://github.com/maknz/slack-laravel)
+See `DEVELOPMENT_CHECKLIST.md` for detailed guidelines.
 
+### Code Quality
+```bash
+# Format code
+php artisan ide-helper:generate
+php artisan ide-helper:models
 
-## License
+# Static analysis
+vendor/bin/phpstan analyse
+```
 
-Licensed under the [MIT license](http://opensource.org/licenses/MIT).
+## 📚 Documentation
+
+- `IMPLEMENTATION_REPORT.md` - Detailed implementation documentation
+- `DEVELOPMENT_CHECKLIST.md` - Development standards and guidelines
+- `PERFORMANCE_SECURITY_IMPROVEMENTS.md` - Performance and security enhancements
+
+## 🐛 Troubleshooting
+
+### Common Issues
+- **Permission errors**: Run `php artisan permission:cache-reset`
+- **Class not found**: Run `composer dump-autoload`
+- **View errors**: Check ViewComposer registrations
+- **Performance issues**: Enable query logging and check for N+1 queries
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Follow coding standards in `DEVELOPMENT_CHECKLIST.md`
+4. Write tests for new features
+5. Commit changes (`git commit -m 'Add amazing feature'`)
+6. Push to branch (`git push origin feature/amazing-feature`)
+7. Open Pull Request
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 📞 Support
+
+For technical support or questions:
+- Check the troubleshooting guide
+- Review implementation documentation
+- Contact system administrator
+
+---
+
+**Version**: 2.0.0  
+**Last Updated**: December 2024  
+**Maintained By**: IT Development Team

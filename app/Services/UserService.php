@@ -194,6 +194,29 @@ class UserService
     }
 
     /**
+     * Update user with role validation (prevents removing last super admin)
+     */
+    public function updateUserWithRoleValidation(User $user, array $data)
+    {
+        return DB::transaction(function () use ($user, $data) {
+            // Check if changing role would leave no super admins
+            if (isset($data['role_id'])) {
+                $currentUserRole = $user->roles->first();
+                $newRole = Role::findOrFail($data['role_id']);
+                
+                if ($currentUserRole && $currentUserRole->name === 'super-admin' && $newRole->name !== 'super-admin') {
+                    $superAdminCount = User::role('super-admin')->count();
+                    if ($superAdminCount <= 1) {
+                        throw new \Exception('Cannot change role as there must be one (1) or more users with the role of Super Administrator.');
+                    }
+                }
+            }
+            
+            return $this->updateUser($user, $data);
+        });
+    }
+
+    /**
      * Get user dashboard statistics
      */
     public function getUserDashboardStats(User $user)

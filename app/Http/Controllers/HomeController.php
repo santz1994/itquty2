@@ -17,6 +17,7 @@ use App\Division;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests;
 use Illuminate\Http\Request;
+use App\Traits\RoleBasedAccessTrait;
 
 /**
  * Class HomeController
@@ -24,6 +25,7 @@ use Illuminate\Http\Request;
  */
 class HomeController extends Controller
 {
+    use RoleBasedAccessTrait;
     /**
      * Create a new controller instance.
      *
@@ -43,7 +45,7 @@ class HomeController extends Controller
       
       // Get Authenticated User
       $user = Auth::user();
-      if ($user->hasRole('user')) {
+      if ($this->hasRole('user')) {
         return redirect()->route('tickets.index');
       } else {
         // Use eager loading for better performance

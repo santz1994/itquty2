@@ -6,6 +6,8 @@ use App\Asset;
 use App\AssetRequest;
 use App\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Exception;
@@ -292,5 +294,70 @@ class AssetService
         }
 
         return $assets->with(['model', 'status', 'assignedTo', 'division'])->get();
+    }
+    
+    /**
+     * Send asset assignment notification
+     */
+    public function sendAssignmentNotification(Asset $asset, User $user)
+    {
+        try {
+            // Use Mail facade or event/listener pattern
+            Mail::send('emails.asset-assignment', [
+                'asset' => $asset,
+                'user' => $user
+            ], function ($m) use ($user, $asset) {
+                $m->to($user->email, $user->name)
+                  ->subject('Asset Assigned: ' . $asset->model->name);
+            });
+            
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send asset assignment email: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Send maintenance reminder notification
+     */
+    public function sendMaintenanceReminder(Asset $asset)
+    {
+        try {
+            if (!$asset->assignedTo) {
+                return false;
+            }
+            
+            Mail::send('emails.asset-maintenance', [
+                'asset' => $asset
+            ], function ($m) use ($asset) {
+                $m->to($asset->assignedTo->email, $asset->assignedTo->name)
+                  ->subject('Maintenance Reminder: ' . $asset->model->name);
+            });
+            
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send maintenance reminder email: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Bulk operations for assets
+     */
+    public function bulkUpdateAssets(array $assetIds, array $updateData)
+    {
+        return Asset::whereIn('id', $assetIds)->update($updateData);
+    }
+    
+    /**
+     * Get assets that need maintenance
+     */
+    public function getAssetsNeedingMaintenance()
+    {
+        return Asset::where('next_maintenance_date', '<=', now())
+                   ->where('status_id', '!=', 4) // Not disposed
+                   ->with(['model', 'assignedTo', 'status'])
+                   ->get();
     }
 }
