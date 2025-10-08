@@ -34,6 +34,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\PreventBackHistory::class,
+            \App\Http\Middleware\SessionTimeoutMiddleware::class,
         ],
 
         'api' => [
@@ -65,5 +66,6 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'ability' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
+        'session.timeout' => \App\Http\Middleware\SessionTimeoutMiddleware::class,
     ];
 }

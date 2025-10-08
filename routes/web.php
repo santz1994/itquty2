@@ -84,6 +84,21 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
     return redirect('/login');
 })->name('logout');
 
+// Password Reset Routes
+Route::get('/password/reset', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
+
+// Session Extension Route for AJAX requests
+Route::post('/extend-session', function (\Illuminate\Http\Request $request) {
+    if ($request->ajax() && Auth::check()) {
+        $request->session()->put('last_activity', time());
+        return response()->json(['status' => 'success', 'message' => 'Session extended']);
+    }
+    return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 401);
+})->middleware('auth')->name('extend-session');
+
 // QR Code Routes (Public access for mobile scanning)
 Route::get('/assets/qr/{qrCode}', [\App\Http\Controllers\QRCodeController::class, 'showAssetByQR'])->name('assets.qr');
 
