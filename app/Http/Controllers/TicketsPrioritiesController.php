@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\TicketsPriority;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\TicketsPriorities\StoreTicketsPriorityRequest;
 use App\Http\Requests\TicketsPriorities\UpdateTicketsPriorityRequest;
 use Illuminate\Http\Request;

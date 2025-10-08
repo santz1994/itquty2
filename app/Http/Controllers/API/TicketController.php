@@ -208,7 +208,7 @@ class TicketController extends Controller
      */
     public function destroy(Ticket $ticket)
     {
-        if (!auth()->user()->can('delete-tickets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to delete tickets'
@@ -475,7 +475,7 @@ class TicketController extends Controller
     {
         $user = auth()->user();
         
-        return $user->can('edit-tickets') || 
+        return $useruser_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $ticket->user_id == $user->id || 
                $ticket->assigned_to == $user->id;
     }
@@ -490,7 +490,7 @@ class TicketController extends Controller
     {
         $user = auth()->user();
         
-        return $user->can('assign-tickets') || 
+        return $useruser_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $ticket->assigned_to == $user->id;
     }
 }

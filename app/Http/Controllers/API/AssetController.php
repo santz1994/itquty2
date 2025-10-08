@@ -49,6 +49,7 @@ class AssetController extends Controller
 
         // Pagination
         $perPage = $request->get('per_page', 15);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $assets */
         $assets = $query->paginate($perPage);
 
         // Transform data
@@ -104,7 +105,7 @@ class AssetController extends Controller
      */
     public function store(Request $request)
     {
-        if (!auth()->user()->can('create-assets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to create assets'
@@ -144,7 +145,7 @@ class AssetController extends Controller
         // Auto-assign if assigned_to is provided
         if ($request->assigned_to) {
             $user = User::find($request->assigned_to);
-            $asset->assignTo($user, 'api');
+            $asset->assignTo($user);
         }
 
         return response()->json([
@@ -180,7 +181,7 @@ class AssetController extends Controller
      */
     public function update(Request $request, Asset $asset)
     {
-        if (!auth()->user()->can('edit-assets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to update assets'
@@ -232,7 +233,7 @@ class AssetController extends Controller
      */
     public function destroy(Asset $asset)
     {
-        if (!auth()->user()->can('delete-assets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to delete assets'
@@ -256,7 +257,7 @@ class AssetController extends Controller
      */
     public function assign(Request $request, Asset $asset)
     {
-        if (!auth()->user()->can('assign-assets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to assign assets'
@@ -277,7 +278,7 @@ class AssetController extends Controller
         }
 
         $user = User::find($request->user_id);
-        $result = $asset->assignTo($user, 'api', $request->notes);
+        $result = $asset->assignTo($user);
 
         return response()->json([
             'success' => true,
@@ -295,7 +296,7 @@ class AssetController extends Controller
      */
     public function unassign(Request $request, Asset $asset)
     {
-        if (!auth()->user()->can('assign-assets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to unassign assets'
@@ -314,7 +315,7 @@ class AssetController extends Controller
             ], 422);
         }
 
-        $result = $asset->unassign('api', $request->notes);
+        $result = $asset->unassign();
 
         return response()->json([
             'success' => true,
@@ -332,7 +333,7 @@ class AssetController extends Controller
      */
     public function markForMaintenance(Request $request, Asset $asset)
     {
-        if (!auth()->user()->can('edit-assets')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to update assets'

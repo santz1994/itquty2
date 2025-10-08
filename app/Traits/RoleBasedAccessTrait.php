@@ -13,7 +13,7 @@ trait RoleBasedAccessTrait
     protected function hasAnyRole(array $roles): bool
     {
         $user = Auth::user();
-        return $user && $user->hasAnyRole($roles);
+        return $user && user_has_any_role($user, $roles);
     }
 
     /**
@@ -22,7 +22,7 @@ trait RoleBasedAccessTrait
     protected function hasRole(string $role): bool
     {
         $user = Auth::user();
-        return $user && $user->hasRole($role);
+        return $user && user_has_role($user, $role);
     }
 
     /**

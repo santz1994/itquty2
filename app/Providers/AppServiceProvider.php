@@ -16,6 +16,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register view composers
         $this->registerViewComposers();
+        
+        // Register observers for cache invalidation
+        \App\Location::observe(\App\Observers\LocationObserver::class);
+        \App\Status::observe(\App\Observers\StatusObserver::class);
     }
     
     /**

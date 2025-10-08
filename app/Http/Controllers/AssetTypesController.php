@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\AssetType;
-use Session;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Requests\AssetTypes\StoreAssetTypeRequest;
 use App\Http\Requests\AssetTypes\UpdateAssetTypeRequest;

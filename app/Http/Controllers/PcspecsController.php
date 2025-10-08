@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Pcspec;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Pcspecs\StorePcspecRequest;
 use Illuminate\Http\Request;
 

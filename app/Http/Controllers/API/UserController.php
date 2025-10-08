@@ -21,7 +21,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        if (!auth()->user()->can('view-users')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view users'
@@ -77,7 +77,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        if (!auth()->user()->can('view-users') && auth()->user()->id !== $user->id) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management']) && auth()->user()->id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view this user'
@@ -102,7 +102,7 @@ class UserController extends Controller
      */
     public function getPerformance(User $user, Request $request)
     {
-        if (!auth()->user()->can('view-users') && auth()->user()->id !== $user->id) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management']) && auth()->user()->id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view performance data'
@@ -127,7 +127,7 @@ class UserController extends Controller
      */
     public function getWorkload(User $user)
     {
-        if (!auth()->user()->can('view-users') && auth()->user()->id !== $user->id) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management']) && auth()->user()->id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view workload data'
@@ -152,7 +152,7 @@ class UserController extends Controller
      */
     public function getActivities(User $user, Request $request)
     {
-        if (!auth()->user()->can('view-users') && auth()->user()->id !== $user->id) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management']) && auth()->user()->id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view activity data'
@@ -236,7 +236,7 @@ class UserController extends Controller
      */
     public function getKpiData()
     {
-        if (!auth()->user()->can('view-kpi-dashboard')) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view KPI data'

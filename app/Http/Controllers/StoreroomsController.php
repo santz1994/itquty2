@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Location;
-use Session;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Requests\Storerooms\UpdateStoreroomRequest;
 use App\Http\Requests;

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Budget;
 use App\Division;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Budgets\StoreBudgetRequest;
 use Illuminate\Http\Request;
 

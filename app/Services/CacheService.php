@@ -138,4 +138,72 @@ class CacheService
                    ->select('statuses.name', DB::raw('count(*) as total'))
                    ->pluck('total', 'name');
     }
+
+    /**
+     * Get cached locations
+     */
+    public static function getLocations()
+    {
+        return Cache::remember('locations_all', self::CACHE_TTL, function () {
+            return \App\Location::orderBy('name')->get();
+        });
+    }
+
+    /**
+     * Get cached statuses
+     */
+    public static function getStatuses()
+    {
+        return Cache::remember('statuses_all', self::CACHE_TTL, function () {
+            return \App\Status::orderBy('name')->get();
+        });
+    }
+
+    /**
+     * Get cached ticket statuses
+     */
+    public static function getTicketStatuses()
+    {
+        return Cache::remember('ticket_statuses_all', self::CACHE_TTL, function () {
+            return \App\TicketsStatus::orderBy('name')->get();
+        });
+    }
+
+    /**
+     * Get cached ticket types
+     */
+    public static function getTicketTypes()
+    {
+        return Cache::remember('ticket_types_all', self::CACHE_TTL, function () {
+            return \App\TicketsType::orderBy('name')->get();
+        });
+    }
+
+    /**
+     * Get cached ticket priorities
+     */
+    public static function getTicketPriorities()
+    {
+        return Cache::remember('ticket_priorities_all', self::CACHE_TTL, function () {
+            return \App\TicketsPriority::orderBy('sort')->get();
+        });
+    }
+
+    /**
+     * Clear all static data cache
+     */
+    public static function clearStaticDataCache()
+    {
+        $keys = [
+            'locations_all',
+            'statuses_all',
+            'ticket_statuses_all',
+            'ticket_types_all',
+            'ticket_priorities_all'
+        ];
+
+        foreach ($keys as $key) {
+            Cache::forget($key);
+        }
+    }
 }

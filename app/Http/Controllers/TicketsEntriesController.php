@@ -7,7 +7,7 @@ use App\Ticket;
 use App\TicketsEntry;
 use App\User;
 use Auth;
-use Session;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Requests\Tickets\StoreNoteForTicketRequest;
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Division;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Divisions\StoreDivisionRequest;
 use App\Http\Requests\Divisions\UpdateDivisionRequest;
 use Illuminate\Http\Request;

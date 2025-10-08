@@ -10,7 +10,7 @@ use App\TicketsType;
 use App\Location;
 use App\User;
 use App\Ticket;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\TicketsCannedFields\StoreTicketsCannedFieldRequest;
 use Illuminate\Http\Request;
 

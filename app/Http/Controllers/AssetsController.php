@@ -289,7 +289,7 @@ class AssetsController extends Controller
      */
     public function export()
     {
-        if (!auth()->user()->can('export-assets')) {
+        if (!$this->hasAnyRole(['admin', 'super-admin', 'management'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -301,7 +301,7 @@ class AssetsController extends Controller
      */
     public function importForm()
     {
-        if (!auth()->user()->can('import-assets')) {
+        if (!$this->hasAnyRole(['admin', 'super-admin', 'management'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -313,7 +313,7 @@ class AssetsController extends Controller
      */
     public function import(Request $request)
     {
-        if (!auth()->user()->can('import-assets')) {
+        if (!$this->hasAnyRole(['admin', 'super-admin'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -348,7 +348,7 @@ class AssetsController extends Controller
      */
     public function downloadTemplate()
     {
-        if (!auth()->user()->can('import-assets')) {
+        if (!$this->hasAnyRole(['admin', 'super-admin'])) {
             abort(403, 'Unauthorized action.');
         }
 

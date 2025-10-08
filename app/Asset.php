@@ -111,6 +111,14 @@ class Asset extends Model
     return $this->hasMany(AssetRequest::class, 'fulfilled_asset_id');
   }
 
+  /**
+   * Relasi ke Asset Maintenance Logs
+   */
+  public function maintenanceLogs()
+  {
+    return $this->hasMany(AssetMaintenanceLog::class)->orderBy('scheduled_at', 'desc');
+  }
+
   // Scopes
   public function scopeInUse($query)
   {

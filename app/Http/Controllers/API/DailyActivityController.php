@@ -105,7 +105,7 @@ class DailyActivityController extends Controller
 
         // Check if user can create activity for another user
         if ($activityData['user_id'] != auth()->user()->id && 
-            !auth()->user()->can('manage-daily-activities')) {
+            !user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to create activities for other users'
@@ -269,7 +269,7 @@ class DailyActivityController extends Controller
     public function getUserActivities(User $user, Request $request)
     {
         // Check permissions
-        if (!auth()->user()->can('view-daily-activities') && auth()->user()->id !== $user->id) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management']) && auth()->user()->id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view activities for this user'
@@ -318,7 +318,7 @@ class DailyActivityController extends Controller
     public function getUserSummary(User $user, Request $request)
     {
         // Check permissions
-        if (!auth()->user()->can('view-daily-activities') && auth()->user()->id !== $user->id) {
+        if (!user_has_any_role(auth()->user(), ['admin', 'super-admin', 'management']) && auth()->user()->id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to view activity summary for this user'
@@ -384,7 +384,7 @@ class DailyActivityController extends Controller
     {
         $user = auth()->user();
         
-        return $user->can('view-daily-activities') || 
+        return user_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $activity->user_id == $user->id;
     }
 
@@ -398,7 +398,7 @@ class DailyActivityController extends Controller
     {
         $user = auth()->user();
         
-        return $user->can('manage-daily-activities') || 
+        return user_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $activity->user_id == $user->id;
     }
 }

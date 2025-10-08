@@ -162,8 +162,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/assets/{asset}/print', [\App\Http\Controllers\AssetsController::class, 'print'])->name('assets.print');
         
         // New Export/Print Routes for Tickets
-        Route::get('/tickets/export', [\App\Http\Controllers\TicketsController::class, 'export'])->name('tickets.export');
-        Route::get('/tickets/{ticket}/print', [\App\Http\Controllers\TicketsController::class, 'print'])->name('tickets.print');
+        Route::get('/tickets/export', [\App\Http\Controllers\TicketController::class, 'export'])->name('tickets.export');
+        Route::get('/tickets/{ticket}/print', [\App\Http\Controllers\TicketController::class, 'print'])->name('tickets.print');
         
         // KPI Dashboard Routes
         Route::get('/kpi-dashboard', [\App\Http\Controllers\KPIDashboardController::class, 'index'])->name('kpi.dashboard');
@@ -185,7 +185,19 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Assets CRUD Routes
         Route::resource('assets', \App\Http\Controllers\AssetsController::class)->except(['index']);
 
-        // Asset Maintenance
+        // Asset Maintenance Logs
+        Route::resource('maintenance', \App\Http\Controllers\AssetMaintenanceLogController::class)->names([
+            'index' => 'maintenance.index',
+            'create' => 'maintenance.create',
+            'store' => 'maintenance.store',
+            'show' => 'maintenance.show',
+            'edit' => 'maintenance.edit',
+            'update' => 'maintenance.update',
+            'destroy' => 'maintenance.destroy'
+        ]);
+        Route::get('/maintenance/asset/{asset}', [\App\Http\Controllers\AssetMaintenanceLogController::class, 'getByAsset'])->name('maintenance.by-asset');
+        
+        // Asset Maintenance (Legacy)
         Route::get('/asset-maintenance', [\App\Http\Controllers\AssetMaintenanceController::class, 'index'])->name('asset-maintenance.index');
         Route::get('/asset-maintenance/analytics', [\App\Http\Controllers\AssetMaintenanceController::class, 'analytics'])->name('asset-maintenance.analytics');
         Route::get('/asset-maintenance/{asset}', [\App\Http\Controllers\AssetMaintenanceController::class, 'show'])->name('asset-maintenance.show');
@@ -930,7 +942,7 @@ Route::middleware(['auth', 'role:management|admin|super-admin'])->prefix('report
     
     // Ticket Reports
     Route::get('/tickets', [\App\Http\Controllers\ManagementDashboardController::class, 'ticketReports'])->name('reports.tickets');
-    Route::get('/tickets/export', [\App\Http\Controllers\TicketsController::class, 'export'])->name('reports.tickets.export');
+    Route::get('/tickets/export', [\App\Http\Controllers\TicketController::class, 'export'])->name('reports.tickets.export');
     
     // Performance Reports
     Route::get('/performance', [\App\Http\Controllers\ManagementDashboardController::class, 'adminPerformance'])->name('reports.performance');

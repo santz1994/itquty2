@@ -7,6 +7,7 @@ use App\Http\Requests\Tickets\AssignTicketRequest;
 use App\Http\Requests\Tickets\CompleteTicketRequest;
 use App\Http\Requests\CreateTicketRequest;
 use App\Services\TicketService;
+use App\Services\CacheService;
 use App\Ticket;
 use App\Asset;
 use App\User;
@@ -69,9 +70,9 @@ class TicketController extends BaseController
 
         $tickets = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        // Get filter options - ViewComposer handles most dropdown data
-        $statuses = TicketsStatus::orderBy('status')->get();
-        $priorities = TicketsPriority::orderBy('priority')->get();
+        // Get filter options using cache
+        $statuses = CacheService::getTicketStatuses();
+        $priorities = CacheService::getTicketPriorities();
         $admins = User::admins()->orderBy('name')->get();
         $pageTitle = 'Ticket Management';
 
@@ -83,12 +84,12 @@ class TicketController extends BaseController
      */
     public function create()
     {
-        // Get dropdown data with correct variable names expected by the view
+        // Get dropdown data with correct variable names expected by the view using cache
         $users = User::select('id', 'name')->orderBy('name')->get();
-        $locations = Location::select('id', 'location_name')->orderBy('location_name')->get();
-        $ticketsStatuses = TicketsStatus::select('id', 'status')->orderBy('status')->get();
-        $ticketsTypes = TicketsType::select('id', 'type')->orderBy('type')->get();
-        $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
+        $locations = CacheService::getLocations();
+        $ticketsStatuses = CacheService::getTicketStatuses();
+        $ticketsTypes = CacheService::getTicketTypes();
+        $ticketsPriorities = CacheService::getTicketPriorities();
         $assets = Asset::where('assigned_to', auth()->id())->get(); // Only user's assets
         $pageTitle = 'Create New Ticket';
         // Provide canned fields so the view can render the right-hand column
@@ -234,5 +235,24 @@ class TicketController extends BaseController
         return view('tickets.overdue', compact('tickets'));
     }
 
+    /**
+     * Export tickets to Excel
+     */
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\TicketsExport, 'tickets_' . now()->format('Y-m-d_H-i-s') . '.xlsx');
+    }
 
+    /**
+     * Print ticket details to PDF
+     */
+    public function print($id)
+    {
+        $ticket = Ticket::with(['user', 'assignedTo', 'location', 'asset', 'ticket_status', 'ticket_priority', 'ticket_type', 'ticket_entries'])
+                       ->findOrFail($id);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('tickets.print', compact('ticket'));
+        
+        return $pdf->stream('ticket_' . $ticket->ticket_code . '.pdf');
+    }
 }

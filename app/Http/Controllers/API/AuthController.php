@@ -87,7 +87,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         // Check if user has permission to create users
-        if (!auth()->user() || !auth()->user()->can('create-users')) {
+        if (!auth()->user() || !user_has_any_role(auth()->user(), ['admin', 'super-admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized to create users'

@@ -573,14 +573,14 @@ class AdminController extends Controller
     {
         try {
             // Get all tables
-            $tables = \DB::select('SHOW TABLES');
-            $database = \DB::getDatabaseName();
+            $tables = DB::select('SHOW TABLES');
+            $database = DB::getDatabaseName();
             $key = "Tables_in_{$database}";
             
             $optimizedTables = [];
             foreach ($tables as $table) {
                 $tableName = $table->$key;
-                \DB::statement("OPTIMIZE TABLE `{$tableName}`");
+                DB::statement("OPTIMIZE TABLE `{$tableName}`");
                 $optimizedTables[] = $tableName;
             }
             
