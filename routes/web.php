@@ -4,6 +4,32 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+// Small runtime-safe helpers to wrap Spatie role methods so static analysers
+// (intelephense, PHPStan in the editor) don't report undefined method errors
+if (!function_exists('user_has_role')) {
+    function user_has_role($user, $role)
+    {
+        return is_object($user) && method_exists($user, 'hasRole') ? $user->hasRole($role) : false;
+    }
+}
+
+if (!function_exists('user_has_any_role')) {
+    function user_has_any_role($user, $roles)
+    {
+        return is_object($user) && method_exists($user, 'hasAnyRole') ? $user->hasAnyRole($roles) : false;
+    }
+}
+
+if (!function_exists('user_get_role_names')) {
+    function user_get_role_names($user)
+    {
+        if (is_object($user) && method_exists($user, 'getRoleNames')) {
+            return $user->getRoleNames();
+        }
+        return collect();
+    }
+}
+
 // Bridge for legacy apps: if the old app/Http/routes.php exists, load it
 // so older route definitions (from Laravel 5.x era) are picked up.
 $legacy = base_path('app/Http/routes.php');
@@ -17,8 +43,9 @@ if (file_exists($legacy)) {
     Route::get('/', function () {
         if (Auth::check()) {
             // Redirect users based on their role
+            /** @var \App\User|null $user */
             $user = Auth::user();
-            if ($user->hasRole('user')) {
+            if (user_has_role($user, 'user')) {
                 return redirect('/tickets');
             }
             return redirect('/home');
@@ -249,8 +276,8 @@ Route::get('/debug-auth', function() {
            '<p><strong>User:</strong> ' . $user->name . '</p>' .
            '<p><strong>Email:</strong> ' . $user->email . '</p>' .
            '<p><strong>Roles:</strong> ' . implode(', ', $roles) . '</p>' .
-           '<p><strong>Has admin role:</strong> ' . ($user->hasRole('admin') ? 'YES' : 'NO') . '</p>' .
-           '<p><strong>Has super-admin role:</strong> ' . ($user->hasRole('super-admin') ? 'YES' : 'NO') . '</p>';
+           '<p><strong>Has admin role:</strong> ' . (user_has_role($user, 'admin') ? 'YES' : 'NO') . '</p>' .
+           '<p><strong>Has super-admin role:</strong> ' . (user_has_role($user, 'super-admin') ? 'YES' : 'NO') . '</p>';
 });
 
 // Simple assets test route
@@ -316,11 +343,12 @@ Route::prefix('test')->group(function () {
         $output .= "<p><strong>ID:</strong> " . $user->id . "</p>";
         
         // Check roles using different methods
-        $output .= "<h3>Role Check Methods:</h3>";
-        $output .= "<p><strong>hasRole('super-admin'):</strong> " . ($user->hasRole('super-admin') ? 'YES' : 'NO') . "</p>";
-        $output .= "<p><strong>hasRole('admin'):</strong> " . ($user->hasRole('admin') ? 'YES' : 'NO') . "</p>";
-        $output .= "<p><strong>hasRole('user'):</strong> " . ($user->hasRole('user') ? 'YES' : 'NO') . "</p>";
-        $output .= "<p><strong>hasRole('management'):</strong> " . ($user->hasRole('management') ? 'YES' : 'NO') . "</p>";
+    $output .= "<h3>Role Check Methods:</h3>";
+    /** @var \App\User|null $user */
+    $output .= "<p><strong>hasRole('super-admin'):</strong> " . (user_has_role($user, 'super-admin') ? 'YES' : 'NO') . "</p>";
+    $output .= "<p><strong>hasRole('admin'):</strong> " . (user_has_role($user, 'admin') ? 'YES' : 'NO') . "</p>";
+    $output .= "<p><strong>hasRole('user'):</strong> " . (user_has_role($user, 'user') ? 'YES' : 'NO') . "</p>";
+    $output .= "<p><strong>hasRole('management'):</strong> " . (user_has_role($user, 'management') ? 'YES' : 'NO') . "</p>";
         
         // Get all roles from database
         $roles = \Illuminate\Support\Facades\DB::table('model_has_roles')
@@ -341,17 +369,19 @@ Route::prefix('test')->group(function () {
 // Test routes for role middleware verification
 Route::group(['middleware' => ['web', 'auth']], function () {
     Route::get('/test-role', function() {
-        $user = Auth::user();
+    /** @var \App\User|null $user */
+    $user = Auth::user();
         echo "<h1>User Role Test</h1>";
         echo "Logged in as: " . $user->name . "<br>";
         echo "Email: " . $user->email . "<br>";
         echo "<hr>";
         
-        echo "<h2>Role Check</h2>";
-        echo "Has super-admin role: " . ($user->hasRole('super-admin') ? 'YES' : 'NO') . "<br>";
-        echo "Has admin role: " . ($user->hasRole('admin') ? 'YES' : 'NO') . "<br>";
-        echo "Has management role: " . ($user->hasRole('management') ? 'YES' : 'NO') . "<br>";
-        echo "Has user role: " . ($user->hasRole('user') ? 'YES' : 'NO') . "<br>";
+    echo "<h2>Role Check</h2>";
+    /** @var \App\User|null $user */
+    echo "Has super-admin role: " . (user_has_role($user, 'super-admin') ? 'YES' : 'NO') . "<br>";
+    echo "Has admin role: " . (user_has_role($user, 'admin') ? 'YES' : 'NO') . "<br>";
+    echo "Has management role: " . (user_has_role($user, 'management') ? 'YES' : 'NO') . "<br>";
+    echo "Has user role: " . (user_has_role($user, 'user') ? 'YES' : 'NO') . "<br>";
         
         echo "<h2>Database Role Assignments</h2>";
         $spatieRoles = DB::table('model_has_roles')
@@ -446,9 +476,12 @@ Route::get('/debug-roles', function () {
     // Test HasRole method
     $html .= '<h2>Role Checks:</h2>';
     $html .= '<ul>';
-    $html .= '<li>Has role "super-admin": ' . ($user->hasRole('super-admin') ? '✅ YES' : '❌ NO') . '</li>';
-    $html .= '<li>Has role "admin": ' . ($user->hasRole('admin') ? '✅ YES' : '❌ NO') . '</li>';
-    $html .= '<li>Has any role ["super-admin", "admin"]: ' . ($user->hasAnyRole(['super-admin', 'admin']) ? '✅ YES' : '❌ NO') . '</li>';
+    /** @var \App\User|null $user */
+    $html .= '<li>Has role "super-admin": ' . (user_has_role($user, 'super-admin') ? '✅ YES' : '❌ NO') . '</li>';
+    /** @var \App\User|null $user */
+    $html .= '<li>Has role "admin": ' . (user_has_role($user, 'admin') ? '✅ YES' : '❌ NO') . '</li>';
+    /** @var \App\User|null $user */
+    $html .= '<li>Has any role ["super-admin", "admin"]: ' . (user_has_any_role($user, ['super-admin', 'admin']) ? '✅ YES' : '❌ NO') . '</li>';
     $html .= '</ul>';
     
     $html .= '<h2>Expected Result:</h2>';
@@ -522,16 +555,21 @@ Route::get('/test-has-role', function() {
             $html .= '<p>hasRole method exists: ' . (method_exists($user, 'hasRole') ? '✅ YES' : '❌ NO') . '</p>';
             
             if (method_exists($user, 'hasRole')) {
-                $html .= '<p>Has super-admin role: ' . ($user->hasRole('super-admin') ? '✅ YES' : '❌ NO') . '</p>';
-                $html .= '<p>Has admin role: ' . ($user->hasRole('admin') ? '✅ YES' : '❌ NO') . '</p>';
-                $html .= '<p>Has user role: ' . ($user->hasRole('user') ? '✅ YES' : '❌ NO') . '</p>';
+                $hasSuperAdmin = user_has_role($user, 'super-admin');
+                $hasAdmin = user_has_role($user, 'admin');
+                $hasUser = user_has_role($user, 'user');
+
+                $html .= '<p>Has super-admin role: ' . ($hasSuperAdmin ? '✅ YES' : '❌ NO') . '</p>';
+                $html .= '<p>Has admin role: ' . ($hasAdmin ? '✅ YES' : '❌ NO') . '</p>';
+                $html .= '<p>Has user role: ' . ($hasUser ? '✅ YES' : '❌ NO') . '</p>';
             }
             
             // Test getRoleNames if available
             if (method_exists($user, 'getRoleNames')) {
-                $roles = $user->getRoleNames();
-                $html .= '<p>All roles: ' . $roles->implode(', ') . '</p>';
-            }
+                    /** @var \App\User|null $user */
+                    $roles = user_get_role_names($user);
+                        $html .= '<p>All roles: ' . $roles->implode(', ') . '</p>';
+                }
         } else {
             $html .= '<p>❌ User not found</p>';
         }
@@ -571,14 +609,19 @@ Route::get('/debug-current-user', function() {
         
         // Check roles if available
         if (method_exists($user, 'getRoleNames')) {
-            $roles = $user->getRoleNames();
+            $roles = user_get_role_names($user);
             $html .= '<p><strong>Roles:</strong> ' . ($roles->count() > 0 ? $roles->implode(', ') : 'None') . '</p>';
         }
-        
+
         if (method_exists($user, 'hasRole')) {
-            $html .= '<p><strong>Has super-admin role:</strong> ' . ($user->hasRole('super-admin') ? '✅ YES' : '❌ NO') . '</p>';
-            $html .= '<p><strong>Has admin role:</strong> ' . ($user->hasRole('admin') ? '✅ YES' : '❌ NO') . '</p>';
-            $html .= '<p><strong>Has management role:</strong> ' . ($user->hasRole('management') ? '✅ YES' : '❌ NO') . '</p>';
+            /** @var \App\User|null $user */
+            $hasSuperAdmin = user_has_role($user, 'super-admin');
+            $hasAdmin = user_has_role($user, 'admin');
+            $hasManagement = user_has_role($user, 'management');
+
+            $html .= '<p><strong>Has super-admin role:</strong> ' . ($hasSuperAdmin ? '✅ YES' : '❌ NO') . '</p>';
+            $html .= '<p><strong>Has admin role:</strong> ' . ($hasAdmin ? '✅ YES' : '❌ NO') . '</p>';
+            $html .= '<p><strong>Has management role:</strong> ' . ($hasManagement ? '✅ YES' : '❌ NO') . '</p>';
         }
         
         $html .= '</div>';
