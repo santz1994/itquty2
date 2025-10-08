@@ -202,7 +202,7 @@ class Notification extends Model
         $assignedUser = $asset->assignedTo;
         
         // If asset has assigned user, notify them, otherwise notify first admin
-        $userId = $assignedUser ? $assignedUser->id : User::role(['Admin', 'Super Admin'])->first()?->id;
+        $userId = $assignedUser ? $assignedUser->id : User::role(['admin', 'super-admin'])->first()?->id;
         
         if (!$userId) return null;
         
@@ -268,7 +268,7 @@ class Notification extends Model
     public static function createSystemAlert(string $title, string $message, array $userIds = null, string $priority = 'normal'): array
     {
         if (!$userIds) {
-            $userIds = User::role(['Admin', 'Super Admin'])->pluck('id');
+            $userIds = User::role(['admin', 'super-admin'])->pluck('id');
         }
 
         $notifications = [];

@@ -23,7 +23,7 @@ class KPIDashboardController extends Controller
     public function index()
     {
         // Check permission
-        if (!auth()->user()->hasRole(['Management', 'Super Admin', 'Admin'])) {
+        if (!auth()->user()->hasRole(['management', 'super-admin', 'admin'])) {
             abort(403, 'Unauthorized access to KPI Dashboard');
         }
 
@@ -62,7 +62,7 @@ class KPIDashboardController extends Controller
     private function getOpenTickets()
     {
         return Ticket::whereHas('ticket_status', function($query) {
-            $query->whereNotIn('name', ['Closed', 'Resolved']);
+            $query->whereNotIn('status', ['Closed', 'Resolved']);
         })->count();
     }
 
@@ -72,7 +72,7 @@ class KPIDashboardController extends Controller
     private function getClosedTickets()
     {
         return Ticket::whereHas('ticket_status', function($query) {
-            $query->whereIn('name', ['Closed', 'Resolved']);
+            $query->whereIn('status', ['Closed', 'Resolved']);
         })->count();
     }
 
@@ -83,7 +83,7 @@ class KPIDashboardController extends Controller
     {
         return Ticket::where('sla_due', '<', now())
                     ->whereHas('ticket_status', function($query) {
-                        $query->whereNotIn('name', ['Closed', 'Resolved']);
+                        $query->whereNotIn('status', ['Closed', 'Resolved']);
                     })->count();
     }
 
@@ -113,10 +113,10 @@ class KPIDashboardController extends Controller
     private function getTicketsByPriority()
     {
         return Ticket::join('tickets_priorities', 'tickets.ticket_priority_id', '=', 'tickets_priorities.id')
-                    ->groupBy('tickets_priorities.name')
-                    ->select('tickets_priorities.name', DB::raw('count(*) as total'))
+                    ->groupBy('tickets_priorities.priority')
+                    ->select('tickets_priorities.priority', DB::raw('count(*) as total'))
                     ->get()
-                    ->pluck('total', 'name');
+                    ->pluck('total', 'priority');
     }
 
     /**
@@ -125,10 +125,10 @@ class KPIDashboardController extends Controller
     private function getTicketsByType()
     {
         return Ticket::join('tickets_types', 'tickets.ticket_type_id', '=', 'tickets_types.id')
-                    ->groupBy('tickets_types.name')
-                    ->select('tickets_types.name', DB::raw('count(*) as total'))
+                    ->groupBy('tickets_types.type')
+                    ->select('tickets_types.type', DB::raw('count(*) as total'))
                     ->get()
-                    ->pluck('total', 'name');
+                    ->pluck('total', 'type');
     }
 
     /**
@@ -137,10 +137,10 @@ class KPIDashboardController extends Controller
     private function getTicketsByStatus()
     {
         return Ticket::join('tickets_statuses', 'tickets.ticket_status_id', '=', 'tickets_statuses.id')
-                    ->groupBy('tickets_statuses.name')
-                    ->select('tickets_statuses.name', DB::raw('count(*) as total'))
+                    ->groupBy('tickets_statuses.status')
+                    ->select('tickets_statuses.status', DB::raw('count(*) as total'))
                     ->get()
-                    ->pluck('total', 'name');
+                    ->pluck('total', 'status');
     }
 
     /**

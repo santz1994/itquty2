@@ -184,10 +184,10 @@ class User extends Authenticatable
       get: function () {
         $role = $this->primary_role;
         $colors = [
-          'Super Admin' => 'danger',
-          'Admin' => 'warning', 
-          'Management' => 'info',
-          'User' => 'success',
+          'super-admin' => 'danger',
+          'admin' => 'warning', 
+          'management' => 'info',
+          'user' => 'success',
         ];
         return $colors[$role] ?? 'secondary';
       }
@@ -223,7 +223,7 @@ class User extends Authenticatable
    */
   public function canManageUsers(): bool
   {
-    return $this->hasAnyRole(['Super Admin', 'Admin']);
+    return $this->hasAnyRole(['super-admin', 'admin']);
   }
 
   /**
@@ -231,7 +231,7 @@ class User extends Authenticatable
    */
   public function canViewManagementDashboard(): bool
   {
-    return $this->hasAnyRole(['Super Admin', 'Admin', 'Management']);
+    return $this->hasAnyRole(['super-admin', 'admin', 'management']);
   }
 
   /**
@@ -239,7 +239,7 @@ class User extends Authenticatable
    */
   public function canManageAssets(): bool
   {
-    return $this->hasAnyRole(['Super Admin', 'Admin']);
+    return $this->hasAnyRole(['super-admin', 'admin']);
   }
 
   /**
@@ -352,7 +352,7 @@ class User extends Authenticatable
       'active' => self::active()->count(),
       'inactive' => self::inactive()->count(),
       'online' => self::where('last_login_at', '>', now()->subMinutes(5))->count(),
-      'admins' => self::whereHas('roles', fn($q) => $q->whereIn('name', ['Super Admin', 'Admin']))->count(),
+      'admins' => self::whereHas('roles', fn($q) => $q->whereIn('name', ['super-admin', 'admin']))->count(),
       'never_logged_in' => self::whereNull('last_login_at')->count(),
     ];
   }

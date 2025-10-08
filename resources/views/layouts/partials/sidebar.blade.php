@@ -66,7 +66,7 @@
       </li>
       @endcan
       
-      <!-- 📊 KPI Dashboard (Management, Admin, Super Admin only) -->
+      <!-- 📊 KPI Dashboard (management, admin, super-admin only) -->
       @can('view-kpi-dashboard')
       <li>
         <a href="{{ route('kpi.dashboard') }}">
@@ -76,13 +76,13 @@
       </li>
       @endcan
       
-      <!-- 📋 Reports (Management, Admin, Super Admin) -->
+      <!-- 📋 Reports (management, admin, super-admin) -->
       @can('view-reports')
       <li class="treeview">
         <a href="#"><i class='fa fa-bar-chart'></i> <span>Reports</span> <i class="fa fa-angle-left pull-right"></i></a>
         <ul class="treeview-menu">
           <li><a href="{{ route('kpi.dashboard') }}">KPI Dashboard</a></li>
-          @hasrole('Management|Admin|Super Admin')
+          @hasrole('management|admin|super-admin')
           <li><a href="{{ url('/management/dashboard')}}">Management Dashboard</a></li>
           <li><a href="{{ url('/management/admin-performance')}}">Admin Performance</a></li>
           @endhasrole
@@ -129,7 +129,7 @@
               </li>
             @endcan
             
-            <!-- 📥📤 Import/Export (Admin & Super Admin) -->
+            <!-- 📥📤 Import/Export (admin & super-admin) -->
             @can('export-data')
             <li class="treeview">
               <a href="#"><i class='fa fa-exchange'></i> <span>Import/Export</span> <i class="fa fa-angle-left pull-right"></i></a>
@@ -145,10 +145,50 @@
             </li>
             @endcan
             
-            <!-- ⚙️ Admin (SuperAdmin=3 only) -->
-            @hasrole('Super Admin')
-              <li><a href="{{ url('/admin')}}"><i class='fa fa-gear'></i> <span>Admin</span></a></li>
-            @endhasrole
+            <!-- 👥 User Management (admin & super-admin) -->
+            @can('view-users')
+            <li class="treeview">
+                <a href="#"><i class='fa fa-users'></i> <span>User Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="{{ url('/users')}}">All Users</a></li>
+                    @can('create-users')
+                    <li><a href="{{ url('/users/create')}}">Add User</a></li>
+                    @endcan
+                    @can('view-users')
+                    <li><a href="{{ url('/users/roles')}}">User Roles</a></li>
+                    @endcan
+                </ul>
+            </li>
+            @endcan
+            
+            <!-- ⚙️ System Settings (super-admin only) -->
+            @can('view-system-settings')
+            <li class="treeview">
+                <a href="#"><i class='fa fa-cogs'></i> <span>System Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="{{ url('/system/settings')}}">General Settings</a></li>
+                    @can('edit-system-settings')
+                    <li><a href="{{ url('/system/permissions')}}">Permissions</a></li>
+                    <li><a href="{{ url('/system/roles')}}">Roles Management</a></li>
+                    <li><a href="{{ url('/system/maintenance')}}">System Maintenance</a></li>
+                    @endcan
+                    <li><a href="{{ url('/system/logs')}}">System Logs</a></li>
+                </ul>
+            </li>
+            @endcan
+            
+            <!-- 🔧 Admin Tools (super-admin only) -->
+            @role('super-admin')
+            <li class="treeview">
+                <a href="#"><i class='fa fa-wrench'></i> <span>Admin Tools</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="{{ url('/admin/dashboard')}}">Admin Dashboard</a></li>
+                    <li><a href="{{ url('/admin/database')}}">Database Management</a></li>
+                    <li><a href="{{ url('/admin/cache')}}">Cache Management</a></li>
+                    <li><a href="{{ url('/admin/backup')}}">Backup & Restore</a></li>
+                </ul>
+            </li>
+            @endrole
         </ul><!-- /.sidebar-menu -->
     </section>
     <!-- /.sidebar -->

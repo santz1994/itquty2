@@ -20,9 +20,9 @@ class TicketsStatusesController extends Controller
   public function index()
   {
     $user = auth()->user();
-  if (!$user || !($user->role === 'super-admin' || $user->role === 'admin')) {
-    abort(403);
-  }
+    if (!$user || !$user->hasRole(['super-admin', 'admin'])) {
+      abort(403);
+    }
     $pageTitle = 'Ticket Statuses';
     $ticketsStatuses = TicketsStatus::all();
     return view('admin.ticket-statuses.index', compact('pageTitle', 'ticketsStatuses'));
@@ -31,7 +31,7 @@ class TicketsStatusesController extends Controller
   public function store(StoreTicketsStatusRequest $request)
   {
     $user = auth()->user();
-    if (!$user || !($user->role === 'super-admin' || $user->role === 'admin')) {
+    if (!$user || !$user->hasRole(['super-admin', 'admin'])) {
       abort(403);
     }
   TicketsStatus::create($request->all());
@@ -50,7 +50,7 @@ class TicketsStatusesController extends Controller
   public function edit(TicketsStatus $ticketsStatus)
   {
     $user = auth()->user();
-    if (!$user || !($user->role === 'super-admin' || $user->role === 'admin')) {
+    if (!$user || !$user->hasRole(['super-admin', 'admin'])) {
       abort(403);
     }
     $pageTitle = 'Edit Ticket Status - ' . $ticketsStatus->status;
@@ -61,7 +61,7 @@ class TicketsStatusesController extends Controller
   public function update(UpdateTicketsStatusRequest $request, TicketsStatus $ticketsStatus)
   {
     $user = auth()->user();
-    if (!$user || !($user->role === 'super-admin' || $user->role === 'admin')) {
+    if (!$user || !$user->hasRole(['super-admin', 'admin'])) {
       abort(403);
     }
   $ticketsStatus->update($request->all());

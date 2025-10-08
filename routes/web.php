@@ -834,3 +834,54 @@ Route::get('/force-relogin', function() {
     return redirect('/login')->with('message', '<strong>Session cleared!</strong> Please login again to refresh your roles.');
 });
 
+// System Management Routes (Super Admin only)
+Route::middleware(['role:super-admin'])->prefix('system')->group(function () {
+    Route::get('/settings', [\App\Http\Controllers\SystemController::class, 'settings'])->name('system.settings');
+    Route::get('/permissions', [\App\Http\Controllers\SystemController::class, 'permissions'])->name('system.permissions');
+    Route::get('/roles', [\App\Http\Controllers\SystemController::class, 'roles'])->name('system.roles');
+    Route::get('/maintenance', [\App\Http\Controllers\SystemController::class, 'maintenance'])->name('system.maintenance');
+    Route::get('/logs', [\App\Http\Controllers\SystemController::class, 'logs'])->name('system.logs');
+    
+    // AJAX endpoints for system management
+    Route::post('/cache/clear', [\App\Http\Controllers\SystemController::class, 'clearCache'])->name('system.cache.clear');
+    Route::post('/permissions/assign', [\App\Http\Controllers\SystemController::class, 'assignPermission'])->name('system.permissions.assign');
+    Route::post('/permissions/remove', [\App\Http\Controllers\SystemController::class, 'removePermission'])->name('system.permissions.remove');
+    Route::post('/permissions/create', [\App\Http\Controllers\SystemController::class, 'createPermission'])->name('system.permissions.create');
+    Route::post('/logs/clear', [\App\Http\Controllers\SystemController::class, 'clearLogs'])->name('system.logs.clear');
+    Route::get('/logs/download', [\App\Http\Controllers\SystemController::class, 'downloadLogs'])->name('system.logs.download');
+});
+
+// Admin Tools Routes (Super Admin only)
+Route::middleware(['role:super-admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/database', [\App\Http\Controllers\AdminController::class, 'database'])->name('admin.database');
+    Route::post('/database/action', [\App\Http\Controllers\AdminController::class, 'databaseAction'])->name('admin.database.action');
+    Route::post('/database/danger', [\App\Http\Controllers\AdminController::class, 'databaseDanger'])->name('admin.database.danger');
+    Route::get('/cache', [\App\Http\Controllers\AdminController::class, 'cache'])->name('admin.cache');
+    Route::post('/cache/clear', [\App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.cache.clear');
+    Route::post('/cache/optimize', [\App\Http\Controllers\AdminController::class, 'optimizeCache'])->name('admin.cache.optimize');
+    Route::get('/backup', [\App\Http\Controllers\AdminController::class, 'backup'])->name('admin.backup');
+    Route::post('/backup/create', [\App\Http\Controllers\AdminController::class, 'createBackup'])->name('admin.backup.create');
+    Route::post('/backup/settings', [\App\Http\Controllers\AdminController::class, 'backupSettings'])->name('admin.backup.settings');
+    Route::post('/backup/cleanup', [\App\Http\Controllers\AdminController::class, 'cleanupBackups'])->name('admin.backup.cleanup');
+    Route::get('/backup/{backup}/download', [\App\Http\Controllers\AdminController::class, 'downloadBackup'])->name('admin.backup.download');
+    Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restoreBackup'])->name('admin.backup.restore');
+    Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'deleteBackup'])->name('admin.backup.delete');
+    Route::post('/backup/upload', [\App\Http\Controllers\AdminController::class, 'uploadBackup'])->name('admin.backup.upload');
+});
+
+// Users Management Routes (Admin and Super Admin)
+Route::middleware(['role:admin|super-admin'])->prefix('users')->group(function () {
+    Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+    Route::get('/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
+    Route::post('/', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+    Route::get('/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
+    Route::get('/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
+    Route::put('/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
+    Route::delete('/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/roles', function() {
+        $roles = \Spatie\Permission\Models\Role::with('users')->get();
+        return view('users.roles', compact('roles'));
+    })->name('users.roles');
+});
+

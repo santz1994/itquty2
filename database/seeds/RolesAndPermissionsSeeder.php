@@ -71,11 +71,11 @@ class RolesAndPermissionsSeeder extends Seeder
         // Create roles and assign permissions
         
         // Super Admin Role
-        $superAdmin = Role::firstOrCreate(['name' => 'Super Admin']);
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
         $superAdmin->syncPermissions(Permission::all());
 
         // Admin Role
-        $admin = Role::firstOrCreate(['name' => 'Admin']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->syncPermissions([
             'view-assets', 'create-assets', 'edit-assets', 'export-assets', 'import-assets',
             'view-tickets', 'create-tickets', 'edit-tickets', 'assign-tickets', 'export-tickets',
@@ -87,7 +87,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Management Role
-        $management = Role::firstOrCreate(['name' => 'Management']);
+        $management = Role::firstOrCreate(['name' => 'management']);
         $management->syncPermissions([
             'view-assets', 'export-assets',
             'view-tickets', 'export-tickets',
@@ -98,7 +98,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // User Role
-        $user = Role::firstOrCreate(['name' => 'User']);
+        $user = Role::firstOrCreate(['name' => 'user']);
         $user->syncPermissions([
             'view-assets',
             'view-tickets', 'create-tickets', 'edit-tickets',

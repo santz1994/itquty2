@@ -66,7 +66,7 @@
       </li>
       <?php endif; ?>
       
-      <!-- 📊 KPI Dashboard (Management, Admin, Super Admin only) -->
+      <!-- 📊 KPI Dashboard (management, admin, super-admin only) -->
       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-kpi-dashboard')): ?>
       <li>
         <a href="<?php echo e(route('kpi.dashboard')); ?>">
@@ -76,13 +76,13 @@
       </li>
       <?php endif; ?>
       
-      <!-- 📋 Reports (Management, Admin, Super Admin) -->
+      <!-- 📋 Reports (management, admin, super-admin) -->
       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-reports')): ?>
       <li class="treeview">
         <a href="#"><i class='fa fa-bar-chart'></i> <span>Reports</span> <i class="fa fa-angle-left pull-right"></i></a>
         <ul class="treeview-menu">
           <li><a href="<?php echo e(route('kpi.dashboard')); ?>">KPI Dashboard</a></li>
-          <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', 'Management|Admin|Super Admin')): ?>
+          <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', 'management|admin|super-admin')): ?>
           <li><a href="<?php echo e(url('/management/dashboard')); ?>">Management Dashboard</a></li>
           <li><a href="<?php echo e(url('/management/admin-performance')); ?>">Admin Performance</a></li>
           <?php endif; ?>
@@ -129,7 +129,7 @@
               </li>
             <?php endif; ?>
             
-            <!-- 📥📤 Import/Export (Admin & Super Admin) -->
+            <!-- 📥📤 Import/Export (admin & super-admin) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-data')): ?>
             <li class="treeview">
               <a href="#"><i class='fa fa-exchange'></i> <span>Import/Export</span> <i class="fa fa-angle-left pull-right"></i></a>
@@ -145,9 +145,49 @@
             </li>
             <?php endif; ?>
             
-            <!-- ⚙️ Admin (SuperAdmin=3 only) -->
-            <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', 'Super Admin')): ?>
-              <li><a href="<?php echo e(url('/admin')); ?>"><i class='fa fa-gear'></i> <span>Admin</span></a></li>
+            <!-- 👥 User Management (admin & super-admin) -->
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-users')): ?>
+            <li class="treeview">
+                <a href="#"><i class='fa fa-users'></i> <span>User Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="<?php echo e(url('/users')); ?>">All Users</a></li>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create-users')): ?>
+                    <li><a href="<?php echo e(url('/users/create')); ?>">Add User</a></li>
+                    <?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-users')): ?>
+                    <li><a href="<?php echo e(url('/users/roles')); ?>">User Roles</a></li>
+                    <?php endif; ?>
+                </ul>
+            </li>
+            <?php endif; ?>
+            
+            <!-- ⚙️ System Settings (super-admin only) -->
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-system-settings')): ?>
+            <li class="treeview">
+                <a href="#"><i class='fa fa-cogs'></i> <span>System Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="<?php echo e(url('/system/settings')); ?>">General Settings</a></li>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('edit-system-settings')): ?>
+                    <li><a href="<?php echo e(url('/system/permissions')); ?>">Permissions</a></li>
+                    <li><a href="<?php echo e(url('/system/roles')); ?>">Roles Management</a></li>
+                    <li><a href="<?php echo e(url('/system/maintenance')); ?>">System Maintenance</a></li>
+                    <?php endif; ?>
+                    <li><a href="<?php echo e(url('/system/logs')); ?>">System Logs</a></li>
+                </ul>
+            </li>
+            <?php endif; ?>
+            
+            <!-- 🔧 Admin Tools (super-admin only) -->
+            <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', 'super-admin')): ?>
+            <li class="treeview">
+                <a href="#"><i class='fa fa-wrench'></i> <span>Admin Tools</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="<?php echo e(url('/admin/dashboard')); ?>">Admin Dashboard</a></li>
+                    <li><a href="<?php echo e(url('/admin/database')); ?>">Database Management</a></li>
+                    <li><a href="<?php echo e(url('/admin/cache')); ?>">Cache Management</a></li>
+                    <li><a href="<?php echo e(url('/admin/backup')); ?>">Backup & Restore</a></li>
+                </ul>
+            </li>
             <?php endif; ?>
         </ul><!-- /.sidebar-menu -->
     </section>

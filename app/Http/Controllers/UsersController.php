@@ -175,7 +175,7 @@ class UsersController extends Controller
   $user->save();
     }
 
-    // If only one user is a Super Admin, don't allow the Super Admin to change role
+    // If only one user is a super-admin, don't allow the super-admin to change role
     $usersRole = DB::table('model_has_roles')
                           ->where('model_id', $user->id)
                           ->where('model_type', User::class)
@@ -185,7 +185,7 @@ class UsersController extends Controller
                                 ->where('role_id', $superAdminRole->id)
                                 ->count();
 
-    // Check if the user being edited is the last Super Admin
+    // Check if the user being edited is the last super-admin
     if ($usersRole && $superAdminRole && $usersRole->role_id == $superAdminRole->id && $usersRole->role_id != $request->role_id) {
       if ($superAdminCount == 1) {
         // Use query-param fallback so tests will reliably see the message

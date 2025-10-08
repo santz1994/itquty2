@@ -173,7 +173,7 @@ class NotificationService
      */
     public function sendDailyDigest(): int
     {
-        $adminUsers = User::role(['Admin', 'Super Admin'])->get();
+        $adminUsers = User::role(['admin', 'super-admin'])->get();
         $count = 0;
 
         foreach ($adminUsers as $admin) {

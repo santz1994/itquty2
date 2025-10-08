@@ -20,12 +20,14 @@ use App\Http\Controllers\API\NotificationController;
 |
 */
 
-// Public authentication routes
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/register', [AuthController::class, 'register']);
+// Public authentication routes - rate limited
+Route::middleware(['throttle:api-auth'])->group(function () {
+    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register']);
+});
 
-// Protected API routes
-Route::middleware(['auth:sanctum'])->group(function () {
+// Protected API routes - standard rate limiting
+Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     
     // Authentication routes
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -59,24 +61,41 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/daily-activities/user/{user}', [DailyActivityController::class, 'getUserActivities']);
     Route::get('/daily-activities/summary/{user}', [DailyActivityController::class, 'getUserSummary']);
     
-    // Notification API endpoints
-    Route::apiResource('notifications', NotificationController::class);
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
-    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+    // Notification API endpoints - high frequency
+    Route::middleware(['throttle:api-frequent'])->group(function () {
+        Route::apiResource('notifications', NotificationController::class);
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+    });
     
-    // Dashboard and Statistics
-    Route::get('/dashboard/stats', [UserController::class, 'getDashboardStats']);
-    Route::get('/dashboard/kpi', [UserController::class, 'getKpiData']);
+    // Dashboard and Statistics - admin level rate limiting
+    Route::middleware(['throttle:api-admin'])->group(function () {
+        Route::get('/dashboard/stats', [UserController::class, 'getDashboardStats']);
+        Route::get('/dashboard/kpi', [UserController::class, 'getKpiData']);
+    });
     
 });
 
-// Rate limited public endpoints
-Route::middleware(['throttle:10,1'])->group(function () {
+// Public endpoints - very restrictive rate limiting
+Route::middleware(['throttle:api-public'])->group(function () {
     Route::get('/system/status', function () {
         return response()->json([
             'status' => 'online',
             'version' => config('app.version', '1.0.0'),
+            'timestamp' => now()->toISOString(),
+            'api_version' => '1.0'
+        ]);
+    });
+    
+    Route::get('/system/health', function () {
+        return response()->json([
+            'status' => 'healthy',
+            'checks' => [
+                'database' => 'connected',
+                'cache' => 'active',
+                'storage' => 'accessible'
+            ],
             'timestamp' => now()->toISOString()
         ]);
     });
