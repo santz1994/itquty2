@@ -26,6 +26,7 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        //
+        // Register model observers
+        \App\Ticket::observe(\App\Observers\TicketObserver::class);
     }
 }

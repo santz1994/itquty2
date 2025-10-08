@@ -148,6 +148,21 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/assets/{asset}/movements', [\App\Http\Controllers\AssetsController::class, 'movements'])->name('assets.movements');
         Route::post('/assets/{asset}/assign', [\App\Http\Controllers\AssetsController::class, 'assign'])->name('assets.assign');
         Route::post('/assets/{asset}/unassign', [\App\Http\Controllers\AssetsController::class, 'unassign'])->name('assets.unassign');
+        
+        // New Export/Import/Print Routes for Assets
+        Route::get('/assets/export', [\App\Http\Controllers\AssetsController::class, 'export'])->name('assets.export');
+        Route::get('/assets/import-form', [\App\Http\Controllers\AssetsController::class, 'importForm'])->name('assets.import-form');
+        Route::post('/assets/import', [\App\Http\Controllers\AssetsController::class, 'import'])->name('assets.import');
+        Route::get('/assets/download-template', [\App\Http\Controllers\AssetsController::class, 'downloadTemplate'])->name('assets.download-template');
+        Route::get('/assets/{asset}/print', [\App\Http\Controllers\AssetsController::class, 'print'])->name('assets.print');
+        
+        // New Export/Print Routes for Tickets
+        Route::get('/tickets/export', [\App\Http\Controllers\TicketsController::class, 'export'])->name('tickets.export');
+        Route::get('/tickets/{ticket}/print', [\App\Http\Controllers\TicketsController::class, 'print'])->name('tickets.print');
+        
+        // KPI Dashboard Routes
+        Route::get('/kpi-dashboard', [\App\Http\Controllers\KPIDashboardController::class, 'index'])->name('kpi.dashboard');
+        Route::get('/kpi-data', [\App\Http\Controllers\KPIDashboardController::class, 'getKPIData'])->name('kpi.data');
         Route::post('/assets/bulk-qr-codes', [\App\Http\Controllers\QRCodeController::class, 'bulkGenerateQRCodes'])->name('assets.bulk-qr-codes');
         Route::post('/assets/{asset}/change-status', [\App\Http\Controllers\InventoryController::class, 'changeStatus'])->name('assets.change-status');
         Route::get('/assets', [\App\Http\Controllers\AssetsController::class, 'index'])->name('assets.index');

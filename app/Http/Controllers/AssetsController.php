@@ -283,4 +283,119 @@ class AssetsController extends Controller
 
         return view('assets.scan-result', compact('asset'));
     }
+
+    /**
+     * Export assets to Excel
+     */
+    public function export()
+    {
+        if (!auth()->user()->can('export-assets')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AssetsExport, 'assets_' . now()->format('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    /**
+     * Show import form
+     */
+    public function importForm()
+    {
+        if (!auth()->user()->can('import-assets')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('assets.import');
+    }
+
+    /**
+     * Import assets from Excel
+     */
+    public function import(Request $request)
+    {
+        if (!auth()->user()->can('import-assets')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\AssetsImport, $request->file('file'));
+            
+            return redirect()->route('assets.index')
+                           ->with('success', 'Assets imported successfully!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['file' => 'Error importing file: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Print asset details to PDF
+     */
+    public function print($id)
+    {
+        $asset = Asset::withRelations()->findOrFail($id);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('assets.print', compact('asset'));
+        
+        return $pdf->stream('asset_' . $asset->asset_tag . '.pdf');
+    }
+
+    /**
+     * Download template for import
+     */
+    public function downloadTemplate()
+    {
+        if (!auth()->user()->can('import-assets')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $headers = [
+            'Asset Tag',
+            'Serial Number', 
+            'Model',
+            'Division',
+            'Supplier',
+            'Purchase Date',
+            'Warranty Months',
+            'IP Address',
+            'MAC Address',
+            'Status',
+            'Assigned To',
+            'Notes'
+        ];
+
+        $callback = function() use ($headers) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            
+            // Add sample data
+            fputcsv($file, [
+                'ASSET001',
+                'SN123456',
+                'Dell OptiPlex 7090',
+                'IT Department',
+                'Dell Inc',
+                '2024-01-15',
+                '36',
+                '192.168.1.100',
+                '00:11:22:33:44:55',
+                'Active',
+                'John Doe',
+                'Sample asset note'
+            ]);
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=assets_template.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ]);
+    }
 }

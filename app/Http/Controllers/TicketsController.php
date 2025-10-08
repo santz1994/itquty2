@@ -119,4 +119,25 @@ class TicketsController extends Controller
 
     return redirect()->route('tickets.show', $ticket->id);
   }
+
+  /**
+   * Export tickets to Excel
+   */
+  public function export()
+  {
+    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\TicketsExport, 'tickets_' . now()->format('Y-m-d_H-i-s') . '.xlsx');
+  }
+
+  /**
+   * Print ticket details to PDF
+   */
+  public function print($id)
+  {
+    $ticket = Ticket::with(['user', 'assignedTo', 'location', 'asset', 'ticket_status', 'ticket_priority', 'ticket_type', 'ticket_entries'])
+                   ->findOrFail($id);
+    
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('tickets.print', compact('ticket'));
+    
+    return $pdf->stream('ticket_' . $ticket->ticket_code . '.pdf');
+  }
 }
