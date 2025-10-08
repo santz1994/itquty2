@@ -25,8 +25,7 @@ class PcspecsController extends Controller
 
   public function store(StorePcspecRequest $request)
   {
-    Pcspec::create($request->all());
-    $pcspec = Pcspec::get()->last();
+    $pcspec = Pcspec::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $pcspec->cpu . ', ' . $pcspec->ram . ', ' . $pcspec->hdd);
@@ -43,7 +42,7 @@ class PcspecsController extends Controller
 
   public function update(StorePcspecRequest $request, Pcspec $pcspec)
   {
-    $pcspec->update($request->all());
+    $pcspec->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $pcspec->cpu . ', ' . $pcspec->ram . ', ' . $pcspec->hdd);

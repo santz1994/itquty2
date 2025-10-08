@@ -54,17 +54,7 @@ if (file_exists($legacy)) {
     });
 }
 
-// Always register admin index routes for priorities, statuses, and types
-Route::middleware(['web'])->group(function () {
-    Route::get('/admin/ticket-priorities', \App\Http\Controllers\TicketsPrioritiesController::class . '@index')->name('admin.ticket-priorities.index');
-    Route::get('/admin/ticket-statuses', \App\Http\Controllers\TicketsStatusesController::class . '@index')->name('admin.ticket-statuses.index');
-    Route::get('/admin/ticket-types', \App\Http\Controllers\TicketsTypesController::class . '@index')->name('admin.ticket-types.index');
-    Route::get('/admin/assets-statuses', \App\Http\Controllers\StatusesController::class . '@index')->name('admin.assets-statuses.index');
-    
-    // Admin Assets and Tickets Routes
-    Route::get('/admin/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('admin.assets.index');
-    Route::get('/admin/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('admin.tickets.show');
-});
+// REMOVED DUPLICATE ADMIN ROUTES - Consolidated below in proper middleware groups
 
 // Authentication Routes (Laravel 10 compatible)
 Route::get('/login', function () {
@@ -834,8 +824,8 @@ Route::get('/force-relogin', function() {
     return redirect('/login')->with('message', '<strong>Session cleared!</strong> Please login again to refresh your roles.');
 });
 
-// System Management Routes (Super Admin only)
-Route::middleware(['role:super-admin'])->prefix('system')->group(function () {
+// System Management Routes (Super Admin only)  
+Route::middleware(['auth', 'role:super-admin'])->prefix('system')->group(function () {
     Route::get('/settings', [\App\Http\Controllers\SystemController::class, 'settings'])->name('system.settings');
     Route::get('/permissions', [\App\Http\Controllers\SystemController::class, 'permissions'])->name('system.permissions');
     Route::get('/roles', [\App\Http\Controllers\SystemController::class, 'roles'])->name('system.roles');
@@ -852,36 +842,199 @@ Route::middleware(['role:super-admin'])->prefix('system')->group(function () {
 });
 
 // Admin Tools Routes (Super Admin only)
-Route::middleware(['role:super-admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:super-admin'])->prefix('admin')->group(function () {
+    // Main admin config page
+    Route::get('/', [\App\Http\Controllers\PagesController::class, 'getTicketConfig'])->name('admin.config');
+    
+    // Admin Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+    
+    // Database Management
     Route::get('/database', [\App\Http\Controllers\AdminController::class, 'database'])->name('admin.database');
     Route::post('/database/action', [\App\Http\Controllers\AdminController::class, 'databaseAction'])->name('admin.database.action');
     Route::post('/database/danger', [\App\Http\Controllers\AdminController::class, 'databaseDanger'])->name('admin.database.danger');
+    
+    // Cache Management
     Route::get('/cache', [\App\Http\Controllers\AdminController::class, 'cache'])->name('admin.cache');
     Route::post('/cache/clear', [\App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.cache.clear');
-    Route::post('/cache/optimize', [\App\Http\Controllers\AdminController::class, 'optimizeCache'])->name('admin.cache.optimize');
+    Route::post('/cache/optimize', [\App\Http\Controllers\AdminController::class, 'optimize'])->name('admin.cache.optimize');
+    
+    // Backup Management
     Route::get('/backup', [\App\Http\Controllers\AdminController::class, 'backup'])->name('admin.backup');
-    Route::post('/backup/create', [\App\Http\Controllers\AdminController::class, 'createBackup'])->name('admin.backup.create');
-    Route::post('/backup/settings', [\App\Http\Controllers\AdminController::class, 'backupSettings'])->name('admin.backup.settings');
-    Route::post('/backup/cleanup', [\App\Http\Controllers\AdminController::class, 'cleanupBackups'])->name('admin.backup.cleanup');
-    Route::get('/backup/{backup}/download', [\App\Http\Controllers\AdminController::class, 'downloadBackup'])->name('admin.backup.download');
-    Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restoreBackup'])->name('admin.backup.restore');
-    Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'deleteBackup'])->name('admin.backup.delete');
-    Route::post('/backup/upload', [\App\Http\Controllers\AdminController::class, 'uploadBackup'])->name('admin.backup.upload');
+    Route::post('/backup/create', [\App\Http\Controllers\AdminController::class, 'create'])->name('admin.backup.create');
+    Route::post('/backup/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('admin.backup.settings');
+    Route::post('/backup/cleanup', [\App\Http\Controllers\AdminController::class, 'cleanup'])->name('admin.backup.cleanup');
+    Route::get('/backup/{backup}/download', [\App\Http\Controllers\AdminController::class, 'download'])->name('admin.backup.download');
+    Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restore'])->name('admin.backup.restore');
+    Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'delete'])->name('admin.backup.delete');
+    Route::post('/backup/upload', [\App\Http\Controllers\AdminController::class, 'upload'])->name('admin.backup.upload');
+    
+    // Admin Tools - Ticket & Asset Management
+    Route::get('/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('admin.assets.index');
+    Route::get('/assets-statuses', [\App\Http\Controllers\StatusesController::class, 'index'])->name('admin.assets-statuses.index');
+    Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('admin.tickets.show');
+    Route::get('/ticket-priorities', [\App\Http\Controllers\TicketsPrioritiesController::class, 'index'])->name('admin.ticket-priorities.index');
+    Route::get('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'index'])->name('admin.ticket-statuses.index');
+    Route::get('/ticket-types', [\App\Http\Controllers\TicketsTypesController::class, 'index'])->name('admin.ticket-types.index');
+    
 });
 
-// Users Management Routes (Admin and Super Admin)
-Route::middleware(['role:admin|super-admin'])->prefix('users')->group(function () {
-    Route::get('/', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
-    Route::get('/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
-    Route::post('/', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
-    Route::get('/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
-    Route::get('/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
-    Route::put('/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
-    Route::delete('/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
+// Admin User Management Routes (Admin and Super Admin with admin prefix)
+Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin/users')->group(function () {
+    Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('admin.users.index');
+    Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('admin.users.create');
+    Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('admin.users.store');
+    Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('admin.users.show');
+    Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('admin.users.update');
+    Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('admin.users.destroy');
+});
+
+// User Management Routes (Admin and Super Admin)
+Route::middleware(['auth', 'role:admin|super-admin'])->prefix('users')->group(function () {
+    Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('users.index');
+    Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('users.create');
+    Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('users.store');
+    Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('users.show');
+    Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('users.edit');
+    Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('users.update');
+    Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('users.destroy');
+    
+    // Role Management
     Route::get('/roles', function() {
         $roles = \Spatie\Permission\Models\Role::with('users')->get();
         return view('users.roles', compact('roles'));
     })->name('users.roles');
+});
+
+// Reports Routes (Management, Admin, Super Admin)
+Route::middleware(['auth', 'role:management|admin|super-admin'])->prefix('reports')->group(function () {
+    // Asset Reports
+    Route::get('/assets', [\App\Http\Controllers\ManagementDashboardController::class, 'assetReports'])->name('reports.assets');
+    Route::get('/assets/export', [\App\Http\Controllers\AssetsController::class, 'export'])->name('reports.assets.export');
+    
+    // Ticket Reports
+    Route::get('/tickets', [\App\Http\Controllers\ManagementDashboardController::class, 'ticketReports'])->name('reports.tickets');
+    Route::get('/tickets/export', [\App\Http\Controllers\TicketsController::class, 'export'])->name('reports.tickets.export');
+    
+    // Performance Reports
+    Route::get('/performance', [\App\Http\Controllers\ManagementDashboardController::class, 'adminPerformance'])->name('reports.performance');
+    
+    // Daily Activity Reports
+    Route::get('/daily-activities', [\App\Http\Controllers\DailyActivityController::class, 'export'])->name('reports.daily-activities');
+    
+    // KPI Reports
+    Route::get('/kpi', [\App\Http\Controllers\KPIDashboardController::class, 'getKPIData'])->name('reports.kpi');
+});
+
+// DEBUG SIMPLE TEST ROUTE FOR BLANK PAGE ISSUE
+Route::get('/debug-blank-page', function() {
+    try {
+        return '<h1>✅ DEBUG ROUTE WORKS</h1>' .
+               '<p>Laravel is running properly</p>' .
+               '<p>Current time: ' . now() . '</p>' .
+               '<p><a href="/login">Go to Login</a></p>' .
+               '<p><a href="/dashboard">Go to Dashboard</a></p>' .
+               '<p><strong>If this shows but dashboard is blank, the issue is in the controller or view</strong></p>';
+    } catch (Exception $e) {
+        return '<h1>❌ ERROR</h1><p>' . $e->getMessage() . '</p>';
+    }
+});
+
+// DEBUG VIEW WITH LAYOUT TEST
+Route::get('/debug-view-test', function() {
+    try {
+        return view('debug-view-test');
+    } catch (Exception $e) {
+        return '<h1>❌ VIEW ERROR</h1><p>' . $e->getMessage() . '</p><pre>' . $e->getTraceAsString() . '</pre>';
+    }
+});
+
+// DEBUG CONTENT WITHOUT LAYOUT
+Route::get('/debug-content-only', function() {
+    return '<html><body><h1>CONTENT ONLY TEST</h1><p>This bypasses all layouts</p></body></html>';
+});
+
+// DEBUG HOME CONTROLLER STEP BY STEP
+Route::get('/debug-home-controller', function() {
+    try {
+        // Step 1: Login as admin
+        Auth::loginUsingId(1);
+        
+        $html = '<h1>🔍 Home Controller Debug</h1>';
+        $html .= '<h3>Step 1: Authentication</h3>';
+        $html .= '<p>✅ Logged in as: ' . Auth::user()->name . '</p>';
+        
+        // Step 2: Check role
+        $user = Auth::user();
+        $hasRole = user_has_role($user, 'admin') || user_has_role($user, 'super-admin');
+        $html .= '<h3>Step 2: Role Check</h3>';
+        $html .= '<p>' . ($hasRole ? '✅' : '❌') . ' Has admin/super-admin role: ' . ($hasRole ? 'YES' : 'NO') . '</p>';
+        
+        // Step 3: Test data queries one by one
+        $html .= '<h3>Step 3: Data Queries</h3>';
+        
+        try {
+            $assetCount = App\Asset::count();
+            $html .= '<p>✅ Total assets: ' . $assetCount . '</p>';
+        } catch (Exception $e) {
+            $html .= '<p>❌ Asset query error: ' . $e->getMessage() . '</p>';
+        }
+        
+        try {
+            $locationCount = App\Location::count();
+            $html .= '<p>✅ Location count: ' . $locationCount . '</p>';
+        } catch (Exception $e) {
+            $html .= '<p>❌ Location query error: ' . $e->getMessage() . '</p>';
+        }
+        
+        try {
+            $movements = App\Movement::with(['asset', 'location', 'user'])->take(5)->get();
+            $html .= '<p>✅ Recent movements: ' . $movements->count() . '</p>';
+        } catch (Exception $e) {
+            $html .= '<p>❌ Movement query error: ' . $e->getMessage() . '</p>';
+        }
+        
+        // Step 4: Test view compilation
+        $html .= '<h3>Step 4: View Test</h3>';
+        try {
+            $testData = [
+                'assetStats' => [
+                    'total_assets' => 10,
+                    'active_assets' => 5,
+                    'available_assets' => 3,
+                    'maintenance_assets' => 2,
+                ],
+                'movements' => collect(),
+                'recentAssets' => collect(),
+                'locationCount' => 5,
+                'divisionCount' => 3,
+                'year' => 2025,
+                'pageTitle' => 'Debug Dashboard'
+            ];
+            
+            $view = view('home', $testData);
+            $content = $view->render();
+            $html .= '<p>✅ View compilation successful (length: ' . strlen($content) . ' chars)</p>';
+            
+            // Check if content contains expected elements
+            if (strpos($content, 'dashboard') !== false) {
+                $html .= '<p>✅ View contains dashboard content</p>';
+            } else {
+                $html .= '<p>❌ View missing dashboard content</p>';
+            }
+            
+        } catch (Exception $e) {
+            $html .= '<p>❌ View error: ' . $e->getMessage() . '</p>';
+            $html .= '<pre>' . $e->getTraceAsString() . '</pre>';
+        }
+        
+        $html .= '<hr><p><a href="/debug-view-test">Test Simple View</a> | <a href="/dashboard">Try Dashboard</a></p>';
+        
+        return $html;
+        
+    } catch (Exception $e) {
+        return '<h1>❌ DEBUG ERROR</h1><p>' . $e->getMessage() . '</p><pre>' . $e->getTraceAsString() . '</pre>';
+    }
 });
 

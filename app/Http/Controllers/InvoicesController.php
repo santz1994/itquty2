@@ -91,7 +91,7 @@ class InvoicesController extends Controller
       Storage::disk('local')->put($filename, File::get($file));
     }
 
-    $invoice->update($request->all());
+    $invoice->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', 'Invoice ' . $invoice->invoice_number);

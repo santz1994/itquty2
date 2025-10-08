@@ -2,7 +2,7 @@
 
 <?php $__env->startSection('title', 'KPI Dashboard'); ?>
 
-<?php $__env->startSection('content'); ?>
+<?php $__env->startSection('main-content'); ?>
 <div class="row">
     <div class="col-md-12">
         <div class="box">
@@ -266,8 +266,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Tickets by Priority Chart
-const priorityCtx = document.getElementById('priorityChart').getContext('2d');
-new Chart(priorityCtx, {
+const priorityCanvas = document.getElementById('priorityChart');
+if (priorityCanvas) {
+    const priorityCtx = priorityCanvas.getContext('2d');
+    new Chart(priorityCtx, {
     type: 'doughnut',
     data: {
         labels: <?php echo json_encode($data['ticketsByPriority']->keys()); ?>,
@@ -280,11 +282,14 @@ new Chart(priorityCtx, {
         responsive: true,
         maintainAspectRatio: false
     }
-});
+    });
+}
 
 // Tickets by Status Chart
-const statusCtx = document.getElementById('statusChart').getContext('2d');
-new Chart(statusCtx, {
+const statusCanvas = document.getElementById('statusChart');
+if (statusCanvas) {
+    const statusCtx = statusCanvas.getContext('2d');
+    new Chart(statusCtx, {
     type: 'doughnut',
     data: {
         labels: <?php echo json_encode($data['ticketsByStatus']->keys()); ?>,
@@ -297,11 +302,14 @@ new Chart(statusCtx, {
         responsive: true,
         maintainAspectRatio: false
     }
-});
+    });
+}
 
 // Monthly Trend Chart
-const trendCtx = document.getElementById('trendChart').getContext('2d');
-new Chart(trendCtx, {
+const trendCanvas = document.getElementById('trendChart');
+if (trendCanvas) {
+    const trendCtx = trendCanvas.getContext('2d');
+    new Chart(trendCtx, {
     type: 'line',
     data: {
         labels: <?php echo json_encode($data['monthlyTicketTrend']->keys()); ?>,
@@ -322,11 +330,14 @@ new Chart(trendCtx, {
             }
         }
     }
-});
+    });
+}
 
 // Assets by Status Chart
-const assetsCtx = document.getElementById('assetsChart').getContext('2d');
-new Chart(assetsCtx, {
+const assetsCanvas = document.getElementById('assetsChart');
+if (assetsCanvas) {
+    const assetsCtx = assetsCanvas.getContext('2d');
+    new Chart(assetsCtx, {
     type: 'pie',
     data: {
         labels: <?php echo json_encode($data['assetsBreakdown']->keys()); ?>,
@@ -339,7 +350,9 @@ new Chart(assetsCtx, {
         responsive: true,
         maintainAspectRatio: false
     }
-});
+    });
+}
 </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\Quty1\resources\views/kpi/dashboard.blade.php ENDPATH**/ ?>

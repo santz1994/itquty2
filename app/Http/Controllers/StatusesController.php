@@ -31,8 +31,7 @@ class StatusesController extends Controller
 
   public function store(StoreStatusRequest $request)
   {
-    Status::create($request->all());
-    $status = Status::get()->last();
+    $status = Status::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $status->name);
@@ -50,7 +49,7 @@ class StatusesController extends Controller
 
   public function update(UpdateStatusRequest $request, Status $status)
   {
-    $status->update($request->all());
+    $status->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $status->name);

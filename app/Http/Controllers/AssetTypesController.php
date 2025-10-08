@@ -26,8 +26,7 @@ class AssetTypesController extends Controller
 
   public function store(StoreAssetTypeRequest $request)
   {
-    AssetType::create($request->all());
-    $asset_type = AssetType::get()->last();
+    $asset_type = AssetType::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $asset_type->type_name);
@@ -44,7 +43,7 @@ class AssetTypesController extends Controller
 
   public function update(UpdateAssetTypeRequest $request, AssetType $asset_type)
   {
-    $asset_type->update($request->all());
+    $asset_type->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $asset_type->type_name);

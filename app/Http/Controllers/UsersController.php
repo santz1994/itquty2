@@ -95,6 +95,13 @@ class UsersController extends Controller
     }
   }
 
+  public function create()
+  {
+    $pageTitle = 'Create New User';
+    $roles = Role::all();
+    return view('admin.users.create', compact('pageTitle', 'roles'));
+  }
+
   public function edit(User $user)
   {
     $pageTitle = 'Edit User - ' . $user->name;
@@ -315,5 +322,11 @@ class UsersController extends Controller
     // ignore
   }
     return redirect('/admin/users?' . $qp);
+  }
+
+  public function roles()
+  {
+    $roles = \Spatie\Permission\Models\Role::with('users')->get();
+    return view('users.roles', compact('roles'));
   }
 }

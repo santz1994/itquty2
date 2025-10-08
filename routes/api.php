@@ -35,14 +35,26 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('/auth/refresh', [AuthController::class, 'refresh']);
     
     // Asset API endpoints
-    Route::apiResource('assets', AssetController::class);
+    Route::apiResource('assets', AssetController::class)->names([
+        'index' => 'api.assets.index',
+        'store' => 'api.assets.store',
+        'show' => 'api.assets.show',
+        'update' => 'api.assets.update',
+        'destroy' => 'api.assets.destroy'
+    ]);
     Route::post('/assets/{asset}/assign', [AssetController::class, 'assign']);
     Route::post('/assets/{asset}/unassign', [AssetController::class, 'unassign']);
     Route::post('/assets/{asset}/maintenance', [AssetController::class, 'markForMaintenance']);
     Route::get('/assets/{asset}/history', [AssetController::class, 'getHistory']);
     
     // Ticket API endpoints
-    Route::apiResource('tickets', TicketController::class);
+    Route::apiResource('tickets', TicketController::class)->names([
+        'index' => 'api.tickets.index',
+        'store' => 'api.tickets.store',
+        'show' => 'api.tickets.show',
+        'update' => 'api.tickets.update',
+        'destroy' => 'api.tickets.destroy'
+    ]);
     Route::post('/tickets/{ticket}/assign', [TicketController::class, 'assign']);
     Route::post('/tickets/{ticket}/resolve', [TicketController::class, 'resolve']);
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close']);
@@ -50,20 +62,38 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/tickets/{ticket}/timeline', [TicketController::class, 'getTimeline']);
     
     // User API endpoints
-    Route::apiResource('users', UserController::class);
+    Route::apiResource('users', UserController::class)->names([
+        'index' => 'api.users.index',
+        'store' => 'api.users.store',
+        'show' => 'api.users.show',
+        'update' => 'api.users.update',
+        'destroy' => 'api.users.destroy'
+    ]);
     Route::get('/users/{user}/performance', [UserController::class, 'getPerformance']);
     Route::get('/users/{user}/workload', [UserController::class, 'getWorkload']);
     Route::get('/users/{user}/activities', [UserController::class, 'getActivities']);
     
     // Daily Activity API endpoints
-    Route::apiResource('daily-activities', DailyActivityController::class);
+    Route::apiResource('daily-activities', DailyActivityController::class)->names([
+        'index' => 'api.daily-activities.index',
+        'store' => 'api.daily-activities.store',
+        'show' => 'api.daily-activities.show',
+        'update' => 'api.daily-activities.update',
+        'destroy' => 'api.daily-activities.destroy'
+    ]);
     Route::post('/daily-activities/{activity}/complete', [DailyActivityController::class, 'markCompleted']);
     Route::get('/daily-activities/user/{user}', [DailyActivityController::class, 'getUserActivities']);
     Route::get('/daily-activities/summary/{user}', [DailyActivityController::class, 'getUserSummary']);
     
     // Notification API endpoints - high frequency
     Route::middleware(['throttle:api-frequent'])->group(function () {
-        Route::apiResource('notifications', NotificationController::class);
+        Route::apiResource('notifications', NotificationController::class)->names([
+            'index' => 'api.notifications.index',
+            'store' => 'api.notifications.store',
+            'show' => 'api.notifications.show',
+            'update' => 'api.notifications.update',
+            'destroy' => 'api.notifications.destroy'
+        ]);
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);

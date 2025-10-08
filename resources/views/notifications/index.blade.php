@@ -11,7 +11,7 @@
   </ol>
 @endsection
 
-@section('content')
+@section('main-content')
 <div class="row">
   <div class="col-md-12">
     

@@ -37,8 +37,7 @@ class TicketsCannedFieldsController extends Controller
 
   public function store(StoreTicketsCannedFieldRequest $request)
   {
-    TicketsCannedField::create($request->all());
-    $ticketsCannedField = TicketsCannedField::get()->last();
+    $ticketsCannedField = TicketsCannedField::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', 'Canned Ticket Fields: ' . $ticketsCannedField->subject);
@@ -74,7 +73,7 @@ class TicketsCannedFieldsController extends Controller
 
   public function update(StoreTicketsCannedFieldRequest $request, TicketsCannedField $ticketsCannedField)
   {
-    $ticketsCannedField->update($request->all());
+    $ticketsCannedField->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', 'Canned Ticket Fields: ' . $ticketsCannedField->subject);

@@ -4,7 +4,7 @@
     Log in
 @endsection
 
-@section('content')
+@section('main-content')
 <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
@@ -71,3 +71,4 @@
 </body>
 
 @endsection
+

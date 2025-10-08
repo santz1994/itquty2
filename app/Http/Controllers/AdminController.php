@@ -565,4 +565,30 @@ class AdminController extends Controller
             return redirect()->route('admin.backup')->with('error', 'Backup upload failed: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Optimize database tables
+     */
+    public function optimize()
+    {
+        try {
+            // Get all tables
+            $tables = \DB::select('SHOW TABLES');
+            $database = \DB::getDatabaseName();
+            $key = "Tables_in_{$database}";
+            
+            $optimizedTables = [];
+            foreach ($tables as $table) {
+                $tableName = $table->$key;
+                \DB::statement("OPTIMIZE TABLE `{$tableName}`");
+                $optimizedTables[] = $tableName;
+            }
+            
+            $message = 'Successfully optimized ' . count($optimizedTables) . ' database tables.';
+            
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Database optimization failed: ' . $e->getMessage());
+        }
+    }
 }

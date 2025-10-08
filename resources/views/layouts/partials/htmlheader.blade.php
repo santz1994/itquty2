@@ -1,6 +1,6 @@
 <head>
     <meta charset="UTF-8">
-    <title>IVD Assets @if(isset($pageTitle))- @yield('htmlheader_title', $pageTitle) @endif</title>
+    <title>QutyIT @if(isset($pageTitle))- @yield('htmlheader_title', $pageTitle) @endif</title>
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
     <!-- Font Awesome Icons -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />

@@ -3,6 +3,6 @@
 
 @include('layouts.partials.htmlheader')
 
-@yield('content')
+@yield('main-content')
 
 </html>

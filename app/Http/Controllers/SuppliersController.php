@@ -26,8 +26,7 @@ class SuppliersController extends Controller
 
   public function store(StoreSupplierRequest $request)
   {
-    Supplier::create($request->all());
-    $supplier = Supplier::get()->last();
+    $supplier = Supplier::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $supplier->name);
@@ -44,7 +43,7 @@ class SuppliersController extends Controller
 
   public function update(UpdateSupplierRequest $request, Supplier $supplier)
   {
-    $supplier->update($request->all());
+    $supplier->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $supplier->name);

@@ -26,8 +26,7 @@ class DivisionsController extends Controller
 
   public function store(StoreDivisionRequest $request)
   {
-    Division::create($request->all());
-    $division = Division::get()->last();
+    $division = Division::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $division->name);
@@ -44,7 +43,7 @@ class DivisionsController extends Controller
 
   public function update(UpdateDivisionRequest $request, Division $division)
   {
-    $division->update($request->all());
+    $division->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', $division->name);

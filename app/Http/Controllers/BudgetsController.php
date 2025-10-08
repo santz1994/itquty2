@@ -27,8 +27,7 @@ class BudgetsController extends Controller
 
   public function store(StoreBudgetRequest $request)
   {
-    Budget::create($request->all());
-    $budget = Budget::get()->last();
+    $budget = Budget::create($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', 'Budget for ' . $budget->year);
@@ -46,7 +45,7 @@ class BudgetsController extends Controller
 
   public function update(StoreBudgetRequest $request, Budget $budget)
   {
-    $budget->update($request->all());
+    $budget->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', 'Budget for ' . $budget->year);

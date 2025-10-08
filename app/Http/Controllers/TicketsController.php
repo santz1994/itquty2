@@ -111,7 +111,7 @@ class TicketsController extends Controller
 
   public function update(UpdateTicketRequest $request, Ticket $ticket)
   {
-    $ticket->update($request->all());
+    $ticket->update($request->validated());
 
     Session::flash('status', 'success');
     Session::flash('title', 'Ticket #' . $ticket->id);

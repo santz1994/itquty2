@@ -200,10 +200,10 @@ class ManagementDashboardController extends Controller
     {
         return [
             'total_assets' => Asset::count(),
-            'by_type' => Asset::select('asset_types.name', DB::raw('count(*) as count'))
+            'by_type' => Asset::select('asset_types.type_name as name', DB::raw('count(*) as count'))
                              ->join('asset_models', 'assets.model_id', '=', 'asset_models.id')
                              ->join('asset_types', 'asset_models.asset_type_id', '=', 'asset_types.id')
-                             ->groupBy('asset_types.name')
+                             ->groupBy('asset_types.type_name')
                              ->get(),
             'by_status' => Asset::select('statuses.name', DB::raw('count(*) as count'))
                                ->join('statuses', 'assets.status_id', '=', 'statuses.id')

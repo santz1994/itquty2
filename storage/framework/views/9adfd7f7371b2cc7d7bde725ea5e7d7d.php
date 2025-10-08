@@ -1,6 +1,6 @@
 
 
-<?php $__env->startSection('content'); ?>
+<?php $__env->startSection('main-content'); ?>
 <div class="content-wrapper">
     <section class="content-header">
         <h1>
@@ -141,4 +141,5 @@
     </section>
 </div>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\Quty1\resources\views/system/settings.blade.php ENDPATH**/ ?>

@@ -34,8 +34,7 @@ class TicketsStatusesController extends Controller
     if (!$user || !$user->hasRole(['super-admin', 'admin'])) {
       abort(403);
     }
-  TicketsStatus::create($request->all());
-  $ticketsStatus = TicketsStatus::get()->last();
+  $ticketsStatus = TicketsStatus::create($request->validated());
 
   Session::flash('status', 'success');
   Session::flash('title', 'Ticket Status: ' . $ticketsStatus->status);
@@ -64,7 +63,7 @@ class TicketsStatusesController extends Controller
     if (!$user || !$user->hasRole(['super-admin', 'admin'])) {
       abort(403);
     }
-  $ticketsStatus->update($request->all());
+  $ticketsStatus->update($request->validated());
 
   Session::flash('status', 'success');
   Session::flash('title', 'Ticket Status: ' . $ticketsStatus->status);

@@ -89,6 +89,11 @@ class User extends Authenticatable
     return $this->hasMany(Notification::class);
   }
 
+  public function division()
+  {
+    return $this->belongsTo(Division::class);
+  }
+
   // Scopes
   public function scopeWithRoles($query)
   {

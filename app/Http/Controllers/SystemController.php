@@ -22,7 +22,7 @@ class SystemController extends Controller
      */
     public function settings()
     {
-        $this->authorize('view-system-settings');
+        // Authorization handled by middleware (super-admin role required)
         
         $systemInfo = [
             'app_version' => config('app.version', '2.0'),
@@ -42,7 +42,7 @@ class SystemController extends Controller
      */
     public function permissions()
     {
-        $this->authorize('edit-system-settings');
+        // Authorization handled by middleware (super-admin role required)
         
         $permissions = Permission::with('roles')->get();
         $roles = Role::with('permissions')->get();

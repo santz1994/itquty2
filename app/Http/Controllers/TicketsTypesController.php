@@ -34,8 +34,7 @@ class TicketsTypesController extends Controller
     if (!$user || !in_array($user->role, ['super-admin', 'admin'])) {
       abort(403);
     }
-  TicketsType::create($request->all());
-  $ticketsType = TicketsType::get()->last();
+  $ticketsType = TicketsType::create($request->validated());
 
   Session::flash('status', 'success');
   Session::flash('title', 'Ticket Type: ' . $ticketsType->type);
@@ -64,7 +63,7 @@ class TicketsTypesController extends Controller
     if (!$user || !in_array($user->role, ['super-admin', 'admin'])) {
       abort(403);
     }
-  $ticketsType->update($request->all());
+  $ticketsType->update($request->validated());
 
   Session::flash('status', 'success');
   Session::flash('title', 'Ticket Type: ' . $ticketsType->type);

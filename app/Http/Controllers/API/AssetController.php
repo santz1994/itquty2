@@ -134,7 +134,11 @@ class AssetController extends Controller
             ], 422);
         }
 
-        $asset = Asset::create($request->all());
+        $asset = Asset::create($request->only([
+            'asset_tag', 'serial_number', 'model_id', 'division_id', 'supplier_id', 
+            'purchase_date', 'warranty_months', 'warranty_type_id', 'invoice_id', 
+            'ip_address', 'mac_address', 'status_id', 'assigned_to', 'notes'
+        ]));
         $asset->load(['status', 'division', 'location', 'assetModel', 'assignedUser']);
 
         // Auto-assign if assigned_to is provided
@@ -206,7 +210,11 @@ class AssetController extends Controller
             ], 422);
         }
 
-        $asset->update($request->all());
+        $asset->update($request->only([
+            'asset_tag', 'serial_number', 'model_id', 'division_id', 'supplier_id', 
+            'purchase_date', 'warranty_months', 'warranty_type_id', 'invoice_id', 
+            'ip_address', 'mac_address', 'status_id', 'assigned_to', 'notes'
+        ]));
         $asset->load(['status', 'division', 'location', 'assetModel', 'assignedUser']);
 
         return response()->json([

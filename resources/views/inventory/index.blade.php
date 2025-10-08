@@ -4,7 +4,7 @@
 Enhanced Inventory Management
 @endsection
 
-@section('content')
+@section('main-content')
 <div class="row">
   <!-- Summary Statistics -->
   <div class="col-lg-3 col-xs-6">
