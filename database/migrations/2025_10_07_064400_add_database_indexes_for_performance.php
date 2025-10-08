@@ -63,10 +63,10 @@ return new class extends Migration
         // Add indexes for asset_requests table if exists
         if (Schema::hasTable('asset_requests')) {
             Schema::table('asset_requests', function (Blueprint $table) {
-                $table->index('user_id');
-                $table->index('asset_id');
+                $table->index('requested_by');
+                $table->index('asset_type_id');
                 $table->index('status');
-                $table->index(['user_id', 'status']); // For user's requests filtered by status
+                $table->index(['requested_by', 'status']); // For user's requests filtered by status
                 $table->index(['status', 'created_at']); // For status-based queries with ordering
             });
         }

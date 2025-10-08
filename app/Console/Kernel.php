@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         Commands\TestViewFixes::class,
         Commands\TestAllViewFixes::class,
         Commands\TestCriticalFixes::class,
+        Commands\CheckNotifications::class,
     ];
 
     /**
@@ -27,7 +28,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('migrate:reset')->daily();
+        // Run notification checks every hour for overdue tickets and expiring warranties
+        $schedule->command('notifications:check --overdue --warranty')->hourly();
+        
+        // Clean up old notifications daily at 2 AM
+        $schedule->command('notifications:check --cleanup')->dailyAt('02:00');
+        
+        // Send daily digest to admins at 8 AM
+        $schedule->command('notifications:check --digest')->dailyAt('08:00');
         // $schedule->command('migrate')->daily();
         // $schedule->command('db:seed')->daily();
     }

@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Ticket extends Model
 {
@@ -17,6 +19,14 @@ class Ticket extends Model
 
   protected $dates = [
     'assigned_at', 'sla_due', 'first_response_at', 'resolved_at', 'closed'
+  ];
+
+  protected $casts = [
+    'assigned_at' => 'datetime',
+    'sla_due' => 'datetime',
+    'first_response_at' => 'datetime',
+    'resolved_at' => 'datetime',
+    'closed' => 'datetime',
   ];
 
   protected static function boot()
@@ -91,6 +101,304 @@ class Ticket extends Model
     return $this->belongsTo(TicketsType::class);
   }
 
+  // ========================
+  // ACCESSORS & MUTATORS
+  // ========================
+  
+  /**
+   * Format ticket subject for display (uppercase first letter)
+   */
+  protected function subject(): Attribute
+  {
+    return Attribute::make(
+      get: fn ($value) => ucfirst($value),
+      set: fn ($value) => strtolower(trim($value))
+    );
+  }
+
+  /**
+   * Get human-readable status badge
+   */
+  protected function statusBadge(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        $status = $this->ticket_status->name ?? 'Unknown';
+        $badges = [
+          'Open' => '<span class="badge badge-info">Open</span>',
+          'In Progress' => '<span class="badge badge-warning">In Progress</span>',
+          'Resolved' => '<span class="badge badge-success">Resolved</span>',
+          'Closed' => '<span class="badge badge-secondary">Closed</span>',
+          'Pending' => '<span class="badge badge-secondary">Pending</span>',
+        ];
+        return $badges[$status] ?? '<span class="badge badge-light">' . $status . '</span>';
+      }
+    );
+  }
+
+  /**
+   * Get priority color class
+   */
+  protected function priorityColor(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        $priority = $this->ticket_priority->name ?? 'Normal';
+        $colors = [
+          'Urgent' => 'text-danger',
+          'High' => 'text-warning',
+          'Normal' => 'text-info',
+          'Low' => 'text-success',
+        ];
+        return $colors[$priority] ?? 'text-muted';
+      }
+    );
+  }
+
+  /**
+   * Check if ticket is overdue
+   */
+  protected function isOverdue(): Attribute
+  {
+    return Attribute::make(
+      get: fn () => $this->sla_due && now()->gt($this->sla_due) && !$this->resolved_at
+    );
+  }
+
+  /**
+   * Get time remaining until SLA due
+   */
+  protected function timeToSla(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        if (!$this->sla_due) return null;
+        
+        $now = now();
+        if ($now->gt($this->sla_due)) {
+          return 'Overdue by ' . $this->sla_due->diffForHumans($now, true);
+        }
+        return $this->sla_due->diffForHumans($now);
+      }
+    );
+  }
+
+  /**
+   * Get response time in hours
+   */
+  protected function responseTimeHours(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        if (!$this->first_response_at) return null;
+        return round($this->created_at->diffInHours($this->first_response_at), 2);
+      }
+    );
+  }
+
+  /**
+   * Get resolution time in hours
+   */
+  protected function resolutionTimeHours(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        if (!$this->resolved_at) return null;
+        return round($this->created_at->diffInHours($this->resolved_at), 2);
+      }
+    );
+  }
+
+  // ========================
+  // HELPER METHODS
+  // ========================
+  
+  /**
+   * Check if ticket can be assigned
+   */
+  public function canBeAssigned(): bool
+  {
+    return in_array($this->ticket_status->name ?? '', ['Open', 'Pending']);
+  }
+
+  /**
+   * Check if ticket can be resolved
+   */
+  public function canBeResolved(): bool
+  {
+    return in_array($this->ticket_status->name ?? '', ['Open', 'In Progress', 'Pending']);
+  }
+
+  /**
+   * Check if ticket can be reopened
+   */
+  public function canBeReopened(): bool
+  {
+    return in_array($this->ticket_status->name ?? '', ['Resolved', 'Closed']);
+  }
+
+  /**
+   * Assign ticket to user
+   */
+  public function assignTo(User $user, string $assignmentType = 'manual'): bool
+  {
+    if (!$this->canBeAssigned()) {
+      return false;
+    }
+
+    $this->update([
+      'assigned_to' => $user->id,
+      'assigned_at' => now(),
+      'assignment_type' => $assignmentType,
+    ]);
+
+    // Update status to 'In Progress' if currently 'Open'
+    if ($this->ticket_status->name === 'Open') {
+      $inProgressStatus = TicketsStatus::where('name', 'In Progress')->first();
+      if ($inProgressStatus) {
+        $this->update(['ticket_status_id' => $inProgressStatus->id]);
+      }
+    }
+
+    // Create notification for assignment
+    try {
+      Notification::createTicketAssigned($this, $user);
+    } catch (\Exception $e) {
+      Log::error('Failed to create ticket assignment notification', [
+        'ticket_id' => $this->id,
+        'user_id' => $user->id,
+        'error' => $e->getMessage()
+      ]);
+    }
+
+    return true;
+  }
+
+  /**
+   * Mark ticket as first responded
+   */
+  public function markFirstResponse(): bool
+  {
+    if ($this->first_response_at) {
+      return false; // Already has first response
+    }
+
+    $this->update(['first_response_at' => now()]);
+    return true;
+  }
+
+  /**
+   * Resolve ticket
+   */
+  public function resolve(string $resolution = null): bool
+  {
+    if (!$this->canBeResolved()) {
+      return false;
+    }
+
+    $resolvedStatus = TicketsStatus::where('name', 'Resolved')->first();
+    if (!$resolvedStatus) {
+      return false;
+    }
+
+    $updateData = [
+      'ticket_status_id' => $resolvedStatus->id,
+      'resolved_at' => now(),
+    ];
+
+    if ($resolution) {
+      $updateData['resolution'] = $resolution;
+    }
+
+    $this->update($updateData);
+    return true;
+  }
+
+  /**
+   * Close ticket
+   */
+  public function close(): bool
+  {
+    $closedStatus = TicketsStatus::where('name', 'Closed')->first();
+    if (!$closedStatus) {
+      return false;
+    }
+
+    $this->update([
+      'ticket_status_id' => $closedStatus->id,
+      'closed' => now(),
+    ]);
+
+    return true;
+  }
+
+  /**
+   * Reopen ticket
+   */
+  public function reopen(): bool
+  {
+    if (!$this->canBeReopened()) {
+      return false;
+    }
+
+    $openStatus = TicketsStatus::where('name', 'Open')->first();
+    if (!$openStatus) {
+      return false;
+    }
+
+    $this->update([
+      'ticket_status_id' => $openStatus->id,
+      'resolved_at' => null,
+      'closed' => null,
+    ]);
+
+    return true;
+  }
+
+  /**
+   * Get tickets statistics for dashboard
+   */
+  public static function getStatistics(): array
+  {
+    return [
+      'total' => self::count(),
+      'open' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'Open'))->count(),
+      'in_progress' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'In Progress'))->count(),
+      'resolved' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'Resolved'))->count(),
+      'closed' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'Closed'))->count(),
+      'overdue' => self::where('sla_due', '<', now())
+                      ->whereNull('resolved_at')
+                      ->count(),
+      'pending_response' => self::whereNull('first_response_at')
+                               ->whereHas('ticket_status', fn($q) => $q->whereIn('name', ['Open', 'In Progress']))
+                               ->count(),
+    ];
+  }
+
+  /**
+   * Get overdue tickets
+   */
+  public static function getOverdueTickets()
+  {
+    return self::with(['user', 'ticket_status', 'ticket_priority', 'assignedUser'])
+               ->where('sla_due', '<', now())
+               ->whereNull('resolved_at')
+               ->orderBy('sla_due', 'asc')
+               ->get();
+  }
+
+  /**
+   * Get tickets requiring first response
+   */
+  public static function getPendingResponseTickets()
+  {
+    return self::with(['user', 'ticket_status', 'ticket_priority', 'assignedUser'])
+               ->whereNull('first_response_at')
+               ->whereHas('ticket_status', fn($q) => $q->whereIn('name', ['Open', 'In Progress']))
+               ->orderBy('created_at', 'asc')
+               ->get();
+  }
+
   public function ticket_entries()
   {
     return $this->hasMany(TicketsEntry::class);
@@ -99,6 +407,11 @@ class Ticket extends Model
   public function daily_activities()
   {
     return $this->hasMany(DailyActivity::class);
+  }
+
+  public function getNotifications()
+  {
+    return Notification::whereJsonContains('data->ticket_id', $this->id)->get();
   }
 
   // Scopes
@@ -232,33 +545,7 @@ class Ticket extends Model
     return $colors[$this->sla_status] ?? 'gray';
   }
 
-  // Methods
-  public function assignTo($userId, $type = 'manual')
-  {
-    $this->update([
-      'assigned_to' => $userId,
-      'assigned_at' => now(),
-      'assignment_type' => $type
-    ]);
-    
-    // Auto-create daily activity untuk assigned user
-    if ($userId) {
-      DailyActivity::create([
-        'user_id' => $userId,
-        'activity_date' => today(),
-        'description' => "Menerima assignment ticket: {$this->ticket_code} - {$this->subject}",
-        'ticket_id' => $this->id,
-        'type' => 'auto_from_ticket'
-      ]);
-    }
-  }
-
-  public function markFirstResponse()
-  {
-    if (!$this->first_response_at) {
-      $this->update(['first_response_at' => now()]);
-    }
-  }
+  // Methods (duplicate methods removed - using enhanced versions above)
 
   public function markResolved()
   {

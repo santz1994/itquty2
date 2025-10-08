@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Ticket;
 use App\DailyActivity;
+use App\Services\CacheService;
 
 class TicketObserver
 {
@@ -62,6 +63,9 @@ class TicketObserver
                 'activity_type' => 'system'
             ]);
         }
+        
+        // Clear cache when ticket changes
+        app(CacheService::class)->clearCacheOnUpdate('ticket');
     }
 
     /**
@@ -69,7 +73,8 @@ class TicketObserver
      */
     public function deleted(Ticket $ticket): void
     {
-        //
+        // Clear cache when ticket is deleted
+        app(CacheService::class)->clearCacheOnUpdate('ticket');
     }
 
     /**

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Asset extends Model
 {
@@ -20,6 +22,11 @@ class Asset extends Model
   ];
 
   protected $dates = ['purchase_date'];
+  
+  protected $casts = [
+    'purchase_date' => 'date',
+    'warranty_months' => 'integer',
+  ];
 
   protected static function boot()
   {
@@ -175,7 +182,150 @@ class Asset extends Model
     return $query->with(['model', 'division', 'status', 'assignedTo', 'supplier']);
   }
 
-  // Accessors
+  // ========================
+  // ACCESSORS & MUTATORS
+  // ========================
+  
+  /**
+   * Format asset tag for display (uppercase)
+   */
+  protected function assetTag(): Attribute
+  {
+    return Attribute::make(
+      get: fn ($value) => strtoupper($value),
+      set: fn ($value) => strtoupper(trim($value))
+    );
+  }
+
+  /**
+   * Format serial number for display (uppercase)
+   */
+  protected function serialNumber(): Attribute
+  {
+    return Attribute::make(
+      get: fn ($value) => strtoupper($value),
+      set: fn ($value) => strtoupper(trim($value))
+    );
+  }
+
+  /**
+   * Get warranty expiry date
+   */
+  protected function warrantyExpiryDate(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        if (!$this->purchase_date || !$this->warranty_months) {
+          return null;
+        }
+        return $this->purchase_date->addMonths($this->warranty_months);
+      }
+    );
+  }
+
+  /**
+   * Check if warranty is active
+   */
+  protected function isWarrantyActive(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        $expiryDate = $this->warranty_expiry_date;
+        return $expiryDate && now()->lte($expiryDate);
+      }
+    );
+  }
+
+  /**
+   * Check if warranty is expiring soon (within 30 days)
+   */
+  protected function isWarrantyExpiringSoon(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        $expiryDate = $this->warranty_expiry_date;
+        if (!$expiryDate) return false;
+        
+        return now()->diffInDays($expiryDate, false) <= 30 && now()->lte($expiryDate);
+      }
+    );
+  }
+
+  /**
+   * Get asset age in years
+   */
+  protected function ageInYears(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        if (!$this->purchase_date) return null;
+        return round($this->purchase_date->diffInYears(now()), 1);
+      }
+    );
+  }
+
+  /**
+   * Get depreciation percentage (assuming 5-year depreciation)
+   */
+  protected function depreciationPercentage(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        $age = $this->age_in_years;
+        if (!$age) return 0;
+        
+        return min(100, round(($age / 5) * 100, 1));
+      }
+    );
+  }
+
+  /**
+   * Get status badge HTML
+   */
+  protected function statusBadge(): Attribute
+  {
+    return Attribute::make(
+      get: function () {
+        $status = $this->status->name ?? 'Unknown';
+        $badges = [
+          'In Use' => '<span class="badge badge-success">In Use</span>',
+          'In Stock' => '<span class="badge badge-info">In Stock</span>',
+          'In Repair' => '<span class="badge badge-warning">In Repair</span>',
+          'Disposed' => '<span class="badge badge-danger">Disposed</span>',
+          'Lost' => '<span class="badge badge-dark">Lost</span>',
+        ];
+        return $badges[$status] ?? '<span class="badge badge-light">' . $status . '</span>';
+      }
+    );
+  }
+
+  /**
+   * Get formatted purchase date
+   */
+  protected function formattedPurchaseDate(): Attribute
+  {
+    return Attribute::make(
+      get: fn () => $this->purchase_date ? $this->purchase_date->format('d M Y') : null
+    );
+  }
+
+  /**
+   * Get MAC address formatted with colons
+   */
+  protected function formattedMacAddress(): Attribute
+  {
+    return Attribute::make(
+      get: function ($value) {
+        if (!$this->mac_address || strlen($this->mac_address) !== 12) {
+          return $this->mac_address;
+        }
+        return implode(':', str_split($this->mac_address, 2));
+      },
+      set: fn ($value) => str_replace([':', '-', ' '], '', strtoupper(trim($value)))
+    );
+  }
+
+  // Legacy Accessors (for backward compatibility)
   public function getTicketHistoryAttribute()
   {
     return $this->tickets()
@@ -192,6 +342,222 @@ class Asset extends Model
                           ->count();
     
     return $recentTickets > 3;
+  }
+
+  // ========================
+  // HELPER METHODS
+  // ========================
+  
+  /**
+   * Check if asset can be assigned
+   */
+  public function canBeAssigned(): bool
+  {
+    return $this->status && in_array($this->status->name, ['In Stock']);
+  }
+
+  /**
+   * Check if asset is currently assigned
+   */
+  public function isAssigned(): bool
+  {
+    return !is_null($this->assigned_to);
+  }
+
+  /**
+   * Check if asset needs maintenance (has unresolved tickets)
+   */
+  public function needsMaintenance(): bool
+  {
+    return $this->tickets()
+                ->whereNull('resolved_at')
+                ->exists();
+  }
+
+  /**
+   * Assign asset to user
+   */
+  public function assignTo(User $user): bool
+  {
+    if (!$this->canBeAssigned()) {
+      return false;
+    }
+
+    // Update asset
+    $this->update([
+      'assigned_to' => $user->id,
+      'status_id' => Status::where('name', 'In Use')->first()?->id ?? 1,
+    ]);
+
+    // Log activity
+    DailyActivity::create([
+      'user_id' => $user->id,
+      'activity_date' => today(),
+      'description' => "Asset assigned: {$this->asset_tag} - " . ($this->model->name ?? 'Unknown Model'),
+      'type' => 'asset_assignment',
+      'notes' => "Automated assignment log",
+    ]);
+
+    // Create notification for assignment
+    try {
+      Notification::createAssetAssigned($this, $user);
+    } catch (\Exception $e) {
+      Log::error('Failed to create asset assignment notification', [
+        'asset_id' => $this->id,
+        'user_id' => $user->id,
+        'error' => $e->getMessage()
+      ]);
+    }
+
+    return true;
+  }
+
+  /**
+   * Unassign asset from user
+   */
+  public function unassign(): bool
+  {
+    if (!$this->isAssigned()) {
+      return false;
+    }
+
+    $previousUser = $this->assignedTo;
+    
+    // Update asset
+    $this->update([
+      'assigned_to' => null,
+      'status_id' => Status::where('name', 'In Stock')->first()?->id ?? 2,
+    ]);
+
+    // Log activity
+    if ($previousUser) {
+      DailyActivity::create([
+        'user_id' => $previousUser->id,
+        'activity_date' => today(),
+        'description' => "Asset unassigned: {$this->asset_tag} - " . ($this->model->name ?? 'Unknown Model'),
+        'type' => 'asset_unassignment',
+        'notes' => "Automated unassignment log",
+      ]);
+    }
+
+    return true;
+  }
+
+  /**
+   * Mark asset for maintenance
+   */
+  public function markForMaintenance(string $reason = null): bool
+  {
+    $this->update([
+      'status_id' => Status::where('name', 'In Repair')->first()?->id ?? 3,
+    ]);
+
+    // Create maintenance ticket if reason provided
+    if ($reason) {
+      $ticketType = TicketsType::where('name', 'Maintenance')->first();
+      $ticketPriority = TicketsPriority::where('name', 'Normal')->first();
+      $ticketStatus = TicketsStatus::where('name', 'Open')->first();
+
+      if ($ticketType && $ticketPriority && $ticketStatus) {
+        Ticket::create([
+          'user_id' => Auth::id(),
+          'asset_id' => $this->id,
+          'ticket_type_id' => $ticketType->id,
+          'ticket_priority_id' => $ticketPriority->id,
+          'ticket_status_id' => $ticketStatus->id,
+          'subject' => "Maintenance Required: {$this->asset_tag}",
+          'description' => $reason,
+        ]);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Mark asset as disposed
+   */
+  public function dispose(string $reason = null): bool
+  {
+    $this->update([
+      'status_id' => Status::where('name', 'Disposed')->first()?->id ?? 4,
+      'assigned_to' => null,
+      'notes' => $this->notes . "\n\nDisposed: " . ($reason ?? 'No reason provided') . " (" . now()->format('Y-m-d') . ")",
+    ]);
+
+    // Log activity
+    DailyActivity::create([
+      'user_id' => Auth::id(),
+      'activity_date' => today(),
+      'description' => "Asset disposed: {$this->asset_tag} - " . ($reason ?? 'No reason provided'),
+      'type' => 'asset_disposal',
+      'notes' => "Asset disposal log",
+    ]);
+
+    return true;
+  }
+
+  /**
+   * Get asset utilization percentage (based on assignment history)
+   */
+  public function getUtilizationPercentage(int $months = 12): float
+  {
+    if (!$this->purchase_date) return 0;
+
+    $totalDays = min($this->purchase_date->diffInDays(now()), $months * 30);
+    if ($totalDays <= 0) return 0;
+
+    // This is a simplified calculation - in reality you'd track assignment history
+    $assignedDays = $this->isAssigned() ? $totalDays : 0;
+    
+    return round(($assignedDays / $totalDays) * 100, 2);
+  }
+
+  /**
+   * Get maintenance cost (sum of related ticket costs - if tracked)
+   */
+  public function getMaintenanceCost(): float
+  {
+    // This would require additional fields in tickets table for cost tracking
+    return $this->tickets()
+                ->whereNotNull('cost')
+                ->sum('cost') ?? 0;
+  }
+
+  /**
+   * Get asset statistics
+   */
+  public static function getStatistics(): array
+  {
+    return [
+      'total' => self::count(),
+      'in_use' => self::whereHas('status', fn($q) => $q->where('name', 'In Use'))->count(),
+      'in_stock' => self::whereHas('status', fn($q) => $q->where('name', 'In Stock'))->count(),
+      'in_repair' => self::whereHas('status', fn($q) => $q->where('name', 'In Repair'))->count(),
+      'disposed' => self::whereHas('status', fn($q) => $q->where('name', 'Disposed'))->count(),
+      'warranty_expiring' => self::warrantyExpiring(30)->count(),
+      'warranty_expired' => self::warrantyExpired()->count(),
+      'unassigned' => self::unassigned()->count(),
+      'requiring_maintenance' => self::whereHas('tickets', function($q) {
+        $q->whereNull('resolved_at');
+      })->count(),
+    ];
+  }
+
+  /**
+   * Get assets requiring attention (expiring warranty, maintenance needed, etc.)
+   */
+  public static function getAssetsRequiringAttention()
+  {
+    return [
+      'warranty_expiring' => self::warrantyExpiring(30)->with(['model', 'assignedTo'])->get(),
+      'warranty_expired' => self::warrantyExpired()->with(['model', 'assignedTo'])->get(),
+      'maintenance_required' => self::whereHas('tickets', function($q) {
+        $q->whereNull('resolved_at')
+          ->whereHas('ticket_priority', fn($q2) => $q2->whereIn('name', ['Urgent', 'High']));
+      })->with(['model', 'assignedTo', 'tickets.ticket_priority'])->get(),
+      'unassigned_stock' => self::unassigned()->inStock()->with(['model', 'division'])->get(),
+    ];
   }
 
   public function getWarrantyStatusAttribute()
