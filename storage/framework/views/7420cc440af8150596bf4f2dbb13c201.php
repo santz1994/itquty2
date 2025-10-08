@@ -36,19 +36,19 @@
                 </ul>
             </li>
             
-            <!-- 📅 Daily Activities (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
-            <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin', 'management'])): ?>
-            <li class="treeview">
-                <a href="#"><i class='fa fa-calendar-check-o'></i> <span>Daily Activities</span> <i class="fa fa-angle-left pull-right"></i></a>
-                <ul class="treeview-menu">
-                    <li><a href="<?php echo e(url('/daily-activities')); ?>">Activity List</a></li>
-                    <li><a href="<?php echo e(url('/daily-activities/calendar')); ?>">Calendar View</a></li>
-                    <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin'])): ?>
-                    <li><a href="<?php echo e(url('/daily-activities/create')); ?>">Add Activity</a></li>
-                    <?php endif; ?>
-                </ul>
-            </li>
-            <?php endif; ?>
+      <!-- 📅 Daily Activity (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
+      <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin', 'management'])): ?>
+      <li class="treeview">
+        <a href="#"><i class='fa fa-calendar'></i> <span>Daily Activity</span> <i class="fa fa-angle-left pull-right"></i></a>
+        <ul class="treeview-menu">
+          <li><a href="<?php echo e(url('/daily-activities')); ?>">Activity List</a></li>
+          <li><a href="<?php echo e(url('/daily-activities/calendar')); ?>">Calendar View</a></li>
+          <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin'])): ?>
+          <li><a href="<?php echo e(url('/daily-activities/create')); ?>">Add Activity</a></li>
+          <?php endif; ?>
+        </ul>
+      </li>
+      <?php endif; ?>
             
             <!-- 💻 Models (SuperAdmin=3 only) -->
             <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['super-admin'])): ?>

@@ -36,19 +36,19 @@
                 </ul>
             </li>
             
-            <!-- 📅 Daily Activities (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
-            @role(['admin', 'super-admin', 'management'])
-            <li class="treeview">
-                <a href="#"><i class='fa fa-calendar-check-o'></i> <span>Daily Activities</span> <i class="fa fa-angle-left pull-right"></i></a>
-                <ul class="treeview-menu">
-                    <li><a href="{{ url('/daily-activities')}}">Activity List</a></li>
-                    <li><a href="{{ url('/daily-activities/calendar')}}">Calendar View</a></li>
-                    @role(['admin', 'super-admin'])
-                    <li><a href="{{ url('/daily-activities/create')}}">Add Activity</a></li>
-                    @endrole
-                </ul>
-            </li>
-            @endrole
+      <!-- 📅 Daily Activity (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
+      @role(['admin', 'super-admin', 'management'])
+      <li class="treeview">
+        <a href="#"><i class='fa fa-calendar'></i> <span>Daily Activity</span> <i class="fa fa-angle-left pull-right"></i></a>
+        <ul class="treeview-menu">
+          <li><a href="{{ url('/daily-activities')}}">Activity List</a></li>
+          <li><a href="{{ url('/daily-activities/calendar')}}">Calendar View</a></li>
+          @role(['admin', 'super-admin'])
+          <li><a href="{{ url('/daily-activities/create')}}">Add Activity</a></li>
+          @endrole
+        </ul>
+      </li>
+      @endrole
             
             <!-- 💻 Models (SuperAdmin=3 only) -->
             @role(['super-admin'])

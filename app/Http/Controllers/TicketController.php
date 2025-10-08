@@ -91,9 +91,11 @@ class TicketController extends BaseController
         $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
         $assets = Asset::where('assigned_to', auth()->id())->get(); // Only user's assets
         $pageTitle = 'Create New Ticket';
+        // Provide canned fields so the view can render the right-hand column
+        $ticketsCannedFields = \App\TicketsCannedField::all();
 
         return view('tickets.create', compact('users', 'locations', 'ticketsStatuses', 'ticketsTypes', 
-                                            'ticketsPriorities', 'assets', 'pageTitle'));
+                                            'ticketsPriorities', 'assets', 'pageTitle', 'ticketsCannedFields'));
     }
 
     /**
