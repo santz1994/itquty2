@@ -4,32 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-// Small runtime-safe helpers to wrap Spatie role methods so static analysers
-// (intelephense, PHPStan in the editor) don't report undefined method errors
-if (!function_exists('user_has_role')) {
-    function user_has_role($user, $role)
-    {
-        return is_object($user) && method_exists($user, 'hasRole') ? $user->hasRole($role) : false;
-    }
-}
-
-if (!function_exists('user_has_any_role')) {
-    function user_has_any_role($user, $roles)
-    {
-        return is_object($user) && method_exists($user, 'hasAnyRole') ? $user->hasAnyRole($roles) : false;
-    }
-}
-
-if (!function_exists('user_get_role_names')) {
-    function user_get_role_names($user)
-    {
-        if (is_object($user) && method_exists($user, 'getRoleNames')) {
-            return $user->getRoleNames();
-        }
-        return collect();
-    }
-}
-
 // Bridge for legacy apps: if the old app/Http/routes.php exists, load it
 // so older route definitions (from Laravel 5.x era) are picked up.
 $legacy = base_path('app/Http/routes.php');

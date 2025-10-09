@@ -145,7 +145,7 @@ class CacheService
     public static function getLocations()
     {
         return Cache::remember('locations_all', self::CACHE_TTL, function () {
-            return \App\Location::orderBy('name')->get();
+            return \App\Location::orderBy('location_name')->get();
         });
     }
 
@@ -165,7 +165,7 @@ class CacheService
     public static function getTicketStatuses()
     {
         return Cache::remember('ticket_statuses_all', self::CACHE_TTL, function () {
-            return \App\TicketsStatus::orderBy('name')->get();
+            return \App\TicketsStatus::orderBy('status')->get();
         });
     }
 
@@ -175,7 +175,7 @@ class CacheService
     public static function getTicketTypes()
     {
         return Cache::remember('ticket_types_all', self::CACHE_TTL, function () {
-            return \App\TicketsType::orderBy('name')->get();
+            return \App\TicketsType::orderBy('type')->get();
         });
     }
 
