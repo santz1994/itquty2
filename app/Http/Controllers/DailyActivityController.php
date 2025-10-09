@@ -134,7 +134,19 @@ class DailyActivityController extends Controller
             return back()->with('error', 'Hanya dapat mengedit aktivitas hari ini atau kemarin');
         }
 
-        return view('daily-activities.edit', compact('dailyActivity'));
+        // Get assets for the dropdown
+        $assets = \App\Asset::with(['model'])
+                          ->select('id', 'asset_tag', 'model_id')
+                          ->orderBy('asset_tag')
+                          ->get();
+
+        // Get tickets for the dropdown (recent tickets)
+        $tickets = \App\Ticket::select('id', 'subject')
+                             ->orderBy('created_at', 'desc')
+                             ->limit(100)
+                             ->get();
+
+        return view('daily-activities.edit', compact('dailyActivity', 'assets', 'tickets'));
     }
 
     /**

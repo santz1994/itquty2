@@ -655,4 +655,89 @@ class Asset extends Model
       'notes' => "Automated log entry for asset maintenance"
     ]);
   }
+
+  // ========================
+  // ADDITIONAL TICKET HISTORY METHODS
+  // ========================
+
+  /**
+   * Get recent tickets (last 10)
+   */
+  public function getRecentTicketsAttribute()
+  {
+    return $this->tickets()
+                ->with(['ticket_status', 'ticket_priority', 'ticket_type'])
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+  }
+
+  /**
+   * Get open tickets count
+   */
+  public function getOpenTicketsCountAttribute()
+  {
+    return $this->tickets()
+                ->whereHas('ticket_status', function($query) {
+                    $query->whereIn('status', ['Open', 'In Progress', 'Pending']);
+                })
+                ->count();
+  }
+
+  /**
+   * Get resolved tickets count
+   */
+  public function getResolvedTicketsCountAttribute()
+  {
+    return $this->tickets()
+                ->whereHas('ticket_status', function($query) {
+                    $query->where('status', 'Resolved');
+                })
+                ->count();
+  }
+
+  /**
+   * Get last ticket date
+   */
+  public function getLastTicketDateAttribute()
+  {
+    $lastTicket = $this->tickets()->orderBy('created_at', 'desc')->first();
+    return $lastTicket ? $lastTicket->created_at : null;
+  }
+
+  /**
+   * Get asset health score based on ticket history
+   * 0-100 score where 100 is excellent (no issues)
+   */
+  public function getHealthScoreAttribute()
+  {
+    $totalTickets = $this->tickets()->count();
+    
+    if ($totalTickets == 0) {
+        return 100; // Perfect score for no reported issues
+    }
+
+    $recentTickets = $this->tickets()->where('created_at', '>=', now()->subMonths(6))->count();
+    $openTickets = $this->open_tickets_count;
+    
+    // Base score calculation
+    $score = 100;
+    
+    // Deduct points for recent tickets (more recent issues = lower score)
+    $score -= ($recentTickets * 10);
+    
+    // Deduct more points for open tickets (unresolved issues)
+    $score -= ($openTickets * 20);
+    
+    // Ensure score doesn't go below 0
+    return max(0, $score);
+  }
+
+  /**
+   * Check if asset needs attention (has open tickets or recent frequent issues)
+   */
+  public function getNeedsAttentionAttribute()
+  {
+    return $this->open_tickets_count > 0 || $this->health_score < 70;
+  }
 }

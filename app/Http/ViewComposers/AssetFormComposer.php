@@ -35,7 +35,7 @@ class AssetFormComposer
                 return Status::select('id', 'name')->orderBy('name')->get();
             }),
             'asset_models' => Cache::remember('asset_models_objects', 3600, function () {
-                return AssetModel::select('id', 'asset_model', 'manufacturer_id')->with('manufacturer:id,name')->get();
+                return AssetModel::select('id', 'asset_model', 'manufacturer_id', 'asset_type_id')->with(['manufacturer:id,name', 'asset_type:id,type_name'])->get();
             }),
             'manufacturers' => Cache::remember('manufacturers_objects', 3600, function () {
                 return Manufacturer::select('id', 'name')->orderBy('name')->get();

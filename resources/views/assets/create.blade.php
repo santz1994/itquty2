@@ -16,12 +16,13 @@
             </div>
             <div class="form-group">
               <label for="asset_model_id">Model</label>
-              <select class="form-control asset_model_id" name="asset_model_id">
+              <select class="form-control asset_model_id" name="asset_model_id" id="asset_model_id">
                 <option value = ""></option>
                 @foreach($asset_models as $asset_model)
-                    <option value="{{$asset_model->id}}">{{$asset_model->manufacturer->name}} - {{$asset_model->asset_model}}</option>
+                    <option value="{{$asset_model->id}}" data-asset-type-id="{{$asset_model->asset_type->id}}" data-asset-type="{{$asset_model->asset_type->type_name}}">{{$asset_model->manufacturer->name}} - {{$asset_model->asset_model}}</option>
                 @endforeach
               </select>
+              <small id="asset-type-info" class="text-muted" style="display: none;"></small>
             </div>
             <div class="form-group">
               <label for="division_id">Division</label>
@@ -67,13 +68,19 @@
                 @endforeach
               </select>
             </div>
-            <div class="form-group">
-              <label for="ip">IP Address (If PC/Laptop)</label>
-              <input type="text" name="ip" class="form-control" value="{{old('ip')}}">
-            </div>
-            <div class="form-group">
-              <label for="mac">MAC Address (If PC/Laptop)</label>
-              <input type="text" name="mac" class="form-control" value="{{old('mac')}}">
+            <!-- Computer-specific fields -->
+            <div class="pc-laptop-fields" style="display: none;">
+              <fieldset style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px;">
+                <legend style="font-size: 14px; font-weight: bold; color: #337ab7;">Computer Specifications</legend>
+                <div class="form-group">
+                  <label for="ip">IP Address</label>
+                  <input type="text" name="ip" class="form-control" value="{{old('ip')}}" placeholder="e.g., 192.168.1.100">
+                </div>
+                <div class="form-group">
+                  <label for="mac">MAC Address</label>
+                  <input type="text" name="mac" class="form-control" value="{{old('mac')}}" placeholder="e.g., 00:1B:44:11:3A:B7">
+                </div>
+              </fieldset>
             </div>
             <div class="form-group">
               <label for="location">Deploy to a Location</label>
@@ -125,6 +132,34 @@
       $(".location").select2();
       $(".warranty_type_id").select2();
       $(".invoice_id").select2();
+
+      // Handle asset model change to show/hide conditional fields
+      $('#asset_model_id').on('change', function() {
+        var selectedOption = $(this).find('option:selected');
+        var assetType = selectedOption.data('asset-type');
+        var assetTypeInfo = $('#asset-type-info');
+        
+        // Hide all conditional fields first
+        $('.pc-laptop-fields').hide();
+        
+        if (assetType) {
+          // Show asset type information
+          assetTypeInfo.text('Asset Type: ' + assetType).show();
+          
+          // Show relevant fields based on asset type
+          if (assetType.toLowerCase().includes('pc') || assetType.toLowerCase().includes('laptop')) {
+            $('.pc-laptop-fields').show();
+          }
+        } else {
+          // Hide asset type info if no selection
+          assetTypeInfo.hide();
+        }
+      });
+
+      // Trigger change event on page load if there's a selected value (for form validation errors)
+      if ($('#asset_model_id').val()) {
+        $('#asset_model_id').trigger('change');
+      }
     });
   </script>
   <script>

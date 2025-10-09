@@ -132,7 +132,7 @@
                                         @foreach($assets as $asset)
                                             <option value="{{ $asset->id }}" 
                                                 {{ old('related_asset_id', $dailyActivity->related_asset_id) == $asset->id ? 'selected' : '' }}>
-                                                {{ $asset->asset_tag }} - {{ $asset->name }}
+                                                {{ $asset->asset_tag }} - {{ $asset->model->asset_model ?? 'No Model' }}
                                             </option>
                                         @endforeach
                                     </select>

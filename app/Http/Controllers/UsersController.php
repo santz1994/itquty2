@@ -98,8 +98,24 @@ class UsersController extends Controller
   public function create()
   {
     $pageTitle = 'Create New User';
-    $roles = Role::all();
-    return view('admin.users.create', compact('pageTitle', 'roles'));
+    
+    try {
+        // Ensure we get proper model instances, not strings
+        $roles = Role::whereNotNull('name')->orderBy('name')->get()->filter(function($role) {
+            return is_object($role) && isset($role->name);
+        });
+        
+        $divisions = \App\Division::whereNotNull('name')->orderBy('name')->get()->filter(function($division) {
+            return is_object($division) && isset($division->name);
+        });
+        
+    } catch (\Exception $e) {
+        // Fallback to empty collections if there's an error
+        $roles = collect([]);
+        $divisions = collect([]);
+    }
+    
+    return view('admin.users.create', compact('pageTitle', 'roles', 'divisions'));
   }
 
   public function edit(User $user)
@@ -108,8 +124,24 @@ class UsersController extends Controller
     // Provide the same compatibility mapping as in index(): legacy views expect `user_id`.
     $usersRoles = DB::table('model_has_roles')->where('model_type', User::class)->get()
                     ->map(function ($r) { $r->user_id = $r->model_id; return $r; });
-    $roles = Role::all();
-    return view('admin.users.edit', compact('pageTitle', 'user', 'usersRoles', 'roles'));
+    
+    try {
+        // Ensure we get proper model instances, not strings
+        $roles = Role::whereNotNull('name')->orderBy('name')->get()->filter(function($role) {
+            return is_object($role) && isset($role->name);
+        });
+        
+        $divisions = \App\Division::whereNotNull('name')->orderBy('name')->get()->filter(function($division) {
+            return is_object($division) && isset($division->name);
+        });
+        
+    } catch (\Exception $e) {
+        // Fallback to empty collections if there's an error
+        $roles = collect([]);
+        $divisions = collect([]);
+    }
+    
+    return view('admin.users.edit', compact('pageTitle', 'user', 'usersRoles', 'roles', 'divisions'));
   }
 
   public function update(UpdateUserRequest $request, User $user)

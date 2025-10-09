@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Ticket;
 use App\DailyActivity;
 use App\User;
+use App\TicketsStatus;
+use App\TicketsEntry;
+use App\AdminOnlineStatus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -112,8 +115,12 @@ class TicketService
         $ticket->update([
             'assigned_to' => $adminId,
             'assigned_at' => now(),
-            'assignment_type' => $type
+            'assignment_type' => $type,
+            'ticket_status_id' => $this->getStatusId('In Progress') // Auto update to In Progress
         ]);
+
+        // Add automatic ticket entry for assignment
+        $this->addTicketEntry($ticket, $admin->id, "Tiket telah ditugaskan kepada {$admin->name}");
 
         Log::info("Ticket {$ticket->ticket_code} assigned to admin {$admin->name}");
         
@@ -245,5 +252,118 @@ class TicketService
                                  ->count();
 
         return round(($completedTickets / $totalTickets) * 100, 2);
+    }
+
+    /**
+     * Get status ID by name
+     */
+    private function getStatusId($statusName)
+    {
+        $status = TicketsStatus::where('status', $statusName)->first();
+        return $status ? $status->id : 1; // Default to 1 if not found
+    }
+
+    /**
+     * Add ticket entry for logging activities
+     */
+    public function addTicketEntry(Ticket $ticket, $userId, $message, $isPublic = true)
+    {
+        return TicketsEntry::create([
+            'ticket_id' => $ticket->id,
+            'user_id' => $userId,
+            'body' => $message,
+            'is_public' => $isPublic,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+    }
+
+    /**
+     * Add first response to ticket (updates status and logs activity)
+     */
+    public function addFirstResponse(Ticket $ticket, $userId, $response)
+    {
+        DB::transaction(function () use ($ticket, $userId, $response) {
+            // Mark first response time if not set
+            if (!$ticket->first_response_at) {
+                $ticket->update([
+                    'first_response_at' => now()
+                ]);
+            }
+
+            // Add the response as ticket entry
+            $this->addTicketEntry($ticket, $userId, $response);
+
+            // Update status if still open
+            if ($ticket->ticket_status_id == $this->getStatusId('Open')) {
+                $ticket->update([
+                    'ticket_status_id' => $this->getStatusId('In Progress')
+                ]);
+            }
+        });
+
+        return true;
+    }
+
+    /**
+     * Update ticket status with automatic logging
+     */
+    public function updateTicketStatus(Ticket $ticket, $statusName, $userId, $notes = null)
+    {
+        $oldStatus = $ticket->ticket_status->status ?? 'Unknown';
+        $newStatusId = $this->getStatusId($statusName);
+
+        DB::transaction(function () use ($ticket, $newStatusId, $statusName, $oldStatus, $userId, $notes) {
+            $ticket->update([
+                'ticket_status_id' => $newStatusId
+            ]);
+
+            // Log status change
+            $message = "Status tiket diubah dari '{$oldStatus}' menjadi '{$statusName}'";
+            if ($notes) {
+                $message .= "\n\nCatatan: " . $notes;
+            }
+
+            $this->addTicketEntry($ticket, $userId, $message);
+
+            // Handle special status changes
+            if ($statusName == 'Resolved' && !$ticket->resolved_at) {
+                $ticket->update([
+                    'resolved_at' => now()
+                ]);
+
+                // Create daily activity for resolution
+                if ($ticket->assigned_to) {
+                    DailyActivity::createFromTicketCompletion($ticket);
+                }
+            }
+        });
+
+        return true;
+    }
+
+    /**
+     * Close ticket with resolution
+     */
+    public function closeTicket(Ticket $ticket, $resolution, $userId)
+    {
+        DB::transaction(function () use ($ticket, $resolution, $userId) {
+            $ticket->update([
+                'ticket_status_id' => $this->getStatusId('Resolved'),
+                'resolved_at' => now(),
+                'resolution' => $resolution,
+                'closed' => now()
+            ]);
+
+            // Log resolution
+            $this->addTicketEntry($ticket, $userId, "Tiket diselesaikan.\n\nResolusi:\n" . $resolution);
+
+            // Create daily activity
+            if ($ticket->assigned_to) {
+                DailyActivity::createFromTicketCompletion($ticket);
+            }
+        });
+
+        return true;
     }
 }

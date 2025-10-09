@@ -100,11 +100,13 @@
                     @php $roleUserId = isset($usersRole->user_id) ? $usersRole->user_id : (isset($usersRole->model_id) ? $usersRole->model_id : null); @endphp
                     @if($user->id == $roleUserId)
                       @foreach($roles as $role)
-                        <option
-                          @if($role->id == $usersRole->role_id)
-                            selected
-                          @endif
-                          value="{{$role->id}}">{{$role->display_name}}</option>
+                        @if($role && is_object($role) && isset($role->id) && (isset($role->name) || isset($role->display_name)))
+                          <option
+                            @if($role->id == $usersRole->role_id)
+                              selected
+                            @endif
+                            value="{{$role->id}}">{{ $role->display_name ?? ucfirst($role->name) }}</option>
+                        @endif
                       @endforeach
                     @endif
                   @endforeach

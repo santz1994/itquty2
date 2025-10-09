@@ -126,9 +126,11 @@
                                             <option value="">Select Division</option>
                                             @if(isset($divisions))
                                                 @foreach($divisions as $division)
-                                                    <option value="{{ $division->id }}" {{ old('division_id') == $division->id ? 'selected' : '' }}>
-                                                        {{ $division->name }}
-                                                    </option>
+                                                    @if($division && is_object($division) && isset($division->name) && isset($division->id))
+                                                        <option value="{{ $division->id }}" {{ old('division_id') == $division->id ? 'selected' : '' }}>
+                                                            {{ $division->name }}
+                                                        </option>
+                                                    @endif
                                                 @endforeach
                                             @endif
                                         </select>
@@ -147,9 +149,11 @@
                                             <option value="">Select Role</option>
                                             @if(isset($roles))
                                                 @foreach($roles as $role)
-                                                    <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
-                                                        {{ ucfirst($role->name) }}
-                                                    </option>
+                                                    @if($role && is_object($role) && isset($role->name))
+                                                        <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
+                                                            {{ ucfirst($role->name) }}
+                                                        </option>
+                                                    @endif
                                                 @endforeach
                                             @endif
                                         </select>

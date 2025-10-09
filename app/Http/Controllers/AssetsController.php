@@ -293,7 +293,12 @@ class AssetsController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AssetsExport, 'assets_' . now()->format('Y-m-d_H-i-s') . '.xlsx');
+        try {
+            $excel = app(\Maatwebsite\Excel\Excel::class);
+            return $excel->download(new \App\Exports\AssetsExport, 'assets_' . now()->format('Y-m-d_H-i-s') . '.xlsx');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Export failed: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -322,7 +327,8 @@ class AssetsController extends Controller
         ]);
 
         try {
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\AssetsImport, $request->file('file'));
+            $excel = app(\Maatwebsite\Excel\Excel::class);
+            $excel->import(new \App\Imports\AssetsImport, $request->file('file'));
             
             return redirect()->route('assets.index')
                            ->with('success', 'Assets imported successfully!');
@@ -397,5 +403,67 @@ class AssetsController extends Controller
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
             "Expires" => "0"
         ]);
+    }
+
+    // ========================================
+    // USER ASSET MANAGEMENT METHODS
+    // ========================================
+
+    /**
+     * Display user's assigned assets
+     */
+    public function userAssets(Request $request)
+    {
+        $user = auth()->user();
+        
+        $query = Asset::withRelations()->where('assigned_to', $user->id);
+
+        // Search functionality
+        if ($request->has('search') && $request->search !== '') {
+            $query->where(function($q) use ($request) {
+                $q->where('asset_tag', 'like', '%' . $request->search . '%')
+                  ->orWhere('serial_number', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('model', function($model) use ($request) {
+                      $model->where('model_name', 'like', '%' . $request->search . '%');
+                  });
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && $request->status !== '') {
+            $query->byStatus($request->status);
+        }
+
+        $assets = $query->orderBy('asset_tag')->paginate(20);
+        $statuses = Status::orderBy('name')->get();
+        $pageTitle = 'Aset Saya';
+
+        return view('assets.user.index', compact('assets', 'statuses', 'pageTitle'));
+    }
+
+    /**
+     * Show user's specific asset details
+     */
+    public function userShow(Asset $asset)
+    {
+        $user = auth()->user();
+        
+        // Ensure user can only view their own assets
+        if ($asset->assigned_to !== $user->id) {
+            abort(403, 'Anda hanya dapat melihat aset yang ditugaskan kepada Anda.');
+        }
+
+        $asset->load(['model', 'status', 'location', 'division', 'supplier', 'warranty_type']);
+        
+        // Get asset's ticket history
+        $ticketHistory = \App\Ticket::where('asset_id', $asset->id)
+                                   ->with(['ticket_status', 'ticket_priority', 'ticket_type'])
+                                   ->orderBy('created_at', 'desc')
+                                   ->take(10)
+                                   ->get();
+        
+        $pageTitle = 'Detail Aset - ' . $asset->asset_tag;
+
+        return view('assets.user.show', compact('asset', 'ticketHistory', 'pageTitle'));
     }
 }

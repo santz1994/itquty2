@@ -185,7 +185,16 @@ class CacheService
     public static function getTicketPriorities()
     {
         return Cache::remember('ticket_priorities_all', self::CACHE_TTL, function () {
-            return \App\TicketsPriority::orderBy('sort')->get();
+            // Order by priority level: Urgent, High, Normal, Low
+            return \App\TicketsPriority::orderByRaw("
+                CASE priority 
+                    WHEN 'Urgent' THEN 1
+                    WHEN 'High' THEN 2
+                    WHEN 'Normal' THEN 3
+                    WHEN 'Low' THEN 4
+                    ELSE 5
+                END
+            ")->get();
         });
     }
 

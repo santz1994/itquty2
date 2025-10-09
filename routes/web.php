@@ -105,6 +105,17 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\TicketController::class, 'assign'])->name('tickets.assign');
         Route::post('/tickets/{ticket}/complete', [\App\Http\Controllers\TicketController::class, 'complete'])->name('tickets.complete');
         Route::post('/tickets/{ticket}/force-assign', [\App\Http\Controllers\TicketController::class, 'forceAssign'])->name('tickets.force-assign');
+        
+        // Enhanced ticket management with auto-status updates
+        Route::post('/tickets/{ticket}/add-response', [\App\Http\Controllers\TicketController::class, 'addResponse'])->name('tickets.add-response');
+        Route::post('/tickets/{ticket}/update-status', [\App\Http\Controllers\TicketController::class, 'updateStatus'])->name('tickets.update-status');
+        Route::post('/tickets/{ticket}/complete-with-resolution', [\App\Http\Controllers\TicketController::class, 'completeWithResolution'])->name('tickets.complete-with-resolution');
+        
+        // Time tracking for technicians
+        Route::post('/tickets/{ticket}/start-timer', [\App\Http\Controllers\TicketController::class, 'startTimer'])->name('tickets.start-timer');
+        Route::post('/tickets/{ticket}/stop-timer', [\App\Http\Controllers\TicketController::class, 'stopTimer'])->name('tickets.stop-timer');
+        Route::get('/tickets/{ticket}/timer-status', [\App\Http\Controllers\TicketController::class, 'getTimerStatus'])->name('tickets.timer-status');
+        Route::get('/tickets/{ticket}/work-summary', [\App\Http\Controllers\TicketController::class, 'getWorkSummary'])->name('tickets.work-summary');
 
         // Daily Activities - Specific routes BEFORE resource route
         Route::get('/daily-activities/calendar', [\App\Http\Controllers\DailyActivityController::class, 'calendar'])->name('daily-activities.calendar');
@@ -192,6 +203,40 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Admin Configuration
         Route::get('/admin', [\App\Http\Controllers\PagesController::class, 'getTicketConfig'])->name('admin.config');
         
+        // System Settings Management
+        Route::prefix('system-settings')->name('system-settings.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SystemSettingsController::class, 'index'])->name('index');
+            
+            // Ticket Configuration
+            Route::get('/canned-fields', [\App\Http\Controllers\SystemSettingsController::class, 'cannedFields'])->name('canned-fields');
+            Route::get('/ticket-statuses', [\App\Http\Controllers\SystemSettingsController::class, 'ticketStatuses'])->name('ticket-statuses');
+            Route::get('/ticket-types', [\App\Http\Controllers\SystemSettingsController::class, 'ticketTypes'])->name('ticket-types');
+            Route::get('/ticket-priorities', [\App\Http\Controllers\SystemSettingsController::class, 'ticketPriorities'])->name('ticket-priorities');
+            
+            // Asset Configuration
+            Route::get('/asset-statuses', [\App\Http\Controllers\SystemSettingsController::class, 'assetStatuses'])->name('asset-statuses');
+            Route::get('/divisions', [\App\Http\Controllers\SystemSettingsController::class, 'divisions'])->name('divisions');
+            Route::get('/suppliers', [\App\Http\Controllers\SystemSettingsController::class, 'suppliers'])->name('suppliers');
+            Route::get('/invoices', [\App\Http\Controllers\SystemSettingsController::class, 'invoices'])->name('invoices');
+            Route::get('/warranty-types', [\App\Http\Controllers\SystemSettingsController::class, 'warrantyTypes'])->name('warranty-types');
+            
+            // Storeroom Configuration
+            Route::get('/storeroom', [\App\Http\Controllers\SystemSettingsController::class, 'storeroom'])->name('storeroom');
+        });
+
+        // Resource routes for system settings management
+        Route::resource('tickets-priority', \App\Http\Controllers\TicketsPrioritiesController::class)->except(['show', 'create', 'index']);
+        Route::resource('tickets-status', \App\Http\Controllers\TicketsStatusesController::class)->except(['show', 'create', 'index']);
+        Route::resource('warranty-types', \App\Http\Controllers\WarrantyTypesController::class)->except(['show', 'create', 'index']);
+
+        // Tickets Canned Fields Management (Super Admin only)
+        Route::resource('tickets-canned-field', \App\Http\Controllers\TicketsCannedFieldsController::class)->except(['show', 'create']);
+        Route::get('/admin/ticket-canned-fields', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'index'])->name('admin.ticket-canned-fields.index');
+        Route::get('/admin/ticket-canned-fields/{ticketsCannedField}/edit', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'edit'])->name('admin.ticket-canned-fields.edit');
+        
+        // Status Management (Super Admin only)
+        Route::resource('status', \App\Http\Controllers\StatusesController::class)->except(['show', 'create']);
+
         // Master Data Management
         Route::resource('/models', \App\Http\Controllers\AssetModelsController::class, ['parameters' => ['models' => 'asset_model']]);
         Route::resource('/pcspecs', \App\Http\Controllers\PcspecsController::class);
@@ -206,6 +251,19 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // NOTE: User and Management routes are now handled by the admin|super-admin group above
     // to avoid route conflicts and 403 errors. The controller handles role-based filtering internally.
+
+    // User Self-Service Portal Routes
+    Route::middleware(['role:user'])->group(function () {
+        // Self-service ticket creation for users
+        Route::get('/tiket-saya', [\App\Http\Controllers\TicketController::class, 'userTickets'])->name('tickets.user-index');
+        Route::get('/tiket-saya/buat', [\App\Http\Controllers\TicketController::class, 'userCreate'])->name('tickets.user-create');
+        Route::post('/tiket-saya/buat', [\App\Http\Controllers\TicketController::class, 'userStore'])->name('tickets.user-store');
+        Route::get('/tiket-saya/{ticket}', [\App\Http\Controllers\TicketController::class, 'userShow'])->name('tickets.user-show');
+        
+        // User can view their assets
+        Route::get('/aset-saya', [\App\Http\Controllers\AssetsController::class, 'userAssets'])->name('assets.user-index');
+        Route::get('/aset-saya/{asset}', [\App\Http\Controllers\AssetsController::class, 'userShow'])->name('assets.user-show');
+    });
 
     // Multi-role Routes (Management, Admin, SuperAdmin)
     Route::middleware(['role:management|admin|super-admin'])->group(function () {
@@ -873,6 +931,10 @@ Route::middleware(['auth', 'role:super-admin'])->prefix('admin')->group(function
     // Admin Tools - Ticket & Asset Management
     Route::get('/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('admin.assets.index');
     Route::get('/assets-statuses', [\App\Http\Controllers\StatusesController::class, 'index'])->name('admin.assets-statuses.index');
+    Route::post('/assets-statuses', [\App\Http\Controllers\StatusesController::class, 'store'])->name('admin.assets-statuses.store');
+    Route::get('/assets-statuses/{status}/edit', [\App\Http\Controllers\StatusesController::class, 'edit'])->name('admin.assets-statuses.edit');
+    Route::put('/assets-statuses/{status}', [\App\Http\Controllers\StatusesController::class, 'update'])->name('admin.assets-statuses.update');
+    Route::delete('/assets-statuses/{status}', [\App\Http\Controllers\StatusesController::class, 'destroy'])->name('admin.assets-statuses.destroy');
     Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('admin.tickets.show');
     Route::get('/ticket-priorities', [\App\Http\Controllers\TicketsPrioritiesController::class, 'index'])->name('admin.ticket-priorities.index');
     Route::get('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'index'])->name('admin.ticket-statuses.index');
@@ -902,10 +964,7 @@ Route::middleware(['auth', 'role:admin|super-admin'])->prefix('users')->group(fu
     Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('users.destroy');
     
     // Role Management
-    Route::get('/roles', function() {
-        $roles = \Spatie\Permission\Models\Role::with('users')->get();
-        return view('users.roles', compact('roles'));
-    })->name('users.roles');
+    Route::get('/roles', [\App\Http\Controllers\UsersController::class, 'roles'])->name('users.roles');
 });
 
 // Reports Routes (Management, Admin, Super Admin)

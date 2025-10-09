@@ -37,7 +37,7 @@ class StatusesController extends Controller
     Session::flash('title', $status->name);
     Session::flash('message', 'Successfully created');
 
-    return redirect()->route('admin.assets-statuses.index');
+    return redirect()->route('system-settings.asset-statuses');
   }
 
   public function edit(Status $status)
@@ -55,6 +55,18 @@ class StatusesController extends Controller
     Session::flash('title', $status->name);
     Session::flash('message', 'Successfully updated');
 
-    return redirect()->route('admin.assets-statuses.index');
+    return redirect()->route('system-settings.asset-statuses');
+  }
+
+  public function destroy(Status $status)
+  {
+    $statusName = $status->name;
+    $status->delete();
+
+    Session::flash('status', 'success');
+    Session::flash('title', $statusName);
+    Session::flash('message', 'Successfully deleted');
+
+    return redirect()->route('system-settings.asset-statuses');
   }
 }
