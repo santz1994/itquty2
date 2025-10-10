@@ -63,7 +63,7 @@ class KPIService
      */
     public function getAllAdminsPerformance($dateRange)
     {
-        $admins = User::role('admin')->get();
+        $admins = User::role('admin')->with(['roles', 'adminOnlineStatus'])->get();
         $performance = [];
 
         foreach ($admins as $admin) {

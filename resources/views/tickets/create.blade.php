@@ -11,13 +11,9 @@
           <form method="POST" action="{{ url('tickets') }}">
             {{csrf_field()}}
             <div class="form-group">
-              <label for="user_id">@if ($errors->has('user_id'))<span class="text-red">Agent <small>'{{ $errors->first('user_id') }}'</small></span>@else Agent @endif</label>
-              <select class="form-control user_id" name="user_id">
-                <option value="">Select Agent</option>
-                @foreach($users as $user)
-                    <option value="{{$user->id}}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{$user->name}}</option>
-                @endforeach
-              </select>
+              <label>Agent</label>
+              <p class="form-control-static">{{ Auth::user()->name }}</p>
+              <input type="hidden" name="user_id" value="{{ old('user_id', Auth::id()) }}">
             </div>
             <div class="form-group">
               <label for="location_id">Location</label>
@@ -121,7 +117,6 @@
 @section('footer')
   <script type="text/javascript">
     $(document).ready(function() {
-      $(".user_id").select2();
       $(".location_id").select2();
       $(".ticket_status_id").select2();
       $(".ticket_type_id").select2();

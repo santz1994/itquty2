@@ -11,7 +11,12 @@ use App\Location;
 use App\User;
 use App\Manufacturer;
 use App\Status;
+use App\AssetModel;
 use Illuminate\Support\Facades\Storage;
+use App\Division;
+use App\Supplier;
+use App\Invoice;
+use App\WarrantyType;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
 use App\Traits\RoleBasedAccessTrait;
@@ -94,10 +99,16 @@ class AssetsController extends Controller
      */
     public function create()
     {
-        $pageTitle = 'Create New Asset';
-        
-        // ViewComposer will provide dropdown data
-        return view('assets.create', compact('pageTitle'));
+        $models = AssetModel::all(); // Fetch all asset models
+        $divisions = Division::all(); // Fetch all divisions
+        $suppliers = Supplier::all(); // Fetch all suppliers
+        $invoices = Invoice::all(); // Fetch all invoices
+        $warranty_types = WarrantyType::all(); // Fetch all warranty types
+        $statuses = Status::all(); // Fetch all statuses
+        $locations = Location::all(); // Fetch all locations
+
+    $pageTitle = 'Create Asset';
+    return view('assets.create', compact('models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations', 'pageTitle'));
     }
 
     /**
@@ -105,15 +116,16 @@ class AssetsController extends Controller
      */
     public function store(StoreAssetRequest $request)
     {
-        try {
-            $asset = $this->assetService->createAsset($request->validated());
-            
-            return redirect()->route('assets.show', $asset)
-                           ->with('success', 'Asset berhasil dibuat dengan tag: ' . $asset->asset_tag);
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal membuat asset: ' . $e->getMessage()])
-                         ->withInput();
-        }
+        $validated = $request->validated();
+
+        Asset::create([
+            'model_id' => $validated['model_id'],
+            'serial_number' => $validated['serial_number'],
+            'purchase_date' => $validated['purchase_date'],
+            // Other fields...
+        ]);
+
+        return redirect()->route('assets.index')->with('success', 'Asset created successfully.');
     }
 
     /**

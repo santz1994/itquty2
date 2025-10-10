@@ -94,6 +94,11 @@ class User extends Authenticatable
     return $this->belongsTo(Division::class);
   }
 
+  public function adminOnlineStatus()
+  {
+    return $this->hasOne(AdminOnlineStatus::class);
+  }
+
   // Scopes
   public function scopeWithRoles($query)
   {

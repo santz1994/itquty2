@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\User;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class SystemController extends Controller
 {
@@ -81,11 +82,14 @@ class SystemController extends Controller
     /**
      * Show system logs
      */
-    public function logs()
+    public function logs(Request $request)
     {
         $this->authorize('view-system-settings');
         
-        $logFile = storage_path('logs/laravel.log');
+        // allow selecting a log file via ?file=filename.log (sanitize with basename)
+        $requestedFile = $request->get('file', 'laravel.log');
+        $requestedFile = basename($requestedFile);
+        $logFile = storage_path('logs/' . $requestedFile);
         $logs = [];
         $stats = [
             'total' => 0,
@@ -96,30 +100,54 @@ class SystemController extends Controller
             'last_entry' => 'Never'
         ];
         $log_files = [];
-        
         if (file_exists($logFile)) {
             $logContent = file_get_contents($logFile);
-            $logLines = explode("\n", $logContent);
-            $recentLines = array_slice(array_reverse($logLines), 0, 100);
-            
-            // Parse log entries
-            foreach ($recentLines as $index => $line) {
-                if (!empty(trim($line))) {
-                    $logs[] = [
-                        'id' => $index,
-                        'timestamp' => date('Y-m-d H:i:s'),
-                        'level' => $this->extractLogLevel($line),
-                        'message' => $this->extractLogMessage($line),
-                        'context' => []
-                    ];
+            // split into lines preserving empty lines
+            $logLines = preg_split('/\r\n|\r|\n/', $logContent);
+
+            // Group lines into entries by detecting lines that start with a timestamp
+            $entries = [];
+            $current = '';
+            foreach ($logLines as $line) {
+                if (preg_match('/^\[?\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]?/', trim($line))) {
+                    if ($current !== '') {
+                        $entries[] = $current;
+                    }
+                    $current = $line;
+                } else {
+                    // continuation of previous log entry (stacktrace, context, etc.)
+                    $current .= "\n" . $line;
                 }
             }
-            
+            if ($current !== '') $entries[] = $current;
+
+            // take last 100 entries
+            $recentEntries = array_slice($entries, -100);
+            $recentEntries = array_reverse($recentEntries);
+
+            foreach ($recentEntries as $index => $entry) {
+                $timestamp = null;
+                if (preg_match('/^\[?(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]?/', $entry, $m)) {
+                    $timestamp = $m[1];
+                }
+
+                $level = $this->extractLogLevel($entry);
+                $message = $this->extractLogMessage($entry);
+
+                $logs[] = [
+                    'id' => $index,
+                    'timestamp' => $timestamp ?? date('Y-m-d H:i:s', filemtime($logFile)),
+                    'level' => $level,
+                    'message' => $message,
+                    'context' => []
+                ];
+            }
+
             // Calculate stats
             $stats['total'] = count($logs);
             $stats['file_size'] = round(filesize($logFile) / 1024, 2) . ' KB';
             $stats['last_entry'] = date('Y-m-d H:i:s', filemtime($logFile));
-            
+
             foreach ($logs as $log) {
                 if ($log['level'] === 'error') $stats['errors']++;
                 elseif ($log['level'] === 'warning') $stats['warnings']++;
@@ -137,7 +165,49 @@ class SystemController extends Controller
             ];
         }
         
-        return view('system.logs', compact('logs', 'stats', 'log_files'));
+        // Apply basic filtering (search, level, date) on the assembled $logs
+        $search = $request->get('search');
+        $levelFilter = $request->get('level');
+        $dateFilter = $request->get('date');
+
+        $filtered = collect($logs)->filter(function ($entry) use ($search, $levelFilter, $dateFilter) {
+            // level filter
+            if ($levelFilter && strtolower($entry['level']) !== strtolower($levelFilter)) return false;
+            // search filter (in message or timestamp)
+            if ($search) {
+                $s = strtolower($search);
+                if (stripos($entry['message'], $search) === false && stripos($entry['timestamp'], $search) === false) {
+                    return false;
+                }
+            }
+            // date filter (today, yesterday, week, month)
+            if ($dateFilter && isset($entry['timestamp'])) {
+                $entryDate = Carbon::parse($entry['timestamp'])->startOfDay();
+                $now = Carbon::now();
+                if ($dateFilter === 'today' && !$entryDate->isSameDay($now)) return false;
+                if ($dateFilter === 'yesterday' && !$entryDate->isSameDay($now->copy()->subDay())) return false;
+                if ($dateFilter === 'week' && $entryDate->lt($now->copy()->startOfWeek())) return false;
+                if ($dateFilter === 'month' && $entryDate->lt($now->copy()->startOfMonth())) return false;
+            }
+            return true;
+        })->values()->all();
+
+        // Recalculate stats for filtered set
+        $filteredStats = [
+            'total' => count($filtered),
+            'errors' => 0,
+            'warnings' => 0,
+            'info' => 0,
+            'file_size' => $stats['file_size'],
+            'last_entry' => $stats['last_entry']
+        ];
+        foreach ($filtered as $entry) {
+            if ($entry['level'] === 'error') $filteredStats['errors']++;
+            elseif ($entry['level'] === 'warning') $filteredStats['warnings']++;
+            elseif ($entry['level'] === 'info') $filteredStats['info']++;
+        }
+
+        return view('system.logs', ['logs' => $filtered, 'stats' => $filteredStats, 'log_files' => $log_files]);
     }
     
     private function extractLogLevel($line)

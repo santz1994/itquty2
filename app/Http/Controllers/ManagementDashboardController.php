@@ -9,6 +9,7 @@ use App\Services\KPIService;
 use App\Ticket;
 use App\Asset;
 use App\User;
+use App\AdminOnlineStatus;
 use App\DailyActivity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,39 @@ class ManagementDashboardController extends Controller
         $period = $request->get('period', 'month'); // month, quarter, year
         $adminId = $request->get('admin_id');
 
-        $data = $this->kpiService->getAdminPerformanceReport($period, $adminId);
+        if ($adminId) {
+            // Individual admin performance
+            $data = $this->kpiService->getAdminPerformanceReport($period, $adminId);
+        } else {
+            // All admins performance - transform the data for the view
+            $performanceData = $this->kpiService->getAdminPerformanceReport($period);
+            
+            $adminPerformance = collect($performanceData)->map(function($item) {
+                $admin = $item['admin'];
+                $metrics = $item['metrics'];
+                
+                // Add metrics as properties to the admin object
+                $admin->assigned_tickets = $metrics['total_assigned'] ?? 0;
+                $admin->resolved_tickets = $metrics['total_completed'] ?? 0;
+                $admin->avg_response_time = $metrics['avg_resolution_time'] ?? 0;
+                
+                // Add online status check
+                $admin->is_online = $admin->adminOnlineStatus && 
+                                   $admin->adminOnlineStatus->last_activity && 
+                                   $admin->adminOnlineStatus->last_activity->gt(now()->subMinutes(10));
+                
+                // Add last activity
+                $admin->last_activity = $admin->adminOnlineStatus ? 
+                                       $admin->adminOnlineStatus->last_activity : null;
+                
+                return $admin;
+            });
+            
+            $data = [
+                'adminPerformance' => $adminPerformance,
+                'period' => $period
+            ];
+        }
 
         if ($request->ajax()) {
             return response()->json($data);

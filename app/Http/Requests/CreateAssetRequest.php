@@ -15,11 +15,11 @@ class CreateAssetRequest extends FormRequest
     {
         return [
             'asset_tag' => 'required|string|max:10|unique:assets,asset_tag',
-            'serial_number' => 'nullable|string|max:50',
+            'serial_number' => 'required|string|max:255',
             'model_id' => 'required|exists:asset_models,id',
             'division_id' => 'required|exists:divisions,id',
             'supplier_id' => 'required|exists:suppliers,id',
-            'purchase_date' => 'nullable|date',
+            'purchase_date' => 'required|date',
             'warranty_months' => 'nullable|integer|min:0|max:120',
             'warranty_type_id' => 'nullable|exists:warranty_types,id',
             'invoice_id' => 'nullable|exists:invoices,id',

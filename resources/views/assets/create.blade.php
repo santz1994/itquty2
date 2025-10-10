@@ -15,14 +15,17 @@
               <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{old('serial_number')}}" autofocus>
             </div>
             <div class="form-group">
-              <label for="model_id">Model</label>
-              <select class="form-control model_id" name="model_id" id="model_id" required>
-                <option value="">Select Model</option>
-                @foreach($asset_models as $asset_model)
-                    <option value="{{$asset_model->id}}" {{ old('model_id') == $asset_model->id ? 'selected' : '' }} data-asset-type-id="{{$asset_model->asset_type->id}}" data-asset-type="{{$asset_model->asset_type->type_name}}">{{$asset_model->manufacturer->name}} - {{$asset_model->asset_model}}</option>
-                @endforeach
-              </select>
-              <small id="asset-type-info" class="text-muted" style="display: none;"></small>
+                <label for="model_id">Asset Model</label>
+                <select name="model_id" id="model_id" class="form-control" required>
+                    <option value="">-- Select Asset Model --</option>
+            @php
+              // Prefer composer-provided `asset_models` (cached) but fall back to controller's $models
+              $modelsList = isset($asset_models) ? $asset_models : (isset($models) ? $models : collect());
+            @endphp
+            @foreach ($modelsList as $model)
+              <option value="{{ $model->id }}">{{ $model->manufacturer->name ?? '' }} - {{ $model->name }}</option>
+            @endforeach
+                </select>
             </div>
             <div class="form-group">
               <label for="division_id">Division</label>
