@@ -13,11 +13,11 @@
             {{csrf_field()}}
             <div class="form-group">
               <label for="serial_number">Serial Number</label>
-              <input type="text" name="serial_number" class="form-control" value="{{$asset->serial_number}}">
+              <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{$asset->serial_number}}">
             </div>
             <div class="form-group">
-              <label for="asset_model_id">Model</label>
-              <select class="form-control asset_model_id" name="asset_model_id">
+              <label for="model_id">Model</label>
+              <select class="form-control model_id" name="model_id" id="model_id" required>
                 @foreach($asset_models as $asset_model)
                   <option
                     @if($asset->model_id == $asset_model->id)
@@ -29,7 +29,7 @@
             </div>
             <div class="form-group">
               <label for="division_id">Division</label>
-              <select class="form-control division_id" name="division_id">
+              <select class="form-control division_id" name="division_id" id="division_id">
                 @foreach($divisions as $division)
                   <option
                     @if($asset->division_id == $division->id)
@@ -41,7 +41,7 @@
             </div>
             <div class="form-group">
               <label for="supplier_id">Supplier</label>
-              <select class="form-control supplier_id" name="supplier_id">
+              <select class="form-control supplier_id" name="supplier_id" id="supplier_id">
                 @foreach($suppliers as $supplier)
                   <option
                     @if($asset->supplier_id == $supplier->id)
@@ -53,7 +53,7 @@
             </div>
             <div class="form-group">
               <label for="invoice_id">Invoice</label>
-              <select class="form-control invoice_id" name="invoice_id">
+              <select class="form-control invoice_id" name="invoice_id" id="invoice_id">
                 <option value=""></option>
                 @foreach($invoices as $invoice)
                   <option
@@ -66,15 +66,15 @@
             </div>
             <div class="form-group">
               <label for="purchase_date">Purchase Date</label>
-              <input type="date" name="purchase_date" class="form-control" value="{{$asset->purchase_date}}">
+              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{$asset->purchase_date}}">
             </div>
             <div class="form-group">
               <label for="warranty_months">Warranty Months</label>
-              <input type="text" name="warranty_months" class="form-control" value="{{$asset->warranty_months}}">
+              <input type="text" name="warranty_months" class="form-control" id="warranty_months" value="{{$asset->warranty_months}}">
             </div>
             <div class="form-group">
               <label for="warranty_type_id">Warranty Type</label>
-              <select class="form-control warranty_type_id" name="warranty_type_id">
+              <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id">
                 <option value=""></option>
                 @foreach($warranty_types as $warranty_type)
                   <option
@@ -87,11 +87,11 @@
             </div>
             <div class="form-group">
               <label for="ip">IP Address (If PC/Laptop)</label>
-              <input type="text" name="ip" class="form-control" value="{{$asset->ip}}">
+              <input type="text" name="ip" class="form-control" id="ip" value="{{$asset->ip}}">
             </div>
             <div class="form-group">
               <label for="mac">MAC Address (If PC/Laptop)</label>
-              <input type="text" name="mac" class="form-control" value="{{$asset->mac}}">
+              <input type="text" name="mac" class="form-control" id="mac" value="{{$asset->mac}}">
             </div>
 
             <div class="form-group">
@@ -115,7 +115,7 @@
 @section('footer')
   <script type="text/javascript">
     $(document).ready(function() {
-      $(".asset_model_id").select2();
+      $(".model_id").select2();
       $(".division_id").select2();
       $(".supplier_id").select2();
       $(".invoice_id").select2();

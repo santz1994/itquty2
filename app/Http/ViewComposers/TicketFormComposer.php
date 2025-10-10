@@ -38,7 +38,7 @@ class TicketFormComposer
                 return Location::select('id', 'location_name')->orderBy('location_name')->get();
             }),
             'assets' => Cache::remember('assets_for_tickets_objects', 1800, function () {
-                return Asset::select('id', 'asset_tag')->with('assetModel:id,name')->get();
+                return Asset::select('id', 'asset_tag')->with('model:id,asset_model')->get();
             }),
             'assignableUsers' => Cache::remember('assignable_users_objects', 1800, function () {
                 return User::select('id', 'name')->whereHas('roles', function($q) {

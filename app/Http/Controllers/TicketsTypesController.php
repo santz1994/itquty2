@@ -74,4 +74,35 @@ class TicketsTypesController extends Controller
     ->with('status', 'success')
     ->with('title', 'Ticket Type: ' . $ticketsType->type);
   }
+
+  public function destroy(TicketsType $ticketsType)
+  {
+    $user = auth()->user();
+    if (!$user || !in_array($user->role, ['super-admin', 'admin'])) {
+      abort(403);
+    }
+
+    try {
+      $typeName = $ticketsType->type;
+      $ticketsType->delete();
+
+      Session::flash('status', 'success');
+      Session::flash('title', 'Ticket Type: ' . $typeName);
+      Session::flash('message', 'Successfully deleted');
+
+      return redirect()->route('admin.ticket-types.index')
+        ->with('message', 'Successfully deleted')
+        ->with('status', 'success')
+        ->with('title', 'Ticket Type: ' . $typeName);
+    } catch (\Exception $e) {
+      Session::flash('status', 'error');
+      Session::flash('title', 'Delete Error');
+      Session::flash('message', 'Cannot delete ticket type: ' . $e->getMessage());
+
+      return redirect()->route('admin.ticket-types.index')
+        ->with('message', 'Cannot delete ticket type: ' . $e->getMessage())
+        ->with('status', 'error')
+        ->with('title', 'Delete Error');
+    }
+  }
 }

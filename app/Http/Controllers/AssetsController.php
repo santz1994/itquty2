@@ -13,6 +13,7 @@ use App\Manufacturer;
 use App\Status;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\DB;
 use App\Traits\RoleBasedAccessTrait;
 
 class AssetsController extends Controller
@@ -54,21 +55,29 @@ class AssetsController extends Controller
 
         // Search functionality
         if ($request->has('search') && $request->search !== '') {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('asset_tag', 'like', '%' . $request->search . '%')
-                  ->orWhere('serial', 'like', '%' . $request->search . '%');
+            $searchTerm = '%' . $request->search . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                  ->orWhere('asset_tag', 'like', $searchTerm)
+                  ->orWhere('serial', 'like', $searchTerm);
             });
         }
 
         $assets = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        // Calculate asset statistics for dashboard
+        // Calculate asset statistics for dashboard - optimized with single query
         $totalAssets = Asset::count();
-        $deployed = Asset::byStatus('Deployed')->count();
-        $readyToDeploy = Asset::byStatus('Ready to Deploy')->count();
-        $repairs = Asset::byStatus('Out for Repair')->count();
-        $writtenOff = Asset::byStatus('Written off')->count();
+        
+        // Get status counts in a single query
+        $statusCounts = Asset::join('statuses', 'assets.status_id', '=', 'statuses.id')
+                             ->select('statuses.name', DB::raw('count(*) as total'))
+                             ->groupBy('statuses.name')
+                             ->pluck('total', 'name');
+
+        $deployed = $statusCounts->get('Deployed', 0);
+        $readyToDeploy = $statusCounts->get('Ready to Deploy', 0);
+        $repairs = $statusCounts->get('Out for Repair', 0);
+        $writtenOff = $statusCounts->get('Written off', 0);
 
         // Get filter options - ViewComposer will handle dropdown data
         $types = AssetType::orderBy('type_name')->get();
@@ -148,12 +157,9 @@ class AssetsController extends Controller
      */
     public function destroy(Asset $asset)
     {
-        try {
-            // Check if user has permission to delete assets
-            if (!$this->hasRole('super-admin')) {
-                return back()->with('error', 'Anda tidak memiliki izin untuk menghapus asset');
-            }
+        $this->authorize('delete', $asset);
 
+        try {
             $asset->delete();
             
             return redirect()->route('assets.index')

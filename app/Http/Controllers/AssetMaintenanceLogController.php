@@ -53,7 +53,10 @@ class AssetMaintenanceLogController extends Controller
         $maintenanceLogs = $query->paginate(15);
         
         // Get filter options
-        $assets = Asset::select('id', 'name', 'asset_tag')->orderBy('name')->get();
+        $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
+                      ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
+                      ->orderBy('assets.asset_tag')
+                      ->get();
         $statuses = ['planned', 'in_progress', 'completed', 'cancelled'];
         $maintenanceTypes = ['repair', 'preventive', 'upgrade', 'inspection', 'other'];
 
@@ -65,7 +68,10 @@ class AssetMaintenanceLogController extends Controller
      */
     public function create(Request $request)
     {
-        $assets = Asset::select('id', 'name', 'asset_tag')->orderBy('name')->get();
+        $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
+                      ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
+                      ->orderBy('assets.asset_tag')
+                      ->get();
         $tickets = Ticket::with('asset')->where('ticket_status_id', '!=', 3)->orderBy('created_at', 'desc')->get(); // Exclude closed tickets
         
         $selectedAsset = null;
@@ -126,7 +132,10 @@ class AssetMaintenanceLogController extends Controller
     public function edit($id)
     {
         $maintenanceLog = AssetMaintenanceLog::findOrFail($id);
-        $assets = Asset::select('id', 'name', 'asset_tag')->orderBy('name')->get();
+        $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
+                      ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
+                      ->orderBy('assets.asset_tag')
+                      ->get();
         $tickets = Ticket::with('asset')->where('ticket_status_id', '!=', 3)->orderBy('created_at', 'desc')->get();
         
         return view('maintenance.edit', compact('maintenanceLog', 'assets', 'tickets'));

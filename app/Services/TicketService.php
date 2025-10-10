@@ -60,7 +60,19 @@ class TicketService
         return DB::transaction(function () use ($data) {
             // Generate ticket code
             $data['ticket_code'] = $this->generateTicketCode();
-            
+
+            // Defensive: ensure ticket_status_id is present and valid
+            if (empty($data['ticket_status_id']) || !\App\TicketsStatus::find($data['ticket_status_id'])) {
+                // Fallback to default 'Open' status id
+                $defaultId = $this->getStatusId('Open');
+                Log::warning('ticket_status_id missing or invalid in createTicket payload; defaulting to Open', [
+                    'provided_ticket_status_id' => $data['ticket_status_id'] ?? null,
+                    'default_ticket_status_id' => $defaultId,
+                    'payload_snapshot' => $data
+                ]);
+                $data['ticket_status_id'] = $defaultId;
+            }
+
             // Create ticket
             $ticket = Ticket::create($data);
             

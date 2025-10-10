@@ -23,13 +23,9 @@
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
-        <!-- Use MySQL for tests. Update these values to match your local test DB. -->
-        <env name="DB_CONNECTION" value="mysql"/>
-        <env name="DB_HOST" value="127.0.0.1"/>
-        <env name="DB_PORT" value="3306"/>
-    <env name="DB_DATABASE" value="itquty"/>
-        <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
+        <!-- Default to sqlite testing DB to make running tests locally easier -->
+    <env name="DB_CONNECTION" value="sqlite"/>
+    <env name="DB_DATABASE" value="database/testing.sqlite"/>
         <env name="DB_FOREIGN_KEYS" value="true"/>
         <env name="MAIL_DRIVER" value="log"/>
         <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>

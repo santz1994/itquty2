@@ -29,6 +29,9 @@
         "classmap": ["database"],
         "files": ["app/Http/helpers.php"]
     },
+    "autoload-dev": {
+        "classmap": ["tests/"]
+    },
     "scripts": {
         "post-root-package-install": [
             "php -r \"copy('.env.example', '.env');\""

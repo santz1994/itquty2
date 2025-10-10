@@ -81,7 +81,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     
     // Home/Dashboard Routes
     Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
-    Route::get('/dashboard', [\App\Http\Controllers\HomeController::class, 'index'])->name('dashboard');
+    Route::redirect('/dashboard', '/home');
     
     // Management Dashboard Routes
     Route::middleware(['role:management|super-admin'])->prefix('management')->group(function () {
@@ -101,6 +101,9 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
         Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
         Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+        Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
+        Route::put('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
+        Route::patch('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update']);
         Route::post('/tickets/{ticket}/self-assign', [\App\Http\Controllers\TicketController::class, 'selfAssign'])->name('tickets.self-assign');
         Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\TicketController::class, 'assign'])->name('tickets.assign');
         Route::post('/tickets/{ticket}/complete', [\App\Http\Controllers\TicketController::class, 'complete'])->name('tickets.complete');
@@ -276,8 +279,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/update-activity', [\App\Http\Controllers\ActivityController::class, 'updateActivity'])->name('update-activity');
 });
 
-// Debug route for assets issue
-Route::get('/test-inventory-debug', function() {
+// Debug and Test Routes (only available in local environment)
+if (app()->environment('local')) {
+    // Debug route for assets issue
+    Route::get('/test-inventory-debug', function() {
     try {
         echo "<h2>Testing Inventory Controller Data</h2>";
         
@@ -902,31 +907,42 @@ Route::middleware(['auth', 'role:super-admin'])->prefix('system')->group(functio
 
 // Admin Tools Routes (Super Admin only)
 Route::middleware(['auth', 'role:super-admin'])->prefix('admin')->group(function () {
+    // Admin Authentication Routes (no additional middleware needed)
+    Route::get('/authenticate', [\App\Http\Controllers\AdminAuthController::class, 'authenticate'])->name('admin.authenticate');
+    Route::post('/authenticate', [\App\Http\Controllers\AdminAuthController::class, 'processAuth'])->name('admin.process-auth');
+    Route::post('/clear-auth', [\App\Http\Controllers\AdminAuthController::class, 'clearAuth'])->name('admin.clear-auth');
+    
     // Main admin config page
     Route::get('/', [\App\Http\Controllers\PagesController::class, 'getTicketConfig'])->name('admin.config');
     
     // Admin Dashboard
     Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
     
-    // Database Management
+    // Database Management (Old routes - read-only)
     Route::get('/database', [\App\Http\Controllers\AdminController::class, 'database'])->name('admin.database');
-    Route::post('/database/action', [\App\Http\Controllers\AdminController::class, 'databaseAction'])->name('admin.database.action');
-    Route::post('/database/danger', [\App\Http\Controllers\AdminController::class, 'databaseDanger'])->name('admin.database.danger');
     
-    // Cache Management
+    // Restricted Admin Operations (daniel@quty.co.id + password confirmation required)
+    Route::middleware(['admin.security:edit'])->group(function () {
+        Route::post('/database/action', [\App\Http\Controllers\AdminController::class, 'databaseAction'])->name('admin.database.action');
+        Route::post('/database/danger', [\App\Http\Controllers\AdminController::class, 'databaseDanger'])->name('admin.database.danger');
+        
+        // Cache Management (POST operations only)
+        Route::post('/cache/clear', [\App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.cache.clear');
+        Route::post('/cache/optimize', [\App\Http\Controllers\AdminController::class, 'optimize'])->name('admin.cache.optimize');
+        
+        // Backup Management (Dangerous operations)
+        Route::post('/backup/create', [\App\Http\Controllers\AdminController::class, 'create'])->name('admin.backup.create');
+        Route::post('/backup/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('admin.backup.settings');
+        Route::post('/backup/cleanup', [\App\Http\Controllers\AdminController::class, 'cleanup'])->name('admin.backup.cleanup');
+        Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restore'])->name('admin.backup.restore');
+        Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'delete'])->name('admin.backup.delete');
+        Route::post('/backup/upload', [\App\Http\Controllers\AdminController::class, 'upload'])->name('admin.backup.upload');
+    });
+    
+    // Safe Admin Operations (read-only, no password confirmation needed)
     Route::get('/cache', [\App\Http\Controllers\AdminController::class, 'cache'])->name('admin.cache');
-    Route::post('/cache/clear', [\App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.cache.clear');
-    Route::post('/cache/optimize', [\App\Http\Controllers\AdminController::class, 'optimize'])->name('admin.cache.optimize');
-    
-    // Backup Management
     Route::get('/backup', [\App\Http\Controllers\AdminController::class, 'backup'])->name('admin.backup');
-    Route::post('/backup/create', [\App\Http\Controllers\AdminController::class, 'create'])->name('admin.backup.create');
-    Route::post('/backup/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('admin.backup.settings');
-    Route::post('/backup/cleanup', [\App\Http\Controllers\AdminController::class, 'cleanup'])->name('admin.backup.cleanup');
     Route::get('/backup/{backup}/download', [\App\Http\Controllers\AdminController::class, 'download'])->name('admin.backup.download');
-    Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restore'])->name('admin.backup.restore');
-    Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'delete'])->name('admin.backup.delete');
-    Route::post('/backup/upload', [\App\Http\Controllers\AdminController::class, 'upload'])->name('admin.backup.upload');
     
     // Admin Tools - Ticket & Asset Management
     Route::get('/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('admin.assets.index');
@@ -939,6 +955,28 @@ Route::middleware(['auth', 'role:super-admin'])->prefix('admin')->group(function
     Route::get('/ticket-priorities', [\App\Http\Controllers\TicketsPrioritiesController::class, 'index'])->name('admin.ticket-priorities.index');
     Route::get('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'index'])->name('admin.ticket-statuses.index');
     Route::get('/ticket-types', [\App\Http\Controllers\TicketsTypesController::class, 'index'])->name('admin.ticket-types.index');
+    Route::post('/ticket-types', [\App\Http\Controllers\TicketsTypesController::class, 'store'])->name('tickets-type.store');
+    Route::get('/ticket-types/{ticketsType}/edit', [\App\Http\Controllers\TicketsTypesController::class, 'edit'])->name('tickets-type.edit');
+    Route::put('/ticket-types/{ticketsType}', [\App\Http\Controllers\TicketsTypesController::class, 'update'])->name('tickets-type.update');
+    Route::delete('/ticket-types/{ticketsType}', [\App\Http\Controllers\TicketsTypesController::class, 'destroy'])->name('tickets-type.destroy');
+    
+    // Database Management Routes (Super Admin Only)
+    // Read-only routes (no additional security needed)
+    Route::get('/database', [\App\Http\Controllers\DatabaseController::class, 'index'])->name('admin.database.index');
+    Route::get('/database/backup', [\App\Http\Controllers\DatabaseController::class, 'backup'])->name('admin.database.backup');
+    Route::get('/database/{table}', [\App\Http\Controllers\DatabaseController::class, 'showTable'])->name('admin.database.table');
+    Route::get('/database/{table}/{id}', [\App\Http\Controllers\DatabaseController::class, 'show'])->name('admin.database.show');
+    Route::get('/database/{table}/export/{format}', [\App\Http\Controllers\DatabaseController::class, 'export'])->name('admin.database.export');
+    
+    // Edit operations (daniel@quty.co.id + password confirmation required)
+    Route::middleware(['admin.security:edit'])->group(function () {
+        Route::get('/database/{table}/create', [\App\Http\Controllers\DatabaseController::class, 'create'])->name('admin.database.create');
+        Route::post('/database/{table}', [\App\Http\Controllers\DatabaseController::class, 'store'])->name('admin.database.store');
+        Route::get('/database/{table}/{id}/edit', [\App\Http\Controllers\DatabaseController::class, 'edit'])->name('admin.database.edit');
+        Route::put('/database/{table}/{id}', [\App\Http\Controllers\DatabaseController::class, 'update'])->name('admin.database.update');
+        Route::delete('/database/{table}/{id}', [\App\Http\Controllers\DatabaseController::class, 'destroy'])->name('admin.database.destroy');
+        Route::delete('/database/{table}/truncate', [\App\Http\Controllers\DatabaseController::class, 'truncate'])->name('admin.database.truncate');
+    });
     
 });
 
@@ -1097,4 +1135,6 @@ Route::get('/debug-home-controller', function() {
         return '<h1>❌ DEBUG ERROR</h1><p>' . $e->getMessage() . '</p><pre>' . $e->getTraceAsString() . '</pre>';
     }
 });
+
+} // End of local environment debug routes
 

@@ -57,6 +57,32 @@
             </div>
         </div>
 
+        <!-- Security Status Alert -->
+        <div class="row">
+            <div class="col-md-12">
+                @if(auth()->user()->email === 'daniel@quty.co.id')
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h4><i class="icon fa fa-shield"></i> Full Administrative Access</h4>
+                    You have unrestricted access to all administrative functions including database modifications.
+                    @if(session('admin_password_confirmed') && session('admin_password_confirmed') > now()->subMinutes(30))
+                        <br><small><i class="fa fa-check-circle"></i> Password authentication valid until {{ session('admin_password_confirmed')->addMinutes(30)->format('H:i:s') }}</small>
+                        <a href="{{ route('admin.clear-auth') }}" class="btn btn-xs btn-default pull-right" onclick="return confirm('Clear authentication session?')">
+                            <i class="fa fa-times"></i> Clear Auth
+                        </a>
+                    @endif
+                </div>
+                @else
+                <div class="alert alert-warning alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h4><i class="icon fa fa-warning"></i> Limited Administrative Access</h4>
+                    Your account ({{ auth()->user()->email }}) has read-only admin access. 
+                    Database modifications are restricted to authorized personnel (daniel@quty.co.id).
+                </div>
+                @endif
+            </div>
+        </div>
+
         <div class="row">
             <!-- System Status -->
             <div class="col-md-6">
@@ -128,14 +154,27 @@
                                 </a>
                             </div>
                             <div class="col-xs-6">
-                                <a href="{{ route('admin.database') }}" class="btn btn-app">
+                                <a href="{{ route('admin.database.index') }}" class="btn btn-app">
                                     <i class="fa fa-database"></i> Database
+                                    @if(auth()->user()->email !== 'daniel@quty.co.id')
+                                        <span class="badge bg-orange"><i class="fa fa-eye"></i></span>
+                                    @else
+                                        <span class="badge bg-green"><i class="fa fa-edit"></i></span>
+                                    @endif
                                 </a>
                             </div>
                             <div class="col-xs-6">
+                                @if(auth()->user()->email === 'daniel@quty.co.id')
                                 <a href="{{ route('admin.cache') }}" class="btn btn-app">
                                     <i class="fa fa-refresh"></i> Clear Cache
+                                    <span class="badge bg-green"><i class="fa fa-unlock"></i></span>
                                 </a>
+                                @else
+                                <span class="btn btn-app disabled" title="Restricted to daniel@quty.co.id">
+                                    <i class="fa fa-refresh"></i> Clear Cache
+                                    <span class="badge bg-red"><i class="fa fa-lock"></i></span>
+                                </span>
+                                @endif
                             </div>
                         </div>
                     </div>

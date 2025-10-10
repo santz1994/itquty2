@@ -45,7 +45,7 @@ class User extends Authenticatable
    * @var array
    */
   protected $hidden = [
-      'password', 'remember_token',
+      'password', 'remember_token', 'api_token',
   ];
 
   /**
@@ -375,5 +375,39 @@ class User extends Authenticatable
                ->orderBy('resolved_tickets_count', 'desc')
                ->limit($limit)
                ->get();
+  }
+
+  /**
+   * Generate a new secure API token for the user
+   */
+  public function generateApiToken()
+  {
+      $plainTextToken = \Illuminate\Support\Str::random(60);
+      $hashedToken = hash('sha256', $plainTextToken);
+      
+      $this->update(['api_token' => $hashedToken]);
+      
+      return $plainTextToken; // Return the plain text version for the user
+  }
+
+  /**
+   * Verify an API token against the stored hash
+   */
+  public function verifyApiToken($token)
+  {
+      return hash('sha256', $token) === $this->api_token;
+  }
+
+  /**
+   * Find user by API token
+   */
+  public static function findByApiToken($token)
+  {
+      if (empty($token)) {
+          return null;
+      }
+
+      $hashedToken = hash('sha256', $token);
+      return static::where('api_token', $hashedToken)->first();
   }
 }

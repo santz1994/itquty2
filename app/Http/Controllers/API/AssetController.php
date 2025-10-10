@@ -135,11 +135,15 @@ class AssetController extends Controller
             ], 422);
         }
 
-        $asset = Asset::create($request->only([
-            'asset_tag', 'serial_number', 'model_id', 'division_id', 'supplier_id', 
-            'purchase_date', 'warranty_months', 'warranty_type_id', 'invoice_id', 
-            'ip_address', 'mac_address', 'status_id', 'assigned_to', 'notes'
+        $validatedData = $validator->validated();
+        // Only use fields that exist in the Asset model
+        $assetData = array_intersect_key($validatedData, array_flip([
+            'asset_tag', 'name', 'serial_number', 'mac_address', 'ip_address', 
+            'purchase_date', 'warranty_expiry', 'location_id', 'division_id', 
+            'status_id', 'model_id', 'assigned_to'
         ]));
+        
+        $asset = Asset::create($assetData);
         $asset->load(['status', 'division', 'location', 'assetModel', 'assignedUser']);
 
         // Auto-assign if assigned_to is provided
@@ -211,11 +215,15 @@ class AssetController extends Controller
             ], 422);
         }
 
-        $asset->update($request->only([
-            'asset_tag', 'serial_number', 'model_id', 'division_id', 'supplier_id', 
-            'purchase_date', 'warranty_months', 'warranty_type_id', 'invoice_id', 
-            'ip_address', 'mac_address', 'status_id', 'assigned_to', 'notes'
+        $validatedData = $validator->validated();
+        // Only use fields that exist in the Asset model  
+        $assetData = array_intersect_key($validatedData, array_flip([
+            'asset_tag', 'name', 'serial_number', 'mac_address', 'ip_address', 
+            'purchase_date', 'warranty_expiry', 'location_id', 'division_id', 
+            'status_id', 'model_id', 'assigned_to'
         ]));
+        
+        $asset->update($assetData);
         $asset->load(['status', 'division', 'location', 'assetModel', 'assignedUser']);
 
         return response()->json([

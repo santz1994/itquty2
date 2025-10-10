@@ -19,6 +19,7 @@ use App\DailyActivity;
 use App\Traits\RoleBasedAccessTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\Controller as BaseController;
 
@@ -63,6 +64,11 @@ class TicketController extends BaseController
             $query->where('assigned_to', $request->assigned_to);
         }
 
+        // Filter by asset
+        if ($request->has('asset_id') && $request->asset_id !== '') {
+            $query->where('asset_id', $request->asset_id);
+        }
+
         // Search by ticket code or subject
         if ($request->has('search') && $request->search !== '') {
             $query->where(function($q) use ($request) {
@@ -77,9 +83,13 @@ class TicketController extends BaseController
         $statuses = CacheService::getTicketStatuses();
         $priorities = CacheService::getTicketPriorities();
         $admins = User::admins()->orderBy('name')->get();
+        $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
+                      ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
+                      ->orderBy('assets.asset_tag')
+                      ->get();
         $pageTitle = 'Ticket Management';
 
-        return view('tickets.index', compact('tickets', 'statuses', 'priorities', 'admins', 'pageTitle'));
+        return view('tickets.index', compact('tickets', 'statuses', 'priorities', 'admins', 'assets', 'pageTitle'));
     }
 
     /**
@@ -100,7 +110,10 @@ class TicketController extends BaseController
         $ticketsStatuses = CacheService::getTicketStatuses();
         $ticketsTypes = CacheService::getTicketTypes();
         $ticketsPriorities = CacheService::getTicketPriorities();
-        $assets = Asset::where('assigned_to', auth()->id())->get(); // Only user's assets
+        $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
+                      ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
+                      ->orderBy('assets.asset_tag')
+                      ->get();
         $pageTitle = 'Create New Ticket';
         // Provide canned fields so the view can render the right-hand column
         $ticketsCannedFields = \App\TicketsCannedField::all();
@@ -163,6 +176,119 @@ class TicketController extends BaseController
         
         return view('tickets.show', compact('ticket', 'pageTitle', 'ticketEntries', 
                                           'users', 'locations', 'ticketsStatuses', 'ticketsTypes', 'ticketsPriorities'));
+    }
+
+    /**
+     * Show the form for editing the specified ticket
+     */
+    public function edit(Ticket $ticket)
+    {
+        $user = auth()->user();
+        
+        Log::info('Accessing ticket edit', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $user->id
+        ]);
+        
+        // Check if user has permission to edit this ticket
+        $hasRole = $this->hasAnyRole(['super-admin', 'admin']);
+        $isAssigned = $ticket->assigned_to === $user->id;
+        
+        Log::info('Checking edit permissions', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $user->id,
+            'assigned_to' => $ticket->assigned_to,
+            'has_admin_role' => $hasRole,
+            'is_assigned' => $isAssigned,
+            'can_edit' => $hasRole || $isAssigned
+        ]);
+        
+        if (!$hasRole && !$isAssigned) {
+            Log::warning('User denied access to edit ticket', [
+                'ticket_id' => $ticket->id,
+                'user_id' => $user->id,
+                'assigned_to' => $ticket->assigned_to
+            ]);
+            return redirect()->route('tickets.show', $ticket)
+                           ->with('error', 'You do not have permission to edit this ticket.');
+        }
+
+        $ticket->load(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'ticket_type', 'location', 'asset']);
+        
+        // Get dropdown data for the edit form
+        $users = User::select('id', 'name')->orderBy('name')->get();
+        $locations = Location::select('id', 'location_name')->orderBy('location_name')->get();
+        $ticketsStatuses = TicketsStatus::select('id', 'status')->orderBy('status')->get();
+        $ticketsTypes = TicketsType::select('id', 'type')->orderBy('type')->get();
+        $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
+        $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
+                      ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
+                      ->orderBy('assets.asset_tag')
+                      ->get();
+        
+        return view('tickets.edit', compact('ticket', 'users', 'locations', 'ticketsStatuses', 
+                                          'ticketsTypes', 'ticketsPriorities', 'assets'));
+    }
+
+    /**
+     * Update the specified ticket in storage
+     */
+    public function update(Request $request, Ticket $ticket)
+    {
+        $user = auth()->user();
+        
+        // Check if user has permission to update this ticket
+        if (!$this->hasAnyRole(['super-admin', 'admin']) && $ticket->assigned_to !== $user->id) {
+            return redirect()->route('tickets.show', $ticket)
+                           ->with('error', 'You do not have permission to update this ticket.');
+        }
+
+        // Log detailed request info
+        Log::info('Ticket update request received', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $user->id,
+            'method' => $request->method(),
+            'request_data' => $request->all(),
+            'has_subject' => $request->has('subject'),
+            'subject_value' => $request->input('subject'),
+            'has_description' => $request->has('description'),  
+            'description_value' => $request->input('description')
+        ]);
+
+        $validated = $request->validate([
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string',
+            'ticket_priority_id' => 'required|exists:tickets_priorities,id',
+            'ticket_type_id' => 'required|exists:tickets_types,id',
+            'ticket_status_id' => 'required|exists:tickets_statuses,id',
+            'location_id' => 'nullable|exists:locations,id',
+            'asset_id' => 'nullable|exists:assets,id',
+            'assigned_to' => 'nullable|exists:users,id',
+        ]);
+
+        try {
+            Log::info('Attempting to update ticket', [
+                'ticket_id' => $ticket->id,
+                'validated_data' => $validated,
+                'user_id' => $user->id
+            ]);
+            
+            $ticket->update($validated);
+            
+            Log::info('Ticket updated successfully', ['ticket_id' => $ticket->id]);
+            
+            return redirect()->route('tickets.show', $ticket)
+                           ->with('success', 'Ticket updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to update ticket', [
+                'ticket_id' => $ticket->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withInput()
+                        ->with('error', 'Failed to update ticket: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -44,6 +44,11 @@
             @endforeach
 					</ul>
           <div class="box-footer">
+            @if((auth()->user()->hasRole('super-admin') || auth()->user()->hasRole('admin')) || $ticket->assigned_to == auth()->id())
+              <a href="{{ route('tickets.edit', $ticket) }}" class="btn btn-primary">
+                <i class="fa fa-edit"></i> Edit Ticket
+              </a>
+            @endif
             <button type="button" class="btn btn-default" id='note'><i class="fa fa-pencil"></i> Add Note</button>
             <div id='new-note' style='display: none'>
               <form method="POST" action="/tickets/{{$ticket->id}}">

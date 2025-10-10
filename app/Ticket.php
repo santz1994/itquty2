@@ -88,17 +88,17 @@ class Ticket extends Model
 
   public function ticket_status()
   {
-    return $this->belongsTo(TicketsStatus::class);
+    return $this->belongsTo(TicketsStatus::class, 'ticket_status_id');
   }
 
   public function ticket_priority()
   {
-    return $this->belongsTo(TicketsPriority::class);
+    return $this->belongsTo(TicketsPriority::class, 'ticket_priority_id');
   }
 
   public function ticket_type()
   {
-    return $this->belongsTo(TicketsType::class);
+    return $this->belongsTo(TicketsType::class, 'ticket_type_id');
   }
 
   // ========================
@@ -500,7 +500,8 @@ class Ticket extends Model
   public function scopeWithRelations($query)
   {
     return $query->with([
-      'user', 'assignedTo', 'ticket_status', 'ticket_priority', 'asset'
+      'user', 'assignedTo', 'location', 'asset', 
+      'ticket_status', 'ticket_priority', 'ticket_type'
     ]);
   }
 

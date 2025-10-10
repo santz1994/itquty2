@@ -60,6 +60,14 @@ class Asset extends Model
     return QrCode::size(200)->generate($this->qr_code_url);
   }
 
+  /**
+   * Get the asset name from the related model
+   */
+  public function getNameAttribute()
+  {
+    return $this->model ? $this->model->asset_model : 'Unknown Model';
+  }
+
   // Relationships
   public function model()
   {

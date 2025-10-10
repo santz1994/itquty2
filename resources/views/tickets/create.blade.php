@@ -29,6 +29,17 @@
               </select>
             </div>
             <div class="form-group">
+              <label for="asset_id">Asset (Optional)</label>
+              <select class="form-control asset_id" name="asset_id">
+                <option value="">No Asset</option>
+                @foreach($assets as $asset)
+                    <option value="{{$asset->id}}" {{ old('asset_id') == $asset->id ? 'selected' : '' }}>
+                        {{ $asset->model_name ? $asset->model_name : 'Unknown Model' }} ({{ $asset->asset_tag }})
+                    </option>
+                @endforeach
+              </select>
+            </div>
+            <div class="form-group">
               <label for="ticket_status_id">Status</label>
               <select class="form-control ticket_status_id" name="ticket_status_id">
                 <option value = ""></option>

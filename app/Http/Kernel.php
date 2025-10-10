@@ -67,5 +67,6 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'ability' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         'session.timeout' => \App\Http\Middleware\SessionTimeoutMiddleware::class,
+        'admin.security' => \App\Http\Middleware\AdminSecurityMiddleware::class,
     ];
 }

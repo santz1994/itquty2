@@ -47,7 +47,7 @@
                                     <option value="">All Assets</option>
                                     @foreach($assets as $asset)
                                         <option value="{{ $asset->id }}" {{ request('asset_id') == $asset->id ? 'selected' : '' }}>
-                                            {{ $asset->asset_tag }} - {{ $asset->name }}
+                                            {{ $asset->asset_tag }} - {{ $asset->model_name ?? 'Unknown Model' }}
                                         </option>
                                     @endforeach
                                 </select>

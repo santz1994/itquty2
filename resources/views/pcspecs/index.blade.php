@@ -15,7 +15,7 @@
               <tr>
                 <th>CPU</th>
                 <th>RAM</th>
-                <th>HDD</th>
+                <th>HDD/SSD</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -54,7 +54,7 @@
               {{ hasErrorForField($errors, 'ram') }}
             </div>
             <div class="form-group {{ hasErrorForClass($errors, 'hdd') }}">
-              <label for="hdd">HDD</label>
+              <label for="hdd">HDD/SSD</label>
               <input type="text"  name="hdd" class="form-control" value="{{old('hdd')}}">
               {{ hasErrorForField($errors, 'hdd') }}
             </div>
