@@ -69,12 +69,15 @@
             <thead>
               <tr>
                 <th>Ticket Number</th>
-                <th>Agent</th>
+                <th>Creator Ticket</th>
                 <th>Location</th>
                 <th>Asset</th>
                 <th>Status</th>
                 <th>Priority</th>
                 <th>Subject</th>
+                @if(!auth()->user()->hasRole('user'))
+                  <th>Assigned To</th>
+                @endif
                 <th>Actions</th>
               </tr>
             </thead>
@@ -118,8 +121,19 @@
                         {{$ticket->ticket_priority->priority}}</span>
                       </div>
                     </td>
-                    <td>{{$ticket->subject}}</td>
-                    <td><a href="/tickets/{{ $ticket->id }}" class="btn btn-primary"><span class="fa fa-ticket" aria-hidden="true"></span> <b>View</b></a></td>
+                      <td>{{$ticket->subject}}</td>
+                      @if(!auth()->user()->hasRole('user'))
+                        <td>
+                          <div class="hover-pointer" id="assigned{{$ticket->id}}">
+                            @if($ticket->assignedTo)
+                              {{ $ticket->assignedTo->name }}
+                            @else
+                              <span class="text-muted">Unassigned</span>
+                            @endif
+                          </div>
+                        </td>
+                      @endif
+                      <td><a href="/tickets/{{ $ticket->id }}" class="btn btn-primary"><span class="fa fa-ticket" aria-hidden="true"></span> <b>View</b></a></td>
                   </div>
                 </tr>
               @endforeach
@@ -133,7 +147,7 @@
         var table = $('#table').DataTable( {
           responsive: true,
           columnDefs: [ {
-            orderable: false, targets: 7
+            orderable: false, targets: -1
           } ],
           order: [[ 0, "desc" ]]
         } );
@@ -186,6 +200,18 @@
           $(priority()).click(function () {
             table.search( "{{$ticket->ticket_priority->priority}}" ).draw();
           });
+            @if(!auth()->user()->hasRole('user'))
+            // Assigned To
+            var assigned = (function() {
+              var x = '#assigned' + {{$ticket->id}};
+              return x;
+            });
+            $(assigned()).click(function () {
+              @if($ticket->assignedTo)
+                table.search( "{{ $ticket->assignedTo->name }}" ).draw();
+              @endif
+            });
+            @endif
         @endforeach
       } );
 

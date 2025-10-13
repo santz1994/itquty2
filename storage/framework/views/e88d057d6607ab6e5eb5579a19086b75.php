@@ -72,12 +72,15 @@
             <thead>
               <tr>
                 <th>Ticket Number</th>
-                <th>Agent</th>
+                <th>Creator Ticket</th>
                 <th>Location</th>
                 <th>Asset</th>
                 <th>Status</th>
                 <th>Priority</th>
                 <th>Subject</th>
+                <?php if(!auth()->user()->hasRole('user')): ?>
+                  <th>Assigned To</th>
+                <?php endif; ?>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -121,8 +124,20 @@
                         <?php echo e($ticket->ticket_priority->priority); ?></span>
                       </div>
                     </td>
-                    <td><?php echo e($ticket->subject); ?></td>
-                    <td><a href="/tickets/<?php echo e($ticket->id); ?>" class="btn btn-primary"><span class="fa fa-ticket" aria-hidden="true"></span> <b>View</b></a></td>
+                      <td><?php echo e($ticket->subject); ?></td>
+                      <?php if(!auth()->user()->hasRole('user')): ?>
+                        <td>
+                          <div class="hover-pointer" id="assigned<?php echo e($ticket->id); ?>">
+                            <?php if($ticket->assignedTo): ?>
+                              <?php echo e($ticket->assignedTo->name); ?>
+
+                            <?php else: ?>
+                              <span class="text-muted">Unassigned</span>
+                            <?php endif; ?>
+                          </div>
+                        </td>
+                      <?php endif; ?>
+                      <td><a href="/tickets/<?php echo e($ticket->id); ?>" class="btn btn-primary"><span class="fa fa-ticket" aria-hidden="true"></span> <b>View</b></a></td>
                   </div>
                 </tr>
               <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -136,7 +151,7 @@
         var table = $('#table').DataTable( {
           responsive: true,
           columnDefs: [ {
-            orderable: false, targets: 7
+            orderable: false, targets: -1
           } ],
           order: [[ 0, "desc" ]]
         } );
@@ -189,6 +204,18 @@
           $(priority()).click(function () {
             table.search( "<?php echo e($ticket->ticket_priority->priority); ?>" ).draw();
           });
+            <?php if(!auth()->user()->hasRole('user')): ?>
+            // Assigned To
+            var assigned = (function() {
+              var x = '#assigned' + <?php echo e($ticket->id); ?>;
+              return x;
+            });
+            $(assigned()).click(function () {
+              <?php if($ticket->assignedTo): ?>
+                table.search( "<?php echo e($ticket->assignedTo->name); ?>" ).draw();
+              <?php endif; ?>
+            });
+            <?php endif; ?>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
       } );
 
