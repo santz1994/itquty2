@@ -87,15 +87,19 @@ class DatabaseController extends Controller
             $query = DB::table($tableName);
             
             if ($search) {
-                // Search across all text columns
-                $textColumns = collect($columns)->where('type', 'like', '%varchar%')
-                    ->orWhere('type', 'like', '%text%')->pluck('column_name');
-                
-                $query->where(function($q) use ($textColumns, $search) {
-                    foreach ($textColumns as $column) {
-                        $q->orWhere($column, 'like', "%{$search}%");
-                    }
-                });
+                // Search across all text-like columns (varchar, text, char)
+                $textColumns = collect($columns)->filter(function($col) {
+                    $type = strtolower($col->type ?? '');
+                    return strpos($type, 'varchar') !== false || strpos($type, 'text') !== false || strpos($type, 'char') !== false;
+                })->pluck('column_name');
+
+                if ($textColumns->isNotEmpty()) {
+                    $query->where(function($q) use ($textColumns, $search) {
+                        foreach ($textColumns as $column) {
+                            $q->orWhere($column, 'like', "%{$search}%");
+                        }
+                    });
+                }
             }
             
             $totalRecords = $query->count();
@@ -113,6 +117,24 @@ class DatabaseController extends Controller
             Log::error('Table view error: ' . $e->getMessage());
             return back()->with('error', 'Error loading table: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Wrapper for legacy routes that expect `show(Request $request, $table, $id)`
+     * Delegates to showTable for backwards compatibility.
+     */
+    public function show(Request $request, $tableName, $id = null)
+    {
+        // Note: some legacy routes expected an {id} parameter; showTable handles
+        // displaying the table and paginated rows. If an id is provided we
+        // forward it via the request so showTable can use the search/pagination
+        // normally (or you can extend behaviour later to show a single record).
+        if ($id !== null) {
+            // If needed, attach id to request as a search parameter for quick lookup
+            $request->merge(['search' => $id]);
+        }
+
+        return $this->showTable($request, $tableName);
     }
 
     /**
@@ -170,6 +192,46 @@ class DatabaseController extends Controller
                 $insertData['updated_at'] = Carbon::now();
             }
             
+            // Pre-check unique indexes to avoid duplicate key DB errors (e.g. UNIQUE(user_id))
+            $indexes = $this->getTableIndexes($tableName);
+            $indexMap = [];
+            foreach ($indexes as $idx) {
+                // MySQL SHOW INDEX returns Key_name, Column_name, Non_unique
+                $key = $idx->Key_name ?? $idx->Key_name ?? null;
+                $col = $idx->Column_name ?? $idx->Column_name ?? null;
+                $nonUnique = isset($idx->Non_unique) ? (int)$idx->Non_unique : null;
+
+                if (!$key || !$col) continue;
+
+                if (!isset($indexMap[$key])) {
+                    $indexMap[$key] = ['non_unique' => $nonUnique, 'columns' => []];
+                }
+                $indexMap[$key]['columns'][] = $col;
+            }
+
+            foreach ($indexMap as $keyName => $info) {
+                // Only consider unique indexes (non_unique == 0) and skip primary
+                if (isset($info['non_unique']) && (int)$info['non_unique'] === 0 && strtoupper($keyName) !== 'PRIMARY') {
+                    $cols = $info['columns'];
+                    // Check if all columns for this unique index are present in insert data
+                    $allPresent = true;
+                    foreach ($cols as $c) {
+                        if (!array_key_exists($c, $insertData)) { $allPresent = false; break; }
+                    }
+
+                    if ($allPresent) {
+                        $q = DB::table($tableName);
+                        foreach ($cols as $c) {
+                            $q->where($c, $insertData[$c]);
+                        }
+                        if ($q->exists()) {
+                            // Return friendly error pointing out which unique index prevented insertion
+                            return back()->withInput()->with('error', "A record with the same values for unique index '{$keyName}' already exists.");
+                        }
+                    }
+                }
+            }
+
             $id = DB::table($tableName)->insertGetId($insertData);
             
             $this->logOperation('INSERT', $tableName, $id, $insertData);

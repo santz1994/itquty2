@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 
 // Bridge for legacy apps: if the old app/Http/routes.php exists, load it
 // so older route definitions (from Laravel 5.x era) are picked up.
@@ -944,6 +945,22 @@ Route::middleware(['auth', 'role:super-admin'])->prefix('admin')->group(function
     Route::get('/backup', [\App\Http\Controllers\AdminController::class, 'backup'])->name('admin.backup');
     Route::get('/backup/{backup}/download', [\App\Http\Controllers\AdminController::class, 'download'])->name('admin.backup.download');
     
+
+// Development helper: allow a GET shortcut to clear caches in local env only.
+// This is intentionally restricted to local environment and requires auth + super-admin role.
+if (app()->environment('local')) {
+    Route::middleware(['auth', 'role:super-admin'])->get('/cache/clear-dev', function() {
+        try {
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            return redirect('/admin/cache')->with('success', 'Caches cleared (dev-only).');
+        } catch (\Exception $e) {
+            return redirect('/admin/cache')->with('error', 'Cache clear failed: ' . $e->getMessage());
+        }
+    })->name('admin.cache.clear.dev');
+}
     // Admin Tools - Ticket & Asset Management
     Route::get('/assets', [\App\Http\Controllers\InventoryController::class, 'index'])->name('admin.assets.index');
     Route::get('/assets-statuses', [\App\Http\Controllers\StatusesController::class, 'index'])->name('admin.assets-statuses.index');
