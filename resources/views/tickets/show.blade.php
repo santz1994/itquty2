@@ -67,6 +67,21 @@
           <div class="text-center"><a class="btn btn-primary" href="{{ URL::previous() }}">Back</a></div><br>
         </div>
       </div>
+      
+      <!-- File Attachments Section -->
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title"><i class="fa fa-paperclip"></i> Attachments</h3>
+        </div>
+        <div class="box-body">
+          @include('partials.file-uploader', [
+            'model_type' => 'ticket',
+            'model_id' => $ticket->id,
+            'collection' => 'attachments'
+          ])
+        </div>
+      </div>
+      
       @if(count($errors))
         <ul>
           @foreach($errors->all() as $error)

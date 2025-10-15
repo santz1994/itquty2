@@ -10,6 +10,9 @@
     <!-- Responsive Fixes CSS -->
     <link href="{{ asset('/css/responsive-fix.css') }}" rel="stylesheet" type="text/css" />
     
+    <!-- Enhanced UX CSS -->
+    <link href="{{ asset('/css/enhanced-ux.css') }}" rel="stylesheet" type="text/css" />
+    
     <script src="{{ asset('/plugins/jQuery/jQuery-2.1.4.min.js') }}"></script>
 
 

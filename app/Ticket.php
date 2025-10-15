@@ -7,9 +7,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Ticket extends Model
+class Ticket extends Model implements HasMedia
 {
+  use InteractsWithMedia;
   protected $fillable = [
     'user_id', 'location_id', 'ticket_status_id', 'ticket_type_id', 
     'ticket_priority_id', 'subject', 'description', 'ticket_code',
@@ -63,6 +66,25 @@ class Ticket extends Model
     ];
     
     return now()->addHours($slaHours[$priorityId] ?? 72);
+  }
+
+  /**
+   * Register media collections
+   */
+  public function registerMediaCollections(): void
+  {
+    $this->addMediaCollection('attachments')
+         ->acceptsMimeTypes([
+           'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+           'application/pdf', 'application/msword', 
+           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+           'application/vnd.ms-excel',
+           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+           'text/plain', 'text/csv'
+         ]);
+    
+    $this->addMediaCollection('screenshots')
+         ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
   }
 
   // Relationships

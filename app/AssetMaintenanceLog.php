@@ -4,9 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class AssetMaintenanceLog extends Model
+class AssetMaintenanceLog extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     protected $fillable = [
         'asset_id',
         'ticket_id',
@@ -30,6 +33,21 @@ class AssetMaintenanceLog extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime'
     ];
+
+    /**
+     * Register media collections
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('before_photos')
+             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+        
+        $this->addMediaCollection('after_photos')
+             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+        
+        $this->addMediaCollection('receipts')
+             ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png']);
+    }
 
     /**
      * Relasi ke Asset

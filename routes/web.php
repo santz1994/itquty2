@@ -1012,14 +1012,15 @@ Route::middleware(['auth', 'role:admin|super-admin'])->prefix('admin/users')->gr
 Route::middleware(['auth', 'role:admin|super-admin'])->prefix('users')->group(function () {
     Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('users.index');
     Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('users.create');
+    
+    // Role Management - Must be before /{user} routes to avoid conflicts
+    Route::get('/roles', [\App\Http\Controllers\UsersController::class, 'roles'])->name('users.roles');
+    
     Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('users.store');
     Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('users.show');
     Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('users.edit');
     Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('users.update');
     Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('users.destroy');
-    
-    // Role Management
-    Route::get('/roles', [\App\Http\Controllers\UsersController::class, 'roles'])->name('users.roles');
 });
 
 // Reports Routes (Management, Admin, Super Admin)

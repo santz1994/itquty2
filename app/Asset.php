@@ -8,9 +8,12 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Asset extends Model
+class Asset extends Model implements HasMedia
 {
+  use InteractsWithMedia;
   /**
    * Mass assignable attributes
    * @var array
@@ -42,6 +45,21 @@ class Asset extends Model
   public static function generateQRCode()
   {
     return 'AST-' . strtoupper(uniqid());
+  }
+
+  /**
+   * Register media collections
+   */
+  public function registerMediaCollections(): void
+  {
+    $this->addMediaCollection('images')
+         ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+    
+    $this->addMediaCollection('documents')
+         ->acceptsMimeTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+    
+    $this->addMediaCollection('invoices')
+         ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png']);
   }
 
   /**

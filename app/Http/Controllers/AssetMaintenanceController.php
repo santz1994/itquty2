@@ -163,8 +163,8 @@ class AssetMaintenanceController extends Controller
      */
     public function analytics(Request $request)
     {
-        $dateFrom = $request->get('date_from', now()->subMonths(6)->format('Y-m-d'));
-        $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+        $dateFrom = $request->input('date_from', now()->subMonths(6)->format('Y-m-d'));
+        $dateTo = $request->input('date_to', now()->format('Y-m-d'));
 
         // Get maintenance statistics
         $maintenanceTickets = Ticket::whereNotNull('asset_id')

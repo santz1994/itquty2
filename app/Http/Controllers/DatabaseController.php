@@ -80,9 +80,9 @@ class DatabaseController extends Controller
             $indexes = $this->getTableIndexes($tableName);
             
             // Get table data with pagination
-            $perPage = $request->get('per_page', 25);
-            $page = $request->get('page', 1);
-            $search = $request->get('search');
+            $perPage = $request->input('per_page', 25);
+            $page = $request->input('page', 1);
+            $search = $request->input('search');
             
             $query = DB::table($tableName);
             

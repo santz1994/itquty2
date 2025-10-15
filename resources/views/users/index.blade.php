@@ -17,16 +17,16 @@
         <div class="row">
             <div class="col-md-12">
                 @if(session('success'))
-                <div class="alert alert-success alert-dismissible">
+                <div class="alert alert-success alert-dismissible auto-dismiss">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                    {{ session('success') }}
+                    <i class="fa fa-check-circle"></i> {{ session('success') }}
                 </div>
                 @endif
 
                 @if(session('error'))
-                <div class="alert alert-danger alert-dismissible">
+                <div class="alert alert-danger alert-dismissible auto-dismiss">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                    {{ session('error') }}
+                    <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
                 </div>
                 @endif
 
@@ -75,13 +75,19 @@
                                             @endforeach
                                         </td>
                                         <td>{{ $user->created_at->format('M d, Y') }}</td>
-                                        <td>
+                                        <td class="table-actions">
                                             <div class="btn-group">
-                                                <a href="{{ route('users.show', $user) }}" class="btn btn-info btn-xs">
+                                                <a href="{{ route('users.show', $user) }}" 
+                                                   class="btn btn-info btn-xs" 
+                                                   data-toggle="tooltip" 
+                                                   title="View Details">
                                                     <i class="fa fa-eye"></i>
                                                 </a>
                                                 @can('edit-users')
-                                                <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-xs">
+                                                <a href="{{ route('users.edit', $user) }}" 
+                                                   class="btn btn-warning btn-xs"
+                                                   data-toggle="tooltip" 
+                                                   title="Edit User">
                                                     <i class="fa fa-edit"></i>
                                                 </a>
                                                 @endcan
@@ -90,8 +96,11 @@
                                                 <form method="POST" action="{{ route('users.destroy', $user) }}" style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-xs" 
-                                                        onclick="return confirm('Are you sure you want to delete this user?')">
+                                                    <button type="submit" 
+                                                            class="btn btn-danger btn-xs delete-confirm" 
+                                                            data-item-name="user {{ $user->name }}"
+                                                            data-toggle="tooltip" 
+                                                            title="Delete User">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -102,7 +111,25 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">No users found.</td>
+                                        <td colspan="6">
+                                            <div class="empty-state">
+                                                <div class="empty-state-icon">
+                                                    <i class="fa fa-users"></i>
+                                                </div>
+                                                <div class="empty-state-title">No Users Found</div>
+                                                <div class="empty-state-description">
+                                                    There are no users matching your search criteria.
+                                                    @can('create-users')
+                                                    <br>Try adjusting your filters or create a new user.
+                                                    @endcan
+                                                </div>
+                                                @can('create-users')
+                                                <a href="{{ route('users.create') }}" class="btn btn-primary">
+                                                    <i class="fa fa-plus"></i> Add New User
+                                                </a>
+                                                @endcan
+                                            </div>
+                                        </td>
                                     </tr>
                                     @endforelse
                                 </tbody>

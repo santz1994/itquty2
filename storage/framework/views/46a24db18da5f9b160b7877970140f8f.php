@@ -10,6 +10,9 @@
     <!-- Responsive Fixes CSS -->
     <link href="<?php echo e(asset('/css/responsive-fix.css')); ?>" rel="stylesheet" type="text/css" />
     
+    <!-- Enhanced UX CSS -->
+    <link href="<?php echo e(asset('/css/enhanced-ux.css')); ?>" rel="stylesheet" type="text/css" />
+    
     <script src="<?php echo e(asset('/plugins/jQuery/jQuery-2.1.4.min.js')); ?>"></script>
 
 

@@ -3,6 +3,9 @@
 <!-- Custom JS script -->
 <script src="<?php echo e(asset('/js/all.js')); ?>" type="text/javascript"></script>
 
+<!-- Enhanced UX JavaScript -->
+<script src="<?php echo e(asset('/js/enhanced-ux.js')); ?>" type="text/javascript"></script>
+
 <!-- AdminLTE Initialization Script -->
 <script type="text/javascript">
 $(document).ready(function() {

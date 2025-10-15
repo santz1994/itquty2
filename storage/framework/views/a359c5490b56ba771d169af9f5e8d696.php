@@ -70,6 +70,21 @@
           <div class="text-center"><a class="btn btn-primary" href="<?php echo e(URL::previous()); ?>">Back</a></div><br>
         </div>
       </div>
+      
+      <!-- File Attachments Section -->
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title"><i class="fa fa-paperclip"></i> Attachments</h3>
+        </div>
+        <div class="box-body">
+          <?php echo $__env->make('partials.file-uploader', [
+            'model_type' => 'ticket',
+            'model_id' => $ticket->id,
+            'collection' => 'attachments'
+          ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        </div>
+      </div>
+      
       <?php if(count($errors)): ?>
         <ul>
           <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
