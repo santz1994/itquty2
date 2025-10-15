@@ -21,7 +21,7 @@ class AttachmentController extends Controller
     {
         $request->validate([
             'file' => 'required|file|max:10240', // 10MB max
-            'model_type' => 'required|in:asset,ticket,maintenance',
+            'model_type' => 'required|in:asset,ticket,maintenance,maintenance_log',
             'model_id' => 'required|integer',
             'collection' => 'required|string',
         ]);
@@ -183,6 +183,7 @@ class AttachmentController extends Controller
             case 'ticket':
                 return Ticket::find($id);
             case 'maintenance':
+            case 'maintenance_log':
                 return AssetMaintenanceLog::find($id);
             default:
                 return null;
@@ -200,7 +201,7 @@ class AttachmentController extends Controller
         $request->validate([
             'files' => 'required|array',
             'files.*' => 'file|max:10240',
-            'model_type' => 'required|in:asset,ticket,maintenance',
+            'model_type' => 'required|in:asset,ticket,maintenance,maintenance_log',
             'model_id' => 'required|integer',
             'collection' => 'required|string',
         ]);

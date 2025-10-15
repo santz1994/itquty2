@@ -80,6 +80,23 @@ Route::get('/assets/qr/{qrCode}', [\App\Http\Controllers\QRCodeController::class
 // Authenticated Routes
 Route::middleware(['web', 'auth'])->group(function () {
     
+    // Global Search API Routes
+    Route::get('/api/search', [\App\Http\Controllers\SearchController::class, 'search'])->name('api.search');
+    Route::get('/api/quick-search', [\App\Http\Controllers\SearchController::class, 'quickSearch'])->name('api.quick-search');
+    
+    // Validation API Routes (for AJAX form validation)
+    Route::get('/api/validate/asset-tag', [\App\Http\Controllers\ValidationController::class, 'validateAssetTag'])->name('api.validate.asset-tag');
+    Route::get('/api/validate/serial-number', [\App\Http\Controllers\ValidationController::class, 'validateSerialNumber'])->name('api.validate.serial-number');
+    Route::get('/api/validate/email', [\App\Http\Controllers\ValidationController::class, 'validateEmail'])->name('api.validate.email');
+    Route::get('/api/validate/ip-address', [\App\Http\Controllers\ValidationController::class, 'validateIpAddress'])->name('api.validate.ip-address');
+    Route::get('/api/validate/mac-address', [\App\Http\Controllers\ValidationController::class, 'validateMacAddress'])->name('api.validate.mac-address');
+    Route::post('/api/validate/batch', [\App\Http\Controllers\ValidationController::class, 'validateBatch'])->name('api.validate.batch');
+    
+    // SLA API Routes (for AJAX SLA status checks)
+    Route::get('/api/sla/ticket/{ticket}/status', [\App\Http\Controllers\SlaController::class, 'getTicketSlaStatus'])->name('api.sla.ticket.status');
+    Route::get('/api/sla/ticket/{ticket}/breach', [\App\Http\Controllers\SlaController::class, 'checkBreach'])->name('api.sla.ticket.breach');
+    Route::get('/api/sla/metrics', [\App\Http\Controllers\SlaController::class, 'getMetrics'])->name('api.sla.metrics');
+    
     // Home/Dashboard Routes
     Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::redirect('/dashboard', '/home');
@@ -167,6 +184,14 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
         Route::get('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'show'])->name('notifications.show');
         Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+        
+        // File Attachments Routes
+        Route::post('/attachments/upload', [\App\Http\Controllers\AttachmentController::class, 'upload'])->name('attachments.upload');
+        Route::post('/attachments/bulk-upload', [\App\Http\Controllers\AttachmentController::class, 'bulkUpload'])->name('attachments.bulk-upload');
+        Route::get('/attachments', [\App\Http\Controllers\AttachmentController::class, 'index'])->name('attachments.index');
+        Route::get('/attachments/{id}/download', [\App\Http\Controllers\AttachmentController::class, 'download'])->name('attachments.download');
+        Route::delete('/attachments/{id}', [\App\Http\Controllers\AttachmentController::class, 'destroy'])->name('attachments.destroy');
+        
         Route::post('/assets/bulk-qr-codes', [\App\Http\Controllers\QRCodeController::class, 'bulkGenerateQRCodes'])->name('assets.bulk-qr-codes');
         Route::post('/assets/{asset}/change-status', [\App\Http\Controllers\InventoryController::class, 'changeStatus'])->name('assets.change-status');
         Route::get('/assets', [\App\Http\Controllers\AssetsController::class, 'index'])->name('assets.index');
@@ -206,6 +231,11 @@ Route::middleware(['web', 'auth'])->group(function () {
         
         // Admin Configuration
         Route::get('/admin', [\App\Http\Controllers\PagesController::class, 'getTicketConfig'])->name('admin.config');
+        
+        // SLA Management Routes
+        Route::get('/sla/dashboard', [\App\Http\Controllers\SlaController::class, 'dashboard'])->name('sla.dashboard');
+        Route::resource('sla', \App\Http\Controllers\SlaController::class);
+        Route::post('/sla/{sla}/toggle-active', [\App\Http\Controllers\SlaController::class, 'toggleActive'])->name('sla.toggle-active');
         
         // System Settings Management
         Route::prefix('system-settings')->name('system-settings.')->group(function () {

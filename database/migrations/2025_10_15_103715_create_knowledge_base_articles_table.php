@@ -13,7 +13,38 @@ return new class extends Migration
     {
         Schema::create('knowledge_base_articles', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->longText('content');
+            
+            // Categorization
+            $table->string('category')->nullable();
+            $table->json('tags')->nullable(); // ['hardware', 'printer', 'troubleshooting']
+            
+            // Author information (foreign key will be added later)
+            $table->unsignedBigInteger('author_id');
+            
+            // Publishing
+            $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $table->timestamp('published_at')->nullable();
+            
+            // Analytics
+            $table->integer('views')->default(0);
+            $table->integer('helpful_count')->default(0);
+            $table->integer('not_helpful_count')->default(0);
+            
+            // SEO
+            $table->string('meta_description')->nullable();
+            $table->json('related_articles')->nullable(); // [1, 2, 3] article IDs
+            
             $table->timestamps();
+            
+            // Indexes for performance
+            $table->index('category');
+            $table->index('status');
+            $table->index('author_id');
+            $table->index('published_at');
+            $table->fullText(['title', 'content']); // Full-text search
         });
     }
 

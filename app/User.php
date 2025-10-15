@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -28,7 +29,7 @@ use Carbon\Carbon;
  */
 class User extends Authenticatable
 {
-  use HasRoles, HasApiTokens;
+  use HasRoles, HasApiTokens, Notifiable;
   
   /**
    * The attributes that are mass assignable.
