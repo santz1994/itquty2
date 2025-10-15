@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+use App\Traits\Auditable;
+
 class Asset extends Model implements HasMedia
 {
-  use InteractsWithMedia;
+  use InteractsWithMedia, Auditable;
   /**
    * Mass assignable attributes
    * @var array

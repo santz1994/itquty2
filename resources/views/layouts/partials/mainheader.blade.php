@@ -21,6 +21,21 @@
         <!-- Navbar Right Menu -->
         <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
+                <!-- Global Search -->
+                @auth
+                <li class="dropdown" style="width: 300px;">
+                    <form class="navbar-form" style="margin: 8px 10px;">
+                        <div class="input-group">
+                            <input type="text" id="global-search" class="form-control" placeholder="Search (Ctrl+K)..." style="border-radius: 20px;">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-flat" style="border-radius: 0 20px 20px 0;">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </form>
+                </li>
+                @endauth
                 <!-- Messages: style can be found in dropdown.less-->
                 {{-- <li class="dropdown messages-menu">
                     <!-- Menu toggle button -->

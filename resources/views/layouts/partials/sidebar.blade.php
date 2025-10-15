@@ -19,10 +19,12 @@
                   <a href="javascript:void(0)"><i class='fa fa-tags'></i> <span>Assets</span> <i class="fa fa-angle-left pull-right"></i></a>
                   <ul class="treeview-menu">
                       <li><a href="{{ url('/assets')}}">All Assets</a></li>
+                      <li><a href="{{ route('assets.my-assets') }}"><i class='fa fa-briefcase'></i> My Assets</a></li>
                       @can('create-assets')
                       <li><a href="{{ url('/asset-maintenance')}}">Asset Maintenance</a></li>
                       <li><a href="{{ url('/spares')}}">Spares</a></li>
                       @endcan
+                      <li><a href="{{ route('assets.scan-qr') }}"><i class='fa fa-qrcode'></i> Scan QR Code</a></li>
                       @can('export-assets')
                       <li><a href="{{ route('assets.export') }}">Export Assets</a></li>
                       @endcan
@@ -32,6 +34,17 @@
                   </ul>
               </li>
             @endcan
+            
+            <!-- 📦 Asset Requests (All authenticated users) -->
+            @auth
+            <li class="treeview">
+                <a href="javascript:void(0)"><i class='fa fa-inbox'></i> <span>Asset Requests</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="{{ route('asset-requests.index') }}">All Requests</a></li>
+                    <li><a href="{{ route('asset-requests.create') }}">New Request</a></li>
+                </ul>
+            </li>
+            @endauth
             
             <!-- 🎫 Tickets (All roles: User=1, Admin=2, SuperAdmin=3, Management=4) -->
             @can('view-tickets')
@@ -167,6 +180,19 @@
                 <a href="javascript:void(0)"><i class='fa fa-cogs'></i> <span>System Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">
                     <li><a href="{{ route('system-settings.index') }}">Settings Overview</a></li>
+                    <li><a href="{{ route('sla.index') }}"><i class='fa fa-clock-o'></i> SLA Policies</a></li>
+                    <li><a href="{{ route('sla.dashboard') }}"><i class='fa fa-tachometer'></i> SLA Dashboard</a></li>
+                </ul>
+            </li>
+            @endrole
+            
+            <!-- 📝 Audit Logs (admin & super-admin) -->
+            @role(['admin', 'super-admin'])
+            <li class="treeview">
+                <a href="javascript:void(0)"><i class='fa fa-history'></i> <span>Audit Logs</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="{{ route('audit-logs.index') }}">View Logs</a></li>
+                    <li><a href="{{ route('audit-logs.export') }}">Export Logs</a></li>
                 </ul>
             </li>
             @endrole

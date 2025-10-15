@@ -13,6 +13,11 @@
     <!-- Enhanced UX CSS -->
     <link href="{{ asset('/css/enhanced-ux.css') }}" rel="stylesheet" type="text/css" />
     
+    <!-- Custom UI/UX Enhancements -->
+    <link href="{{ asset('/css/custom-tables.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('/css/loading-states.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('/css/dashboard-widgets.css') }}" rel="stylesheet" type="text/css" />
+    
     <script src="{{ asset('/plugins/jQuery/jQuery-2.1.4.min.js') }}"></script>
 
 

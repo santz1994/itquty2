@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+use App\Traits\Auditable;
+
 class Ticket extends Model implements HasMedia
 {
-  use InteractsWithMedia;
+  use InteractsWithMedia, Auditable;
   protected $fillable = [
     'user_id', 'location_id', 'ticket_status_id', 'ticket_type_id', 
     'ticket_priority_id', 'subject', 'description', 'ticket_code',

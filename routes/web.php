@@ -138,6 +138,25 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/tickets/{ticket}/timer-status', [\App\Http\Controllers\TicketController::class, 'getTimerStatus'])->name('tickets.timer-status');
         Route::get('/tickets/{ticket}/work-summary', [\App\Http\Controllers\TicketController::class, 'getWorkSummary'])->name('tickets.work-summary');
 
+        // Bulk operations for tickets
+        Route::post('/tickets/bulk/assign', [\App\Http\Controllers\BulkOperationController::class, 'bulkAssign'])->name('tickets.bulk.assign');
+        Route::post('/tickets/bulk/update-status', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdateStatus'])->name('tickets.bulk.update-status');
+        Route::post('/tickets/bulk/update-priority', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdatePriority'])->name('tickets.bulk.update-priority');
+        Route::post('/tickets/bulk/update-category', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdateCategory'])->name('tickets.bulk.update-category');
+        Route::post('/tickets/bulk/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDelete'])->name('tickets.bulk.delete');
+        Route::get('/tickets/bulk/options', [\App\Http\Controllers\BulkOperationController::class, 'getBulkOptions'])->name('tickets.bulk.options');
+
+        // Audit Logs
+        Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::get('/audit-logs/{id}', [\App\Http\Controllers\AuditLogController::class, 'show'])->name('audit-logs.show');
+        Route::get('/audit-logs/export/csv', [\App\Http\Controllers\AuditLogController::class, 'export'])->name('audit-logs.export');
+        Route::post('/audit-logs/cleanup', [\App\Http\Controllers\AuditLogController::class, 'cleanup'])->name('audit-logs.cleanup');
+        
+        // Audit Logs API endpoints
+        Route::get('/api/audit-logs/model', [\App\Http\Controllers\AuditLogController::class, 'getModelLogs'])->name('api.audit-logs.model');
+        Route::get('/api/audit-logs/my-logs', [\App\Http\Controllers\AuditLogController::class, 'getMyLogs'])->name('api.audit-logs.my-logs');
+        Route::get('/api/audit-logs/statistics', [\App\Http\Controllers\AuditLogController::class, 'getStatistics'])->name('api.audit-logs.statistics');
+
         // Daily Activities - Specific routes BEFORE resource route
         Route::get('/daily-activities/calendar', [\App\Http\Controllers\DailyActivityController::class, 'calendar'])->name('daily-activities.calendar');
         Route::get('/daily-activities/calendar-events', [\App\Http\Controllers\DailyActivityController::class, 'getCalendarEvents'])->name('daily-activities.calendar-events');

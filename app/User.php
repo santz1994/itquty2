@@ -27,9 +27,11 @@ use Carbon\Carbon;
  * @method mixed revokePermissionTo($permissions)
  * @method mixed syncPermissions($permissions)
  */
+use App\Traits\Auditable;
+
 class User extends Authenticatable
 {
-  use HasRoles, HasApiTokens, Notifiable;
+  use HasRoles, HasApiTokens, Notifiable, Auditable;
   
   /**
    * The attributes that are mass assignable.

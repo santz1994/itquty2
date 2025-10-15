@@ -19,10 +19,12 @@
                   <a href="javascript:void(0)"><i class='fa fa-tags'></i> <span>Assets</span> <i class="fa fa-angle-left pull-right"></i></a>
                   <ul class="treeview-menu">
                       <li><a href="<?php echo e(url('/assets')); ?>">All Assets</a></li>
+                      <li><a href="<?php echo e(route('assets.my-assets')); ?>"><i class='fa fa-briefcase'></i> My Assets</a></li>
                       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create-assets')): ?>
                       <li><a href="<?php echo e(url('/asset-maintenance')); ?>">Asset Maintenance</a></li>
                       <li><a href="<?php echo e(url('/spares')); ?>">Spares</a></li>
                       <?php endif; ?>
+                      <li><a href="<?php echo e(route('assets.scan-qr')); ?>"><i class='fa fa-qrcode'></i> Scan QR Code</a></li>
                       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-assets')): ?>
                       <li><a href="<?php echo e(route('assets.export')); ?>">Export Assets</a></li>
                       <?php endif; ?>
@@ -31,6 +33,17 @@
                       <?php endif; ?>
                   </ul>
               </li>
+            <?php endif; ?>
+            
+            <!-- 📦 Asset Requests (All authenticated users) -->
+            <?php if(auth()->guard()->check()): ?>
+            <li class="treeview">
+                <a href="javascript:void(0)"><i class='fa fa-inbox'></i> <span>Asset Requests</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="<?php echo e(route('asset-requests.index')); ?>">All Requests</a></li>
+                    <li><a href="<?php echo e(route('asset-requests.create')); ?>">New Request</a></li>
+                </ul>
+            </li>
             <?php endif; ?>
             
             <!-- 🎫 Tickets (All roles: User=1, Admin=2, SuperAdmin=3, Management=4) -->
@@ -167,6 +180,19 @@
                 <a href="javascript:void(0)"><i class='fa fa-cogs'></i> <span>System Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">
                     <li><a href="<?php echo e(route('system-settings.index')); ?>">Settings Overview</a></li>
+                    <li><a href="<?php echo e(route('sla.index')); ?>"><i class='fa fa-clock-o'></i> SLA Policies</a></li>
+                    <li><a href="<?php echo e(route('sla.dashboard')); ?>"><i class='fa fa-tachometer'></i> SLA Dashboard</a></li>
+                </ul>
+            </li>
+            <?php endif; ?>
+            
+            <!-- 📝 Audit Logs (admin & super-admin) -->
+            <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin'])): ?>
+            <li class="treeview">
+                <a href="javascript:void(0)"><i class='fa fa-history'></i> <span>Audit Logs</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li><a href="<?php echo e(route('audit-logs.index')); ?>">View Logs</a></li>
+                    <li><a href="<?php echo e(route('audit-logs.export')); ?>">Export Logs</a></li>
                 </ul>
             </li>
             <?php endif; ?>

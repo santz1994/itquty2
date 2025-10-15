@@ -13,6 +13,11 @@
     <!-- Enhanced UX CSS -->
     <link href="<?php echo e(asset('/css/enhanced-ux.css')); ?>" rel="stylesheet" type="text/css" />
     
+    <!-- Custom UI/UX Enhancements -->
+    <link href="<?php echo e(asset('/css/custom-tables.css')); ?>" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('/css/loading-states.css')); ?>" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('/css/dashboard-widgets.css')); ?>" rel="stylesheet" type="text/css" />
+    
     <script src="<?php echo e(asset('/plugins/jQuery/jQuery-2.1.4.min.js')); ?>"></script>
 
 
