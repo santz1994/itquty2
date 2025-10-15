@@ -189,7 +189,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <small>{{ Str::limit($log->description, 80) }}</small>
+                                                <small>{{ \Illuminate\Support\Str::limit($log->description, 80) }}</small>
                                             </td>
                                             <td>
                                                 @php

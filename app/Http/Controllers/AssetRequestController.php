@@ -16,7 +16,7 @@ class AssetRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $query = AssetRequest::with(['user', 'assetType', 'approvedBy']);
+        $query = AssetRequest::with(['requestedBy', 'assetType', 'approvedBy']);
 
         // Filter by status
         if ($request->has('status') && $request->status !== '') {
@@ -35,7 +35,7 @@ class AssetRequestController extends Controller
 
         // If regular user, only show their requests
         if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
-            $query->where('user_id', Auth::id());
+            $query->where('requested_by', Auth::id());
         }
 
         $requests = $query->orderBy('created_at', 'desc')->paginate(20);
@@ -66,7 +66,7 @@ class AssetRequestController extends Controller
     {
         try {
             $data = $request->validated();
-            $data['user_id'] = Auth::id();
+            $data['requested_by'] = Auth::id();
             $data['status'] = 'pending';
 
             AssetRequest::create($data);
@@ -85,11 +85,11 @@ class AssetRequestController extends Controller
     public function show(AssetRequest $assetRequest)
     {
         // Check if user can view this request
-        if (!Auth::user()->hasRole(['admin', 'super_admin']) && $assetRequest->user_id !== Auth::id()) {
+        if (!Auth::user()->hasRole(['admin', 'super_admin']) && $assetRequest->requested_by !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk melihat permintaan ini');
         }
 
-        $assetRequest->load(['user', 'assetType', 'approvedBy']);
+        $assetRequest->load(['requestedBy', 'assetType', 'approvedBy']);
         
         return view('asset-requests.show', compact('assetRequest'));
     }
@@ -190,7 +190,7 @@ class AssetRequestController extends Controller
             abort(403, 'Tidak memiliki akses');
         }
 
-        $requests = AssetRequest::with(['user', 'assetType'])
+        $requests = AssetRequest::with(['requestedBy', 'assetType'])
                               ->where('status', 'pending')
                               ->orderBy('created_at', 'desc')
                               ->get();
@@ -204,7 +204,7 @@ class AssetRequestController extends Controller
     public function myRequests()
     {
         $requests = AssetRequest::with(['assetType', 'approvedBy'])
-                              ->where('user_id', Auth::id())
+                              ->where('requested_by', Auth::id())
                               ->orderBy('created_at', 'desc')
                               ->get();
 
@@ -217,7 +217,7 @@ class AssetRequestController extends Controller
     public function cancel(AssetRequest $assetRequest)
     {
         // Check if user can cancel this request
-        if ($assetRequest->user_id !== Auth::id()) {
+        if ($assetRequest->requested_by !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk membatalkan permintaan ini');
         }
 
@@ -241,7 +241,7 @@ class AssetRequestController extends Controller
      */
     public function export(Request $request)
     {
-        $query = AssetRequest::with(['user', 'assetType', 'approvedBy']);
+        $query = AssetRequest::with(['requestedBy', 'assetType', 'approvedBy']);
 
         // Apply filters
         if ($request->has('status') && $request->status !== '') {
@@ -254,7 +254,7 @@ class AssetRequestController extends Controller
 
         // If regular user, only export their requests
         if (!Auth::user()->hasRole(['admin', 'super_admin'])) {
-            $query->where('user_id', Auth::id());
+            $query->where('requested_by', Auth::id());
         }
 
         $requests = $query->orderBy('created_at', 'desc')->get();
@@ -276,7 +276,7 @@ class AssetRequestController extends Controller
             foreach ($requests as $req) {
                 fputcsv($file, [
                     $req->created_at->format('Y-m-d H:i:s'),
-                    $req->user->name,
+                    $req->requestedBy->name,
                     $req->assetType->name,
                     $req->description,
                     $req->priority,

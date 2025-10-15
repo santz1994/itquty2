@@ -235,12 +235,19 @@ class SlaController extends Controller
                     ->orderBy('name')
                     ->get();
         
+        // Get active SLA policies for display
+        $activePolicies = SlaPolicy::with('priority')
+                                   ->where('is_active', true)
+                                   ->orderBy('priority_id')
+                                   ->get();
+        
         return view('sla.dashboard', compact(
             'metrics',
             'breachedTickets',
             'criticalTickets',
             'priorities',
             'users',
+            'activePolicies',
             'startDate',
             'endDate',
             'priorityId',

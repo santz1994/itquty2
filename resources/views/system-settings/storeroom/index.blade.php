@@ -88,7 +88,7 @@
                                 <td>
                                     <strong>{{ $item->name }}</strong>
                                     @if($item->description)
-                                        <br><small class="text-muted">{{ Str::limit($item->description, 50) }}</small>
+                                        <br><small class="text-muted">{{ \Illuminate\Support\Str::limit($item->description, 50) }}</small>
                                     @endif
                                 </td>
                                 <td>

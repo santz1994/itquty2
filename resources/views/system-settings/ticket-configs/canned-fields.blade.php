@@ -46,7 +46,7 @@
                                 <td>{{ $field->title }}</td>
                                 <td>
                                     <div class="text-truncate" style="max-width: 200px;" title="{{ $field->content }}">
-                                        {{ Str::limit($field->content, 50) }}
+                                        {{ \Illuminate\Support\Str::limit($field->content, 50) }}
                                     </div>
                                 </td>
                                 <td>

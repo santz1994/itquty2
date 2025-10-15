@@ -147,7 +147,7 @@
                                         @foreach($tickets as $ticket)
                                             <option value="{{ $ticket->id }}" 
                                                 {{ old('related_ticket_id', $dailyActivity->related_ticket_id) == $ticket->id ? 'selected' : '' }}>
-                                                #{{ $ticket->id }} - {{ Str::limit($ticket->subject, 50) }}
+                                                #{{ $ticket->id }} - {{ \Illuminate\Support\Str::limit($ticket->subject, 50) }}
                                             </option>
                                         @endforeach
                                     </select>

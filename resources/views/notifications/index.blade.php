@@ -125,7 +125,7 @@
                     <strong>{{ $notification->title }}</strong>
                   </td>
                   <td>
-                    {{ Str::limit($notification->message, 100) }}
+                    {{ \Illuminate\Support\Str::limit($notification->message, 100) }}
                   </td>
                   <td>
                     <small class="text-muted">{{ $notification->time_ago }}</small>

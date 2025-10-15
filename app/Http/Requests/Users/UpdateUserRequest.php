@@ -43,7 +43,9 @@ class UpdateUserRequest extends Request
         'email' => 'email|required|unique:users,email,'.$userId,
         // Password is optional on update; only validate when provided
         'password' => 'nullable|confirmed|min:6',
-        'password_confirmation' => 'nullable|min:6'
+        'password_confirmation' => 'nullable|min:6',
+        'phone' => 'nullable|string|max:20',
+        'division_id' => 'nullable|exists:divisions,id'
       ];
     }
 

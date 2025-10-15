@@ -109,7 +109,7 @@
                                     <td>
                                         <span class="label label-info">{{ ucfirst($log->maintenance_type) }}</span>
                                     </td>
-                                    <td>{{ \Str::limit($log->description, 50) }}</td>
+                                    <td>{{ \Illuminate\Support\Str::limit($log->description, 50) }}</td>
                                     <td>
                                         @php
                                             $statusClass = [

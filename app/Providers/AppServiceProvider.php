@@ -14,12 +14,30 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // Register custom Blade directives
+        $this->registerBladeDirectives();
+        
         // Register view composers
         $this->registerViewComposers();
         
         // Register observers for cache invalidation
         \App\Location::observe(\App\Observers\LocationObserver::class);
         \App\Status::observe(\App\Observers\StatusObserver::class);
+    }
+    
+    /**
+     * Register custom Blade directives
+     */
+    protected function registerBladeDirectives()
+    {
+        // Register @permission directive (alias for @can for permission checking)
+        \Blade::directive('permission', function ($expression) {
+            return "<?php if(auth()->check() && auth()->user()->can($expression)): ?>";
+        });
+        
+        \Blade::directive('endpermission', function () {
+            return "<?php endif; ?>";
+        });
     }
     
     /**

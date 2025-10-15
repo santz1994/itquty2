@@ -112,7 +112,11 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Admin & SuperAdmin Routes (combined to avoid conflicts)
     Route::middleware(['role:admin|super-admin'])->group(function () {
         
-        // Tickets Routes - Specific routes BEFORE wildcard routes
+        // ========================================
+        // TICKETS ROUTES (REFACTORED)
+        // ========================================
+        
+        // Main CRUD Routes
         Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
         Route::get('/tickets/unassigned', [\App\Http\Controllers\TicketController::class, 'unassigned'])->name('tickets.unassigned');
         Route::get('/tickets/overdue', [\App\Http\Controllers\TicketController::class, 'overdue'])->name('tickets.overdue');
@@ -122,21 +126,25 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
         Route::put('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
         Route::patch('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update']);
-        Route::post('/tickets/{ticket}/self-assign', [\App\Http\Controllers\TicketController::class, 'selfAssign'])->name('tickets.self-assign');
-        Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\TicketController::class, 'assign'])->name('tickets.assign');
-        Route::post('/tickets/{ticket}/complete', [\App\Http\Controllers\TicketController::class, 'complete'])->name('tickets.complete');
-        Route::post('/tickets/{ticket}/force-assign', [\App\Http\Controllers\TicketController::class, 'forceAssign'])->name('tickets.force-assign');
         
-        // Enhanced ticket management with auto-status updates
-        Route::post('/tickets/{ticket}/add-response', [\App\Http\Controllers\TicketController::class, 'addResponse'])->name('tickets.add-response');
-        Route::post('/tickets/{ticket}/update-status', [\App\Http\Controllers\TicketController::class, 'updateStatus'])->name('tickets.update-status');
-        Route::post('/tickets/{ticket}/complete-with-resolution', [\App\Http\Controllers\TicketController::class, 'completeWithResolution'])->name('tickets.complete-with-resolution');
+        // Assignment Routes (TicketAssignmentController)
+        Route::post('/tickets/{ticket}/self-assign', [\App\Http\Controllers\Tickets\TicketAssignmentController::class, 'selfAssign'])->name('tickets.self-assign');
+        Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\Tickets\TicketAssignmentController::class, 'assign'])->name('tickets.assign');
+        Route::post('/tickets/{ticket}/force-assign', [\App\Http\Controllers\Tickets\TicketAssignmentController::class, 'forceAssign'])->name('tickets.force-assign');
         
-        // Time tracking for technicians
-        Route::post('/tickets/{ticket}/start-timer', [\App\Http\Controllers\TicketController::class, 'startTimer'])->name('tickets.start-timer');
-        Route::post('/tickets/{ticket}/stop-timer', [\App\Http\Controllers\TicketController::class, 'stopTimer'])->name('tickets.stop-timer');
-        Route::get('/tickets/{ticket}/timer-status', [\App\Http\Controllers\TicketController::class, 'getTimerStatus'])->name('tickets.timer-status');
-        Route::get('/tickets/{ticket}/work-summary', [\App\Http\Controllers\TicketController::class, 'getWorkSummary'])->name('tickets.work-summary');
+        // Status Management Routes (TicketStatusController)
+        Route::post('/tickets/{ticket}/complete', [\App\Http\Controllers\Tickets\TicketStatusController::class, 'complete'])->name('tickets.complete');
+        Route::post('/tickets/{ticket}/update-status', [\App\Http\Controllers\Tickets\TicketStatusController::class, 'updateStatus'])->name('tickets.update-status');
+        Route::post('/tickets/{ticket}/complete-with-resolution', [\App\Http\Controllers\Tickets\TicketStatusController::class, 'completeWithResolution'])->name('tickets.complete-with-resolution');
+        
+        // User Portal Routes (UserTicketController)
+        Route::post('/tickets/{ticket}/add-response', [\App\Http\Controllers\Tickets\UserTicketController::class, 'addResponse'])->name('tickets.add-response');
+        
+        // Time Tracking Routes (TicketTimerController)
+        Route::post('/tickets/{ticket}/start-timer', [\App\Http\Controllers\Tickets\TicketTimerController::class, 'startTimer'])->name('tickets.start-timer');
+        Route::post('/tickets/{ticket}/stop-timer', [\App\Http\Controllers\Tickets\TicketTimerController::class, 'stopTimer'])->name('tickets.stop-timer');
+        Route::get('/tickets/{ticket}/timer-status', [\App\Http\Controllers\Tickets\TicketTimerController::class, 'getTimerStatus'])->name('tickets.timer-status');
+        Route::get('/tickets/{ticket}/work-summary', [\App\Http\Controllers\Tickets\TicketTimerController::class, 'getWorkSummary'])->name('tickets.work-summary');
 
         // Bulk operations for tickets
         Route::post('/tickets/bulk/assign', [\App\Http\Controllers\BulkOperationController::class, 'bulkAssign'])->name('tickets.bulk.assign');
@@ -305,13 +313,13 @@ Route::middleware(['web', 'auth'])->group(function () {
     // NOTE: User and Management routes are now handled by the admin|super-admin group above
     // to avoid route conflicts and 403 errors. The controller handles role-based filtering internally.
 
-    // User Self-Service Portal Routes
+    // User Self-Service Portal Routes (UserTicketController)
     Route::middleware(['role:user'])->group(function () {
         // Self-service ticket creation for users
-        Route::get('/tiket-saya', [\App\Http\Controllers\TicketController::class, 'userTickets'])->name('tickets.user-index');
-        Route::get('/tiket-saya/buat', [\App\Http\Controllers\TicketController::class, 'userCreate'])->name('tickets.user-create');
-        Route::post('/tiket-saya/buat', [\App\Http\Controllers\TicketController::class, 'userStore'])->name('tickets.user-store');
-        Route::get('/tiket-saya/{ticket}', [\App\Http\Controllers\TicketController::class, 'userShow'])->name('tickets.user-show');
+        Route::get('/tiket-saya', [\App\Http\Controllers\Tickets\UserTicketController::class, 'userTickets'])->name('tickets.user-index');
+        Route::get('/tiket-saya/buat', [\App\Http\Controllers\Tickets\UserTicketController::class, 'userCreate'])->name('tickets.user-create');
+        Route::post('/tiket-saya/buat', [\App\Http\Controllers\Tickets\UserTicketController::class, 'userStore'])->name('tickets.user-store');
+        Route::get('/tiket-saya/{ticket}', [\App\Http\Controllers\Tickets\UserTicketController::class, 'userShow'])->name('tickets.user-show');
         
         // User can view their assets
         Route::get('/aset-saya', [\App\Http\Controllers\AssetsController::class, 'userAssets'])->name('assets.user-index');

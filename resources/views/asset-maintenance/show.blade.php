@@ -60,7 +60,7 @@
                                                     {{ $record->ticket_code }}
                                                 </a>
                                             </td>
-                                            <td>{{ Str::limit($record->description, 50) }}</td>
+                                            <td>{{ \Illuminate\Support\Str::limit($record->description, 50) }}</td>
                                             <td>
                                                 <span class="label label-{{ $record->ticket_status->color ?? 'default' }}">
                                                     {{ $record->ticket_status->name ?? 'Unknown' }}

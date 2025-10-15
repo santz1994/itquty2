@@ -1,6 +1,6 @@
-@extends('layouts.app')
 
-@section('main-content')
+
+<?php $__env->startSection('main-content'); ?>
 <div class="container-fluid">
     <!-- Header -->
     <div class="row mb-3">
@@ -8,7 +8,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h2><i class="fas fa-chart-line"></i> SLA Dashboard</h2>
                 <div>
-                    <a href="{{ route('sla.index') }}" class="btn btn-secondary">
+                    <a href="<?php echo e(route('sla.index')); ?>" class="btn btn-secondary">
                         <i class="fas fa-cog"></i> Manage Policies
                     </a>
                 </div>
@@ -21,7 +21,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('sla.dashboard') }}">
+                    <form method="GET" action="<?php echo e(route('sla.dashboard')); ?>">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -30,7 +30,7 @@
                                            class="form-control" 
                                            id="start_date" 
                                            name="start_date" 
-                                           value="{{ request('start_date', now()->startOfMonth()->format('Y-m-d')) }}">
+                                           value="<?php echo e(request('start_date', now()->startOfMonth()->format('Y-m-d'))); ?>">
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -40,7 +40,7 @@
                                            class="form-control" 
                                            id="end_date" 
                                            name="end_date" 
-                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                           value="<?php echo e(request('end_date', now()->format('Y-m-d'))); ?>">
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -48,12 +48,13 @@
                                     <label for="priority_id">Priority</label>
                                     <select class="form-control" id="priority_id" name="priority_id">
                                         <option value="">All Priorities</option>
-                                        @foreach($priorities as $priority)
-                                            <option value="{{ $priority->id }}" 
-                                                    {{ request('priority_id') == $priority->id ? 'selected' : '' }}>
-                                                {{ $priority->name }}
+                                        <?php $__currentLoopData = $priorities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $priority): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($priority->id); ?>" 
+                                                    <?php echo e(request('priority_id') == $priority->id ? 'selected' : ''); ?>>
+                                                <?php echo e($priority->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
@@ -62,12 +63,13 @@
                                     <label for="assigned_to">Assigned To</label>
                                     <select class="form-control" id="assigned_to" name="assigned_to">
                                         <option value="">All Users</option>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}" 
-                                                    {{ request('assigned_to') == $user->id ? 'selected' : '' }}>
-                                                {{ $user->name }}
+                                        <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($user->id); ?>" 
+                                                    <?php echo e(request('assigned_to') == $user->id ? 'selected' : ''); ?>>
+                                                <?php echo e($user->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
@@ -77,7 +79,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-filter"></i> Apply Filters
                                 </button>
-                                <a href="{{ route('sla.dashboard') }}" class="btn btn-secondary">
+                                <a href="<?php echo e(route('sla.dashboard')); ?>" class="btn btn-secondary">
                                     <i class="fas fa-redo"></i> Reset
                                 </a>
                             </div>
@@ -96,7 +98,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="card-title mb-0">Total Tickets</h5>
-                            <h2 class="mt-2 mb-0">{{ $metrics['total_tickets'] }}</h2>
+                            <h2 class="mt-2 mb-0"><?php echo e($metrics['total_tickets']); ?></h2>
                         </div>
                         <div>
                             <i class="fas fa-ticket-alt fa-3x opacity-50"></i>
@@ -111,8 +113,8 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="card-title mb-0">SLA Met</h5>
-                            <h2 class="mt-2 mb-0">{{ $metrics['sla_met'] }}</h2>
-                            <small>{{ $metrics['sla_compliance_rate'] }}% compliance</small>
+                            <h2 class="mt-2 mb-0"><?php echo e($metrics['sla_met']); ?></h2>
+                            <small><?php echo e($metrics['sla_compliance_rate']); ?>% compliance</small>
                         </div>
                         <div>
                             <i class="fas fa-check-circle fa-3x opacity-50"></i>
@@ -127,7 +129,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="card-title mb-0">SLA Breached</h5>
-                            <h2 class="mt-2 mb-0">{{ $metrics['sla_breached'] }}</h2>
+                            <h2 class="mt-2 mb-0"><?php echo e($metrics['sla_breached']); ?></h2>
                         </div>
                         <div>
                             <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
@@ -142,7 +144,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="card-title mb-0">Critical Tickets</h5>
-                            <h2 class="mt-2 mb-0">{{ $metrics['critical_tickets'] }}</h2>
+                            <h2 class="mt-2 mb-0"><?php echo e($metrics['critical_tickets']); ?></h2>
                             <small>Needs attention</small>
                         </div>
                         <div>
@@ -165,11 +167,11 @@
                 </div>
                 <div class="card-body">
                     <h2 class="text-primary">
-                        {{ number_format($metrics['avg_response_time_hours'], 1) }} hrs
+                        <?php echo e(number_format($metrics['avg_response_time_hours'], 1)); ?> hrs
                     </h2>
                     <p class="text-muted mb-0">
                         Time from ticket creation to first response
-                        <br><small>({{ number_format($metrics['avg_response_time_minutes'], 0) }} minutes)</small>
+                        <br><small>(<?php echo e(number_format($metrics['avg_response_time_minutes'], 0)); ?> minutes)</small>
                     </p>
                 </div>
             </div>
@@ -183,11 +185,11 @@
                 </div>
                 <div class="card-body">
                     <h2 class="text-success">
-                        {{ number_format($metrics['avg_resolution_time_hours'], 1) }} hrs
+                        <?php echo e(number_format($metrics['avg_resolution_time_hours'], 1)); ?> hrs
                     </h2>
                     <p class="text-muted mb-0">
                         Time from ticket creation to resolution
-                        <br><small>({{ number_format($metrics['avg_resolution_time_minutes'], 0) }} minutes)</small>
+                        <br><small>(<?php echo e(number_format($metrics['avg_resolution_time_minutes'], 0)); ?> minutes)</small>
                     </p>
                 </div>
             </div>
@@ -204,7 +206,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    @if($breachedTickets->count() > 0)
+                    <?php if($breachedTickets->count() > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -220,28 +222,31 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($breachedTickets as $ticket)
+                                    <?php $__currentLoopData = $breachedTickets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ticket): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <tr>
-                                            <td><strong>#{{ $ticket->id }}</strong></td>
-                                            <td>{{ \Illuminate\Support\Str::limit($ticket->subject, 50) }}</td>
+                                            <td><strong>#<?php echo e($ticket->id); ?></strong></td>
+                                            <td><?php echo e(\Illuminate\Support\Str::limit($ticket->subject, 50)); ?></td>
                                             <td>
-                                                <span class="badge badge-{{ $ticket->priority->color ?? 'secondary' }}">
-                                                    {{ $ticket->priority->name ?? 'N/A' }}
+                                                <span class="badge badge-<?php echo e($ticket->priority->color ?? 'secondary'); ?>">
+                                                    <?php echo e($ticket->priority->name ?? 'N/A'); ?>
+
                                                 </span>
                                             </td>
                                             <td>
-                                                {{ $ticket->assignedTo->name ?? 'Unassigned' }}
+                                                <?php echo e($ticket->assignedTo->name ?? 'Unassigned'); ?>
+
                                             </td>
-                                            <td>{{ $ticket->created_at->format('Y-m-d H:i') }}</td>
+                                            <td><?php echo e($ticket->created_at->format('Y-m-d H:i')); ?></td>
                                             <td>
-                                                @if($ticket->sla_due)
+                                                <?php if($ticket->sla_due): ?>
                                                     <span class="text-danger">
                                                         <i class="fas fa-clock"></i>
-                                                        {{ $ticket->sla_due->format('Y-m-d H:i') }}
+                                                        <?php echo e($ticket->sla_due->format('Y-m-d H:i')); ?>
+
                                                     </span>
-                                                @else
+                                                <?php else: ?>
                                                     <span class="text-muted">No SLA</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                             <td>
                                                 <span class="badge badge-danger">
@@ -249,29 +254,30 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="{{ route('tickets.show', $ticket->id) }}" 
+                                                <a href="<?php echo e(route('tickets.show', $ticket->id)); ?>" 
                                                    class="btn btn-sm btn-primary"
                                                    target="_blank">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
                         
-                        @if($breachedTickets->hasPages())
+                        <?php if($breachedTickets->hasPages()): ?>
                             <div class="mt-3">
-                                {{ $breachedTickets->appends(request()->query())->links() }}
+                                <?php echo e($breachedTickets->appends(request()->query())->links()); ?>
+
                             </div>
-                        @endif
-                    @else
+                        <?php endif; ?>
+                    <?php else: ?>
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
                             <p>No breached SLA tickets found! Great work!</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -287,7 +293,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    @if($criticalTickets->count() > 0)
+                    <?php if($criticalTickets->count() > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -304,78 +310,83 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($criticalTickets as $ticket)
-                                        @php
+                                    <?php $__currentLoopData = $criticalTickets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ticket): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php
                                             $slaStatus = app(\App\Services\SlaTrackingService::class)->getSlaStatus($ticket);
-                                        @endphp
+                                        ?>
                                         <tr>
-                                            <td><strong>#{{ $ticket->id }}</strong></td>
-                                            <td>{{ \Illuminate\Support\Str::limit($ticket->subject, 50) }}</td>
+                                            <td><strong>#<?php echo e($ticket->id); ?></strong></td>
+                                            <td><?php echo e(\Illuminate\Support\Str::limit($ticket->subject, 50)); ?></td>
                                             <td>
-                                                <span class="badge badge-{{ $ticket->priority->color ?? 'secondary' }}">
-                                                    {{ $ticket->priority->name ?? 'N/A' }}
+                                                <span class="badge badge-<?php echo e($ticket->priority->color ?? 'secondary'); ?>">
+                                                    <?php echo e($ticket->priority->name ?? 'N/A'); ?>
+
                                                 </span>
                                             </td>
                                             <td>
-                                                {{ $ticket->assignedTo->name ?? 'Unassigned' }}
+                                                <?php echo e($ticket->assignedTo->name ?? 'Unassigned'); ?>
+
                                             </td>
-                                            <td>{{ $ticket->created_at->format('Y-m-d H:i') }}</td>
+                                            <td><?php echo e($ticket->created_at->format('Y-m-d H:i')); ?></td>
                                             <td>
-                                                @if($ticket->sla_due)
+                                                <?php if($ticket->sla_due): ?>
                                                     <span class="text-warning">
                                                         <i class="fas fa-clock"></i>
-                                                        {{ $ticket->sla_due->format('Y-m-d H:i') }}
+                                                        <?php echo e($ticket->sla_due->format('Y-m-d H:i')); ?>
+
                                                     </span>
-                                                @else
+                                                <?php else: ?>
                                                     <span class="text-muted">No SLA</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                             <td>
-                                                @if($slaStatus && isset($slaStatus['percentage_remaining']))
+                                                <?php if($slaStatus && isset($slaStatus['percentage_remaining'])): ?>
                                                     <div class="progress" style="height: 20px;">
-                                                        <div class="progress-bar bg-{{ $slaStatus['color'] }}" 
+                                                        <div class="progress-bar bg-<?php echo e($slaStatus['color']); ?>" 
                                                              role="progressbar" 
-                                                             style="width: {{ $slaStatus['percentage_remaining'] }}%"
-                                                             aria-valuenow="{{ $slaStatus['percentage_remaining'] }}" 
+                                                             style="width: <?php echo e($slaStatus['percentage_remaining']); ?>%"
+                                                             aria-valuenow="<?php echo e($slaStatus['percentage_remaining']); ?>" 
                                                              aria-valuemin="0" 
                                                              aria-valuemax="100">
-                                                            {{ round($slaStatus['percentage_remaining'], 1) }}%
+                                                            <?php echo e(round($slaStatus['percentage_remaining'], 1)); ?>%
                                                         </div>
                                                     </div>
-                                                @else
+                                                <?php else: ?>
                                                     <span class="text-muted">N/A</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                             <td>
-                                                <span class="badge badge-{{ $slaStatus['color'] ?? 'secondary' }}">
-                                                    <i class="fas fa-{{ $slaStatus['icon'] ?? 'question' }}"></i> 
-                                                    {{ ucfirst(str_replace('_', ' ', $slaStatus['status'] ?? 'unknown')) }}
+                                                <span class="badge badge-<?php echo e($slaStatus['color'] ?? 'secondary'); ?>">
+                                                    <i class="fas fa-<?php echo e($slaStatus['icon'] ?? 'question'); ?>"></i> 
+                                                    <?php echo e(ucfirst(str_replace('_', ' ', $slaStatus['status'] ?? 'unknown'))); ?>
+
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="{{ route('tickets.show', $ticket->id) }}" 
+                                                <a href="<?php echo e(route('tickets.show', $ticket->id)); ?>" 
                                                    class="btn btn-sm btn-primary"
                                                    target="_blank">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
                         
-                        @if($criticalTickets->hasPages())
+                        <?php if($criticalTickets->hasPages()): ?>
                             <div class="mt-3">
-                                {{ $criticalTickets->appends(request()->query())->links() }}
+                                <?php echo e($criticalTickets->appends(request()->query())->links()); ?>
+
                             </div>
-                        @endif
-                    @else
+                        <?php endif; ?>
+                    <?php else: ?>
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-thumbs-up fa-3x mb-3 text-success"></i>
                             <p>No critical tickets at risk! Keep up the good work!</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -391,7 +402,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    @if($activePolicies->count() > 0)
+                    <?php if($activePolicies->count() > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -404,54 +415,56 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($activePolicies as $policy)
+                                    <?php $__currentLoopData = $activePolicies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $policy): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <tr>
                                             <td>
-                                                <span class="badge badge-{{ $policy->priority->color ?? 'secondary' }}">
-                                                    {{ $policy->priority->name ?? 'N/A' }}
+                                                <span class="badge badge-<?php echo e($policy->priority->color ?? 'secondary'); ?>">
+                                                    <?php echo e($policy->priority->name ?? 'N/A'); ?>
+
                                                 </span>
                                             </td>
-                                            <td>{{ $policy->response_time }} min</td>
-                                            <td>{{ $policy->resolution_time }} min</td>
+                                            <td><?php echo e($policy->response_time); ?> min</td>
+                                            <td><?php echo e($policy->resolution_time); ?> min</td>
                                             <td>
-                                                @if($policy->business_hours_only)
+                                                <?php if($policy->business_hours_only): ?>
                                                     <i class="fas fa-check text-success"></i> Yes
-                                                @else
+                                                <?php else: ?>
                                                     <i class="fas fa-times text-danger"></i> No (24/7)
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                             <td>
-                                                @if($policy->escalation_time)
-                                                    {{ $policy->escalation_time }} min
-                                                    @if($policy->escalateToUser)
-                                                        → {{ $policy->escalateToUser->name }}
-                                                    @endif
-                                                @else
+                                                <?php if($policy->escalation_time): ?>
+                                                    <?php echo e($policy->escalation_time); ?> min
+                                                    <?php if($policy->escalateToUser): ?>
+                                                        → <?php echo e($policy->escalateToUser->name); ?>
+
+                                                    <?php endif; ?>
+                                                <?php else: ?>
                                                     <span class="text-muted">Not configured</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
                             <p>No active SLA policies found. Please create policies to track SLAs.</p>
-                            <a href="{{ route('sla.create') }}" class="btn btn-primary">
+                            <a href="<?php echo e(route('sla.create')); ?>" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Create SLA Policy
                             </a>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('styles')
+<?php $__env->startSection('styles'); ?>
 <style>
 .opacity-50 {
     opacity: 0.5;
@@ -461,4 +474,6 @@
     font-weight: bold;
 }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\Quty1\resources\views/sla/dashboard.blade.php ENDPATH**/ ?>

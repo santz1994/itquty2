@@ -129,7 +129,7 @@
                                         @if($dailyActivity->relatedTicket)
                                             <a href="{{ route('tickets.show', $dailyActivity->relatedTicket->id) }}" class="text-decoration-none">
                                                 <span class="badge badge-outline-info">
-                                                    #{{ $dailyActivity->relatedTicket->id }} - {{ Str::limit($dailyActivity->relatedTicket->subject, 30) }}
+                                                    #{{ $dailyActivity->relatedTicket->id }} - {{ \Illuminate\Support\Str::limit($dailyActivity->relatedTicket->subject, 30) }}
                                                 </span>
                                             </a>
                                         @else
@@ -205,7 +205,7 @@
                                                 </span>
                                             </td>
                                             <td>{{ $movement->location->name ?? 'N/A' }}</td>
-                                            <td>{{ Str::limit($movement->notes, 50) }}</td>
+                                            <td>{{ \Illuminate\Support\Str::limit($movement->notes, 50) }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>

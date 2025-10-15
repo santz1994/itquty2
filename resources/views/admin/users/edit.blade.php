@@ -81,10 +81,34 @@
                 <label for="email">Email</label>
                 <input type="text" name="email" class="form-control" value="{{ old('email', isset($user) ? $user->email : '') }}">
               </div>
+              
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="{{ old('phone', isset($user) ? $user->phone : '') }}">
+                <small class="help-block text-muted">Optional - User's contact phone number</small>
+              </div>
+              
+              <div class="form-group">
+                <label for="division_id">Division</label>
+                <select name="division_id" class="form-control select2">
+                  <option value="">-- Select Division (Optional) --</option>
+                  @if(isset($divisions))
+                    @foreach($divisions as $division)
+                      <option value="{{ $division->id }}" 
+                        {{ old('division_id', isset($user) && $user->division_id == $division->id ? $user->division_id : '') == $division->id ? 'selected' : '' }}>
+                        {{ $division->name }}
+                      </option>
+                    @endforeach
+                  @endif
+                </select>
+                <small class="help-block text-muted">Optional - Organizational division/department</small>
+              </div>
+              
             <div class="form-group {{ hasErrorForClass($errors, 'password') }}">
               <label for="password">Password</label>
-              <input type="password" name="password" class="form-control">
+              <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password">
               {{ hasErrorForField($errors, 'password') }}
+              <small class="help-block text-muted">Leave blank if you don't want to change the password</small>
             </div>
             <div class="form-group {{ hasErrorForClass($errors, 'password_confirmation') }}">
               <label for="password_confirmation">Password</label>
