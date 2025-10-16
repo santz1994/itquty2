@@ -1,59 +1,104 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-widgets.css') }}">
+@endpush
+
 @section('main-content')
 <div class="content-wrapper">
-    <section class="content-header">
-        <h1>
-            Admin Dashboard
-            <small>System overview and quick actions</small>
-        </h1>
-        <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Admin Dashboard</li>
-        </ol>
-    </section>
+    @include('components.page-header', [
+        'title' => 'Admin Dashboard',
+        'subtitle' => 'System overview and quick actions',
+        'icon' => 'fa-tachometer',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'Admin Dashboard', 'active' => true]
+        ]
+    ])
+
+    @include('components.loading-overlay')
 
     <section class="content">
-        <!-- Info boxes -->
+        <!-- Modern KPI Cards -->
         <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-aqua"><i class="fa fa-users"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Users</span>
-                        <span class="info-box-number">{{ $stats['total_users'] ?? 0 }}</span>
+                <a href="{{ route('users.index') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-primary">
+                            <i class="fa fa-users"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $stats['total_users'] ?? 0 }}</h3>
+                            <p class="kpi-label">Total Users</p>
+                            @if(isset($stats['users_growth']) && $stats['users_growth'] > 0)
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-arrow-up"></i> {{ $stats['users_growth'] }}% this month
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-red"><i class="fa fa-desktop"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Assets</span>
-                        <span class="info-box-number">{{ $stats['total_assets'] ?? 0 }}</span>
+                <a href="{{ route('assets.index') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-danger">
+                            <i class="fa fa-desktop"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $stats['total_assets'] ?? 0 }}</h3>
+                            <p class="kpi-label">Total Assets</p>
+                            @if(isset($stats['assets_growth']) && $stats['assets_growth'] > 0)
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-arrow-up"></i> {{ $stats['assets_growth'] }}% this month
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-green"><i class="fa fa-ticket"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Active Tickets</span>
-                        <span class="info-box-number">{{ $stats['active_tickets'] ?? 0 }}</span>
+                <a href="{{ route('tickets.index') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-success">
+                            <i class="fa fa-ticket"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $stats['active_tickets'] ?? 0 }}</h3>
+                            <p class="kpi-label">Active Tickets</p>
+                            @if(isset($stats['tickets_trend']) && $stats['tickets_trend'] < 0)
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-arrow-down"></i> {{ abs($stats['tickets_trend']) }}% from last week
+                            </span>
+                            @elseif(isset($stats['tickets_trend']) && $stats['tickets_trend'] > 0)
+                            <span class="kpi-trend negative">
+                                <i class="fa fa-arrow-up"></i> {{ $stats['tickets_trend'] }}% from last week
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-yellow"><i class="fa fa-exclamation-triangle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Pending Requests</span>
-                        <span class="info-box-number">{{ $stats['pending_requests'] ?? 0 }}</span>
+                <a href="{{ route('asset-requests.index') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-warning">
+                            <i class="fa fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $stats['pending_requests'] ?? 0 }}</h3>
+                            <p class="kpi-label">Pending Requests</p>
+                            @if(isset($stats['requests_pending']))
+                            <span class="kpi-trend neutral">
+                                <i class="fa fa-clock-o"></i> Requires attention
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
@@ -229,3 +274,26 @@
     </section>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 300);
+    });
+    
+    // Add click loading to quick action buttons
+    $('.btn-app').on('click', function() {
+        if (!$(this).hasClass('disabled')) {
+            showLoadingOverlay('Loading...');
+        }
+    });
+    
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+@endpush

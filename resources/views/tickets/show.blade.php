@@ -1,12 +1,29 @@
 @extends('layouts.app')
 
 @section('main-content')
+
+@include('components.page-header', [
+    'title' => 'Ticket #' . $ticket->ticket_code,
+    'subtitle' => $ticket->subject,
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Tickets', 'url' => route('tickets.index')],
+        ['label' => '#' . $ticket->ticket_code]
+    ],
+    'actions' => '<a href="'.route('tickets.edit', $ticket).'" class="btn btn-primary">
+        <i class="fa fa-edit"></i> Edit Ticket
+    </a>
+    <a href="'.route('tickets.print', $ticket).'" class="btn btn-default" target="_blank">
+        <i class="fa fa-print"></i> Print
+    </a>
+    <a href="'.route('tickets.index').'" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+    </a>'
+])
+
   <div class="row">
     <div class="col-md-9">
       <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">{{$pageTitle}}</h3>
-        </div>
           <div class="box-body no-padding">
             <div class="mailbox-read-info">
               <h3>{{$ticket->subject}}</h3>

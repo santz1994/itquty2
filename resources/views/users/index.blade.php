@@ -1,18 +1,21 @@
 @extends('layouts.app')
 
 @section('main-content')
-<div class="content-wrapper">
-    <section class="content-header">
-        <h1>
-            User Management
-            <small>Manage system users and their roles</small>
-        </h1>
-        <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Users</li>
-        </ol>
-    </section>
 
+@include('components.page-header', [
+    'title' => 'User Management',
+    'subtitle' => 'Manage system users and their roles',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Users']
+    ],
+    'actions' => auth()->user()->can('create-users') ? 
+        \'<a href="\'.route(\'users.create\').\'" class="btn btn-primary">
+            <i class="fa fa-plus"></i> Add New User
+        </a>\' : \'\'
+])
+
+<div class="content-wrapper">
     <section class="content">
         <div class="row">
             <div class="col-md-12">
@@ -31,29 +34,17 @@
                 @endif
 
                 <div class="box box-primary">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">
-                            <i class="fa fa-users"></i> System Users
-                        </h3>
-                        <div class="box-tools pull-right">
-                            @can('create-users')
-                            <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm">
-                                <i class="fa fa-plus"></i> Add New User
-                            </a>
-                            @endcan
-                        </div>
-                    </div>
                     <div class="box-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped">
+                            <table class="table table-enhanced table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
+                                        <th class="sortable" data-column="id">ID</th>
+                                        <th class="sortable" data-column="name">Name</th>
+                                        <th class="sortable" data-column="email">Email</th>
                                         <th>Roles</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
+                                        <th class="sortable" data-column="created_at">Created</th>
+                                        <th class="actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -75,37 +66,41 @@
                                             @endforeach
                                         </td>
                                         <td>{{ $user->created_at->format('M d, Y') }}</td>
-                                        <td class="table-actions">
-                                            <div class="btn-group">
+                                        <td class="table-actions" style="white-space: nowrap;">
+                                            <div class="btn-group" role="group">
                                                 <a href="{{ route('users.show', $user) }}" 
-                                                   class="btn btn-info btn-xs" 
+                                                   class="btn btn-info btn-sm" 
                                                    data-toggle="tooltip" 
                                                    title="View Details">
-                                                    <i class="fa fa-eye"></i>
+                                                    <i class="fa fa-eye"></i> View
                                                 </a>
-                                                @can('edit-users')
                                                 <a href="{{ route('users.edit', $user) }}" 
-                                                   class="btn btn-warning btn-xs"
+                                                   class="btn btn-warning btn-sm"
                                                    data-toggle="tooltip" 
                                                    title="Edit User">
-                                                    <i class="fa fa-edit"></i>
+                                                    <i class="fa fa-edit"></i> Edit
                                                 </a>
-                                                @endcan
-                                                @can('delete-users')
                                                 @if($user->id !== auth()->id())
                                                 <form method="POST" action="{{ route('users.destroy', $user) }}" style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
-                                                            class="btn btn-danger btn-xs delete-confirm" 
+                                                            class="btn btn-danger btn-sm delete-confirm" 
                                                             data-item-name="user {{ $user->name }}"
                                                             data-toggle="tooltip" 
                                                             title="Delete User">
-                                                        <i class="fa fa-trash"></i>
+                                                        <i class="fa fa-trash"></i> Delete
                                                     </button>
                                                 </form>
+                                                @else
+                                                <button type="button" 
+                                                        class="btn btn-secondary btn-sm" 
+                                                        disabled
+                                                        data-toggle="tooltip" 
+                                                        title="Cannot delete yourself">
+                                                    <i class="fa fa-ban"></i> Cannot Delete
+                                                </button>
                                                 @endif
-                                                @endcan
                                             </div>
                                         </td>
                                     </tr>
@@ -168,4 +163,34 @@
         </div>
     </section>
 </div>
+
+@include('components.loading-overlay')
+
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Delete confirmation
+    $('.delete-confirm').on('click', function(e) {
+        e.preventDefault();
+        var form = $(this).closest('form');
+        var itemName = $(this).data('item-name') || 'this user';
+        
+        if (confirm('Are you sure you want to delete ' + itemName + '? This action cannot be undone.')) {
+            showLoading('Deleting user...');
+            form.submit();
+        }
+    });
+    
+    // Loading state for action buttons
+    $('.btn-group a').on('click', function() {
+        var action = $(this).attr('title') || 'Processing';
+        showLoading(action + '...');
+    });
+});
+</script>
+@endpush

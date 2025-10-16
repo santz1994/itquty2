@@ -1,25 +1,41 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box box-primary">
-                <div class="box-header with-border">
-                    <h3 class="box-title">
-                        <i class="fa fa-history"></i> Audit Logs
-                    </h3>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-toggle="collapse" data-target="#filter-panel">
-                            <i class="fa fa-filter"></i> Filters
-                        </button>
-                        <a href="{{ route('audit-logs.export', request()->all()) }}" class="btn btn-success btn-sm" title="Export to CSV">
-                            <i class="fa fa-download"></i> Export CSV
-                        </a>
-                    </div>
-                </div>
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/custom-tables.css') }}">
+@endpush
 
-                <!-- Filter Panel -->
+@section('main-content')
+<div class="content-wrapper">
+    @include('components.page-header', [
+        'title' => 'Audit Logs',
+        'subtitle' => 'System activity and change tracking',
+        'icon' => 'fa-history',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'Audit Logs', 'active' => true]
+        ],
+        'actions' => '<button type="button" class="btn btn-default" data-toggle="collapse" data-target="#filter-panel">
+                        <i class="fa fa-filter"></i> Filters
+                      </button>
+                      <a href="' . route('audit-logs.export', request()->all()) . '" class="btn btn-success">
+                        <i class="fa fa-download"></i> Export CSV
+                      </a>'
+    ])
+
+    @include('components.loading-overlay')
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                <i class="fa fa-list"></i> Activity History
+                            </h3>
+                        </div>
+
+                        <!-- Filter Panel -->
                 <div id="filter-panel" class="collapse">
                     <div class="box-body">
                         <form method="GET" action="{{ route('audit-logs.index') }}" id="filter-form">
@@ -285,15 +301,25 @@
                     </button>
                 </div>
             </form>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 </div>
 
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 $(document).ready(function() {
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 300);
+    });
+    
     // Initialize Select2
     $('.select2').select2({
         placeholder: "Select a user",
@@ -304,6 +330,9 @@ $(document).ready(function() {
     @if(request()->hasAny(['user_id', 'action', 'model_type', 'event_type', 'start_date', 'end_date', 'search']))
         $('#filter-panel').addClass('in');
     @endif
+    
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
 });
 </script>
-@endsection
+@endpush

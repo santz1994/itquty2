@@ -67,6 +67,32 @@ Route::middleware(['web', 'auth'])->group(function () {
     // ========================================
     Route::middleware(['role:super-admin'])->group(function () {
         
+        // User Management Routes (with admin prefix)
+        Route::prefix('admin/users')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('admin.users.index');
+            Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('admin.users.create');
+            Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('admin.users.store');
+            Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('admin.users.show');
+            Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('admin.users.edit');
+            Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('admin.users.update');
+            Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('admin.users.destroy');
+        });
+
+        // User Management Routes (without prefix)
+        Route::prefix('users')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('users.index');
+            Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('users.create');
+            
+            // Role Management - Must be before /{user} routes to avoid conflicts
+            Route::get('/roles', [\App\Http\Controllers\UsersController::class, 'roles'])->name('users.roles');
+            
+            Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('users.store');
+            Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('users.show');
+            Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('users.edit');
+            Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('users.update');
+            Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('users.destroy');
+        });
+        
         // Asset Requests Management
         Route::resource('asset-requests', \App\Http\Controllers\AssetRequestController::class);
         Route::post('/asset-requests/{assetRequest}/approve', [\App\Http\Controllers\AssetRequestController::class, 'approve'])->name('asset-requests.approve');
@@ -161,12 +187,41 @@ Route::middleware(['web', 'auth'])->group(function () {
             // Admin Dashboard
             Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
             
-            // Database Management (Read-only)
-            Route::get('/database', [\App\Http\Controllers\AdminController::class, 'database'])->name('admin.database');
+            // Safe Admin Operations (read-only, no password confirmation needed)
+            Route::get('/cache', [\App\Http\Controllers\AdminController::class, 'cache'])->name('admin.cache');
+            Route::get('/backup', [\App\Http\Controllers\AdminController::class, 'backup'])->name('admin.backup');
+            Route::get('/backup/{backup}/download', [\App\Http\Controllers\AdminController::class, 'download'])->name('admin.backup.download');
+            
+            // Database Management Routes (Super Admin Only)
+            // Read-only routes (no additional security needed)
+            Route::get('/database', [\App\Http\Controllers\DatabaseController::class, 'index'])->name('admin.database.index');
+            Route::get('/database/backup', [\App\Http\Controllers\DatabaseController::class, 'backup'])->name('admin.database.backup');
+            Route::get('/database/{table}', [\App\Http\Controllers\DatabaseController::class, 'showTable'])->name('admin.database.table');
+            Route::get('/database/{table}/{id}', [\App\Http\Controllers\DatabaseController::class, 'show'])->name('admin.database.show');
+            Route::get('/database/{table}/export/{format}', [\App\Http\Controllers\DatabaseController::class, 'export'])->name('admin.database.export');
             
             // Restricted Admin Operations (daniel@quty.co.id + password confirmation required)
             Route::middleware(['admin.security:edit'])->group(function () {
+                // Database CRUD operations
+                Route::get('/database/{table}/create', [\App\Http\Controllers\DatabaseController::class, 'create'])->name('admin.database.create');
+                Route::post('/database/{table}', [\App\Http\Controllers\DatabaseController::class, 'store'])->name('admin.database.store');
+                Route::get('/database/{table}/{id}/edit', [\App\Http\Controllers\DatabaseController::class, 'edit'])->name('admin.database.edit');
+                Route::put('/database/{table}/{id}', [\App\Http\Controllers\DatabaseController::class, 'update'])->name('admin.database.update');
+                Route::delete('/database/{table}/{id}', [\App\Http\Controllers\DatabaseController::class, 'destroy'])->name('admin.database.destroy');
+                Route::post('/database/action', [\App\Http\Controllers\AdminController::class, 'databaseAction'])->name('admin.database.action');
+                Route::post('/database/danger', [\App\Http\Controllers\AdminController::class, 'databaseDanger'])->name('admin.database.danger');
+                
+                // Cache Management (POST operations only)
+                Route::post('/cache/clear', [\App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.cache.clear');
+                Route::post('/cache/optimize', [\App\Http\Controllers\AdminController::class, 'optimize'])->name('admin.cache.optimize');
+                
+                // Backup Management (Dangerous operations)
+                Route::post('/backup/create', [\App\Http\Controllers\AdminController::class, 'create'])->name('admin.backup.create');
                 Route::post('/backup/upload', [\App\Http\Controllers\AdminController::class, 'upload'])->name('admin.backup.upload');
+                Route::post('/backup/settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('admin.backup.settings');
+                Route::post('/backup/cleanup', [\App\Http\Controllers\AdminController::class, 'cleanup'])->name('admin.backup.cleanup');
+                Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restore'])->name('admin.backup.restore');
+                Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'delete'])->name('admin.backup.delete');
             });
         });
         

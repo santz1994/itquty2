@@ -1,14 +1,29 @@
 @extends('layouts.app')
 
 @section('main-content')
+
+{{-- Page Header --}}
+@include('components.page-header', [
+    'title' => $pageTitle ?? 'Create New Asset',
+    'subtitle' => 'Add a new asset to the inventory',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home'), 'icon' => 'home'],
+        ['label' => 'Assets', 'url' => route('assets.index')],
+        ['label' => 'Create']
+    ],
+    'actions' => '<a href="'.route('assets.index').'" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+    </a>'
+])
+
   <div class="row">
     <div class="col-md-6">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title">{{$pageTitle}}</h3>
+          <h3 class="box-title">Asset Information</h3>
         </div>
         <div class="box-body">
-          <form method="POST" action="{{ url('assets') }}">
+          <form method="POST" action="{{ url('assets') }}" id="asset-create-form">
             {{csrf_field()}}
             <div class="form-group">
               <label for="serial_number">Serial Number</label>
@@ -124,7 +139,12 @@
             </div>
 
             <div class="form-group">
-              <button type="submit" class="btn btn-primary"><b>Add New Asset</b></button>
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fa fa-save"></i> <b>Add New Asset</b>
+              </button>
+              <a href="{{ route('assets.index') }}" class="btn btn-secondary btn-lg">
+                <i class="fa fa-times"></i> Cancel
+              </a>
             </div>
           </form>
         </div>
@@ -152,7 +172,20 @@
       @endif
     </div>
   </div>
+
+{{-- Loading Overlay --}}
+@include('components.loading-overlay')
+
 @endsection
+
+@push('scripts')
+<script type="text/javascript">
+  // Form loading state
+  $('#asset-create-form').on('submit', function() {
+    showLoading('Creating asset...');
+  });
+</script>
+@endpush
 
 @section('footer')
   <script type="text/javascript">

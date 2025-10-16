@@ -1,14 +1,27 @@
 @extends('layouts.app')
 
 @section('main-content')
+
+@include('components.page-header', [
+    'title' => 'Edit Ticket #' . $ticket->ticket_code,
+    'subtitle' => 'Update ticket details',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Tickets', 'url' => route('tickets.index')],
+        ['label' => 'Edit #' . $ticket->ticket_code]
+    ],
+    'actions' => '<a href="'.route('tickets.show', $ticket).'" class="btn btn-default">
+        <i class="fa fa-eye"></i> View Ticket
+    </a>
+    <a href="'.route('tickets.index').'" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+    </a>'
+])
+
 <div class="row">
     <div class="col-md-8">
         <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">Edit Ticket #{{ $ticket->ticket_code }}</h3>
-            </div>
-            
-            <form method="POST" action="{{ route('tickets.update', $ticket) }}">
+            <form method="POST" action="{{ route('tickets.update', $ticket) }}" id="ticket-edit-form">
                 @csrf
                 @method('PUT')
                 
@@ -211,4 +224,17 @@
         </div>
     </div>
 </div>
+
+@include('components.loading-overlay')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#ticket-edit-form').on('submit', function() {
+        showLoading('Updating ticket...');
+    });
+});
+</script>
+@endpush
+
 @endsection

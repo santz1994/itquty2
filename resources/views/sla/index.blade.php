@@ -19,30 +19,42 @@ if (!function_exists('formatMinutesToHumanReadable')) {
 }
 @endphp
 
-@section('main-content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">
-                            <i class="fas fa-clock"></i> SLA Policies Management
-                        </h3>
-                        <div>
-                            <a href="{{ route('sla.dashboard') }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-chart-line"></i> SLA Dashboard
-                            </a>
-                            @can('create', App\SlaPolicy::class)
-                                <a href="{{ route('sla.create') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Create SLA Policy
-                                </a>
-                            @endcan
-                        </div>
-                    </div>
-                </div>
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/custom-tables.css') }}">
+@endpush
 
-                <div class="card-body">
+@section('main-content')
+<div class="content-wrapper">
+    @include('components.page-header', [
+        'title' => 'SLA Policies',
+        'subtitle' => 'Manage Service Level Agreement policies',
+        'icon' => 'fa-clock-o',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'SLA Policies', 'active' => true]
+        ],
+        'actions' => '<a href="' . route('sla.dashboard') . '" class="btn btn-info">
+                        <i class="fa fa-line-chart"></i> SLA Dashboard
+                      </a>
+                      <a href="' . route('sla.create') . '" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Create SLA Policy
+                      </a>'
+    ])
+
+    @include('components.loading-overlay')
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                <i class="fa fa-list"></i> SLA Policies List
+                            </h3>
+                        </div>
+
+                        <div class="box-body">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="fas fa-check-circle"></i> {{ session('success') }}
@@ -216,10 +228,26 @@ function toggleStatus(policyId) {
 
 function deletePolicy(policyId) {
     if (confirm('Are you sure you want to delete this SLA policy? This action cannot be undone.')) {
+        showLoadingOverlay('Deleting policy...');
         const form = document.getElementById('delete-form');
         form.action = `/sla/${policyId}`;
         form.submit();
     }
 }
-</script>
+
+// Hide loading overlay when page is fully loaded
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        hideLoadingOverlay();
+    }, 300);
+});
+
+// Tooltip initialization
+$('[data-toggle="tooltip"]').tooltip();
+                    </script>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 @endsection

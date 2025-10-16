@@ -1,14 +1,32 @@
 @extends('layouts.app')
 
 @section('main-content')
+
+{{-- Page Header --}}
+@include('components.page-header', [
+    'title' => $pageTitle ?? 'Edit Asset',
+    'subtitle' => 'Update asset information - ' . ($asset->asset_tag ?? ''),
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home'), 'icon' => 'home'],
+        ['label' => 'Assets', 'url' => route('assets.index')],
+        ['label' => 'Edit']
+    ],
+    'actions' => '<a href="'.route('assets.show', $asset->id).'" class="btn btn-info">
+        <i class="fa fa-eye"></i> View Asset
+    </a>
+    <a href="'.route('assets.index').'" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+    </a>'
+])
+
   <div class="row">
     <div class="col-md-6 col-md-offset-3">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title">{{$pageTitle}}</h3>
+          <h3 class="box-title">Asset Information</h3>
         </div>
         <div class="box-body">
-          <form method="POST" action="/assets/{{$asset->id}}">
+          <form method="POST" action="/assets/{{$asset->id}}" id="asset-edit-form">
             {{method_field('PATCH')}}
             {{csrf_field()}}
             <div class="form-group">
@@ -95,10 +113,17 @@
             </div>
 
             <div class="form-group">
-              <button type="submit" class="btn btn-primary"><b>Edit Asset</b></button>
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fa fa-save"></i> <b>Update Asset</b>
+              </button>
+              <a href="{{ route('assets.show', $asset->id) }}" class="btn btn-info btn-lg">
+                <i class="fa fa-eye"></i> View
+              </a>
+              <a href="{{ route('assets.index') }}" class="btn btn-secondary btn-lg">
+                <i class="fa fa-times"></i> Cancel
+              </a>
             </div>
           </form>
-          <div class="text-center"><a class="btn btn-primary" href="{{ URL::previous() }}">Back</a></div>
         </div>
       </div>
 
@@ -111,7 +136,21 @@
       @endif
     </div>
   </div>
+
+{{-- Loading Overlay --}}
+@include('components.loading-overlay')
+
 @endsection
+
+@push('scripts')
+<script type="text/javascript">
+  // Form loading state
+  $('#asset-edit-form').on('submit', function() {
+    showLoading('Updating asset...');
+  });
+</script>
+@endpush
+
 @section('footer')
   <script type="text/javascript">
     $(document).ready(function() {

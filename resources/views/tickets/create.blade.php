@@ -1,14 +1,22 @@
 @extends('layouts.app')
 
 @section('main-content')
+
+@include('components.page-header', [
+    'title' => 'Create New Ticket',
+    'subtitle' => 'Submit a new support ticket',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Tickets', 'url' => route('tickets.index')],
+        ['label' => 'Create']
+    ]
+])
+
   <div class="row">
     <div class="col-md-6">
       <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">{{$pageTitle}}</h3>
-        </div>
         <div class="box-body">
-          <form method="POST" action="{{ url('tickets') }}">
+          <form method="POST" action="{{ url('tickets') }}" id="ticket-create-form">
             {{csrf_field()}}
             <div class="form-group">
               <label>Agent</label>
@@ -112,6 +120,9 @@
       </div>
     </div>
   </div>
+
+@include('components.loading-overlay')
+
 @endsection
 
 @section('footer')
@@ -122,6 +133,11 @@
       $(".ticket_type_id").select2();
       $(".ticket_priority_id").select2();
       $(".subject").select2();
+
+      // Add loading overlay on form submit
+      $('#ticket-create-form').on('submit', function() {
+        showLoading('Creating ticket...');
+      });
     });
   </script>
 @endsection

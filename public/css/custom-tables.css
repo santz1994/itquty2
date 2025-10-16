@@ -275,3 +275,140 @@
 .table-enhanced.table-bordered tbody td {
     border: 1px solid #dee2e6;
 }
+
+/* ============================================
+   RESPONSIVE LAYOUT FIXES
+   ============================================ */
+
+/* Ensure content fills the viewport properly */
+.content-wrapper {
+    min-height: calc(100vh - 100px);
+}
+
+/* Page Header Responsive Fixes */
+.content-header {
+    padding: 15px;
+    margin: 0;
+}
+
+.content-header .container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.content-header h1 {
+    margin: 0 0 10px;
+    font-size: 28px;
+    font-weight: 400;
+}
+
+.content-header .text-muted {
+    margin: 0 0 10px;
+    font-size: 14px;
+}
+
+/* Breadcrumb Responsive */
+.content-header .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Action Buttons Responsive */
+.content-header .float-sm-right {
+    margin-top: 0;
+}
+
+.content-header .float-sm-right .btn {
+    margin-left: 5px;
+    white-space: nowrap;
+}
+
+/* Container Fluid Fixes */
+.container-fluid {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Box Responsive */
+.box {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* Table Responsive Container */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .content-header h1 {
+        font-size: 24px;
+    }
+    
+    .content-header .float-sm-right {
+        float: none !important;
+        margin-top: 10px;
+    }
+    
+    .content-header .float-sm-right .btn {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .content-header .row {
+        display: block;
+    }
+    
+    .content-header .col-sm-6 {
+        width: 100%;
+    }
+    
+    /* Table buttons wrap on mobile */
+    .table-enhanced .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+    
+    .table-enhanced .btn-group .btn {
+        margin: 2px;
+    }
+    
+    /* Stack form groups on mobile */
+    .box-body .row .col-md-6,
+    .box-body .row .col-md-4,
+    .box-body .row .col-md-3 {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Tablet Adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .content-header h1 {
+        font-size: 26px;
+    }
+}
+
+/* Ensure proper box sizing */
+* {
+    box-sizing: border-box;
+}
+
+/* Fix any overflow issues */
+body {
+    overflow-x: hidden;
+}
+
+.wrapper {
+    overflow-x: hidden;
+}

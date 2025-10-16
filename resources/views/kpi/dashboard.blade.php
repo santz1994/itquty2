@@ -2,21 +2,39 @@
 
 @section('title', 'KPI Dashboard')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-widgets.css') }}">
+@endpush
+
 @section('main-content')
-<div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title"><i class="fa fa-dashboard"></i> Key Performance Indicators Dashboard</h3>
-                <div class="box-tools pull-right">
-                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                        <i class="fa fa-minus"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="box-body">
-                
-                <!-- Summary Cards -->
+<div class="content-wrapper">
+    @include('components.page-header', [
+        'title' => 'KPI Dashboard',
+        'subtitle' => 'Key Performance Indicators & Metrics',
+        'icon' => 'fa-line-chart',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'KPI Dashboard', 'active' => true]
+        ]
+    ])
+
+    @include('components.loading-overlay')
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><i class="fa fa-bar-chart"></i> Performance Overview</h3>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="box-body">
+                        
+                        <!-- Summary Cards -->
                 <div class="row">
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-aqua">
@@ -351,5 +369,19 @@ if (assetsCanvas) {
     }
     });
 }
-</script>
+
+    // Hide loading overlay when charts are loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 500);
+    });
+    
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
+                </script>
+            </div>
+        </div>
+    </section>
+</div>
 @endsection

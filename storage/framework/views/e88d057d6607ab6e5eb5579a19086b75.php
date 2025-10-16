@@ -1,16 +1,26 @@
 
 
 <?php $__env->startSection('main-content'); ?>
+
+<?php echo $__env->make('components.page-header', [
+    'title' => 'Tickets',
+    'subtitle' => 'Manage and track all support tickets',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Tickets']
+    ],
+    'actions' => '<a href="'.route('tickets.create').'" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Create New Ticket
+    </a>
+    <a href="'.route('tickets.export').'" class="btn btn-success">
+        <i class="fa fa-download"></i> Export
+    </a>'
+], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
   <div class="row">
     <div class="col-md-12">
       <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title"><?php echo e($pageTitle); ?></h3>
-        </div>
         <div class="box-body">
-          <p>
-            <a href="tickets/create"><button type="button" class="btn btn-default" name="create-new-ticket" data-toggle="tooltip" data-original-title="Create New Ticket"><span class='fa fa-plus' aria-hidden='true'></span> <b>Create New Ticket</b></button></a>
-          </p>
 
           <!-- Bulk Operations Toolbar -->
           <div id="bulk-actions-toolbar" class="alert alert-info" style="display: none; margin-bottom: 20px;">
@@ -101,23 +111,23 @@
             <a href="<?php echo e(route('tickets.index')); ?>" class="btn btn-default" style="margin-left: 5px;">Clear</a>
           </form>
           
-          <table id="table" class="table table-striped table-bordered table-hover">
+          <table id="table" class="table table-enhanced table-striped table-bordered table-hover">
             <thead>
               <tr>
                 <th width="30">
                   <input type="checkbox" id="select-all-tickets" onclick="toggleSelectAll(this)">
                 </th>
-                <th>Ticket Number</th>
-                <th>Creator Ticket</th>
-                <th>Location</th>
-                <th>Asset</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Subject</th>
+                <th class="sortable" data-column="ticket_number">Ticket Number</th>
+                <th class="sortable" data-column="creator">Creator Ticket</th>
+                <th class="sortable" data-column="location">Location</th>
+                <th class="sortable" data-column="asset">Asset</th>
+                <th class="sortable" data-column="status">Status</th>
+                <th class="sortable" data-column="priority">Priority</th>
+                <th class="sortable" data-column="subject">Subject</th>
                 <?php if(!auth()->user()->hasRole('user')): ?>
-                  <th>Assigned To</th>
+                  <th class="sortable" data-column="assigned_to">Assigned To</th>
                 <?php endif; ?>
-                <th>Actions</th>
+                <th class="actions">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -582,6 +592,8 @@
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
           },
           beforeSend: function() {
+            // Show loading overlay
+            showLoading('Processing request...');
             // Disable buttons
             $('button').prop('disabled', true);
           },
@@ -603,12 +615,17 @@
             alert('Error: ' + errorMessage);
           },
           complete: function() {
+            // Hide loading overlay
+            hideLoading();
             // Re-enable buttons
             $('button').prop('disabled', false);
           }
         });
       }
     </script>
+
+<?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
 <?php $__env->stopSection(); ?>
 
 

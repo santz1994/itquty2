@@ -1,6 +1,25 @@
 @extends('layouts.app')
 
 @section('main-content')
+
+@include('components.page-header', [
+    'title' => 'Assets',
+    'subtitle' => 'Manage all IT assets and equipment',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Assets']
+    ],
+    'actions' => '<a href="'.route('assets.create').'" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Create New Asset
+    </a>
+    <a href="'.route('assets.import-form').'" class="btn btn-info">
+        <i class="fa fa-upload"></i> Import
+    </a>
+    <a href="'.route('assets.export').'" class="btn btn-success">
+        <i class="fa fa-download"></i> Export
+    </a>'
+])
+
   <div class="row">
     <div class="col-md-2 col-sm-6 col-xs-12">
       <div class="small-box bg-purple">
@@ -71,27 +90,23 @@
   <div class="row">
     <div class="col-md-12 col-xs-12 col-lg-12">
       <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">Assets</h3>
-        </div>
         <div class="box-body">
-          <p class="pull-right"><a href="assets/create"><button type="button" class="btn btn-default" name="create-new-asset" data-toggle="tooltip" data-original-title="Create New Asset"><span class='fa fa-plus' aria-hidden='true'></span> <b>Create New Asset</b></button></a></p>
-          <table id="table" class="table table-striped table-bordered table-hover">
+          <table id="table" class="table table-enhanced table-striped table-bordered table-hover">
             <thead>
               <tr>
-                <th>Tag</th>
-                <th>Asset Type</th>
-                <th>S/N</th>
-                <th>Age</th>
-                <th>Model</th>
-                <th>Location</th>
-                <th>Division</th>
-                <th>Status</th>
-                <th>Actions</th>
-                <th>Supplier</th>
-                <th>Purchase Date</th>
-                <th>Warranty Months</th>
-                <th>Warranty Type</th>
+                <th class="sortable" data-column="asset_tag">Tag</th>
+                <th class="sortable" data-column="asset_type">Asset Type</th>
+                <th class="sortable" data-column="serial_number">S/N</th>
+                <th class="sortable" data-column="age">Age</th>
+                <th class="sortable" data-column="model">Model</th>
+                <th class="sortable" data-column="location">Location</th>
+                <th class="sortable" data-column="division">Division</th>
+                <th class="sortable" data-column="status">Status</th>
+                <th class="actions">Actions</th>
+                <th class="sortable" data-column="supplier">Supplier</th>
+                <th class="sortable" data-column="purchase_date">Purchase Date</th>
+                <th class="sortable" data-column="warranty_months">Warranty Months</th>
+                <th class="sortable" data-column="warranty_type">Warranty Type</th>
               </tr>
             </thead>
             <tbody>
@@ -264,6 +279,9 @@
       });
     </script>
   @endif
+
+@include('components.loading-overlay')
+
 @endsection
 
 

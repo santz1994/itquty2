@@ -1,102 +1,175 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-widgets.css') }}">
+@endpush
+
 @section('main-content')
 <div class="content-wrapper">
-    <section class="content-header">
-        <h1>
-            Management Dashboard
-            <small>Strategic overview and KPI metrics</small>
-        </h1>
-        <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Management Dashboard</li>
-        </ol>
-    </section>
+    @include('components.page-header', [
+        'title' => 'Management Dashboard',
+        'subtitle' => 'Strategic overview and KPI metrics',
+        'icon' => 'fa-briefcase',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'Management Dashboard', 'active' => true]
+        ]
+    ])
+
+    @include('components.loading-overlay')
 
     <section class="content">
-        <!-- Overview Info boxes -->
+        <!-- Modern KPI Cards - Row 1: Tickets Overview -->
         <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-aqua"><i class="fa fa-ticket"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Today's Tickets</span>
-                        <span class="info-box-number">{{ $overview['total_tickets_today'] ?? 0 }}</span>
+                <a href="{{ route('tickets.index', ['filter' => 'today']) }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-primary">
+                            <i class="fa fa-ticket"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $overview['total_tickets_today'] ?? 0 }}</h3>
+                            <p class="kpi-label">Today's Tickets</p>
+                            <span class="kpi-trend neutral">
+                                <i class="fa fa-calendar-o"></i> Real-time count
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-blue"><i class="fa fa-calendar"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">This Month</span>
-                        <span class="info-box-number">{{ $overview['total_tickets_month'] ?? 0 }}</span>
+                <a href="{{ route('tickets.index', ['filter' => 'month']) }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-info">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $overview['total_tickets_month'] ?? 0 }}</h3>
+                            <p class="kpi-label">This Month</p>
+                            @if(isset($overview['month_growth']) && $overview['month_growth'] > 0)
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-arrow-up"></i> {{ $overview['month_growth'] }}% from last month
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-red"><i class="fa fa-exclamation-triangle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Overdue</span>
-                        <span class="info-box-number">{{ $overview['overdue_tickets'] ?? 0 }}</span>
+                <a href="{{ route('tickets.index', ['status' => 'overdue']) }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-danger">
+                            <i class="fa fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $overview['overdue_tickets'] ?? 0 }}</h3>
+                            <p class="kpi-label">Overdue Tickets</p>
+                            <span class="kpi-trend negative">
+                                <i class="fa fa-warning"></i> Requires attention
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-yellow"><i class="fa fa-question-circle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Unassigned</span>
-                        <span class="info-box-number">{{ $overview['unassigned_tickets'] ?? 0 }}</span>
+                <a href="{{ route('tickets.index', ['status' => 'unassigned']) }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-warning">
+                            <i class="fa fa-question-circle"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $overview['unassigned_tickets'] ?? 0 }}</h3>
+                            <p class="kpi-label">Unassigned</p>
+                            <span class="kpi-trend neutral">
+                                <i class="fa fa-user-plus"></i> Needs assignment
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
-        <!-- Second row of info boxes -->
+        <!-- Modern KPI Cards - Row 2: System Overview -->
         <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-green"><i class="fa fa-desktop"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Assets</span>
-                        <span class="info-box-number">{{ $overview['total_assets'] ?? 0 }}</span>
+                <a href="{{ route('assets.index') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-success">
+                            <i class="fa fa-desktop"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $overview['total_assets'] ?? 0 }}</h3>
+                            <p class="kpi-label">Total Assets</p>
+                            @if(isset($overview['assets_growth']) && $overview['assets_growth'] > 0)
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-arrow-up"></i> {{ $overview['assets_growth'] }}% growth
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-purple"><i class="fa fa-users"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Active Admins</span>
-                        <span class="info-box-number">{{ $overview['active_admins'] ?? 0 }}</span>
+                <a href="{{ route('users.index') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-purple">
+                            <i class="fa fa-users"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $overview['active_admins'] ?? 0 }}</h3>
+                            <p class="kpi-label">Active Admins</p>
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-circle"></i> Online now
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-orange"><i class="fa fa-pie-chart"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">SLA Compliance</span>
-                        <span class="info-box-number">{{ $sla_compliance['compliance_rate'] ?? 0 }}%</span>
+                <a href="{{ route('sla.dashboard') }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon {{ ($sla_compliance['compliance_rate'] ?? 0) >= 90 ? 'bg-success' : 'bg-warning' }}">
+                            <i class="fa fa-pie-chart"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $sla_compliance['compliance_rate'] ?? 0 }}%</h3>
+                            <p class="kpi-label">SLA Compliance</p>
+                            @if(($sla_compliance['compliance_rate'] ?? 0) >= 90)
+                            <span class="kpi-trend positive">
+                                <i class="fa fa-check-circle"></i> Excellent performance
+                            </span>
+                            @else
+                            <span class="kpi-trend negative">
+                                <i class="fa fa-warning"></i> Needs improvement
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <span class="info-box-icon bg-teal"><i class="fa fa-cogs"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Assets In Use</span>
-                        <span class="info-box-number">{{ $asset_overview['in_use'] ?? 0 }}</span>
+                <a href="{{ route('assets.index', ['status' => 'in_use']) }}" style="text-decoration: none; color: inherit;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-teal">
+                            <i class="fa fa-cogs"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value">{{ $asset_overview['in_use'] ?? 0 }}</h3>
+                            <p class="kpi-label">Assets In Use</p>
+                            @if(isset($asset_overview['utilization_rate']))
+                            <span class="kpi-trend neutral">
+                                <i class="fa fa-percent"></i> {{ $asset_overview['utilization_rate'] }}% utilization
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
@@ -313,6 +386,16 @@ $(document).ready(function() {
             }
         });
     }
+    
+    // Hide loading overlay when charts are loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 500);
+    });
+    
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
 });
 </script>
 @endsection

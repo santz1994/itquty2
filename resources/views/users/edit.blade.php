@@ -1,21 +1,26 @@
 @extends('layouts.app')
 
 @section('main-content')
-<div class="content-wrapper">
-    <section class="content-header">
-        <h1>
-            Edit User
-            <small>Modify user details and permissions</small>
-        </h1>
-        <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="{{ route('users.index') }}">Users</a></li>
-            <li class="active">Edit {{ $user->name }}</li>
-        </ol>
-    </section>
 
-    <section class="content">
-        <div class="row">
+{{-- Page Header --}}
+@include('components.page-header', [
+    'title' => 'Edit User: ' . $user->name,
+    'subtitle' => 'Modify user details and permissions',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home'), 'icon' => 'home'],
+        ['label' => 'Users', 'url' => route('users.index')],
+        ['label' => 'Edit']
+    ],
+    'actions' => '<a href="'.route('users.show', $user->id).'" class="btn btn-info">
+        <i class="fa fa-eye"></i> View User
+    </a>
+    <a href="'.route('users.index').'" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+    </a>'
+])
+
+<div class="container-fluid">
+    <div class="row">
             <div class="col-md-8">
                 <div class="box box-primary">
                     <div class="box-header with-border">
@@ -23,7 +28,7 @@
                             <i class="fa fa-user-edit"></i> User Information
                         </h3>
                     </div>
-                    <form method="POST" action="{{ route('users.update', $user) }}">
+                    <form method="POST" action="{{ route('users.update', $user) }}" id="user-edit-form">
                         @csrf
                         @method('PUT')
                         <div class="box-body">
@@ -105,11 +110,14 @@
                             </div>
                         </div>
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fa fa-save"></i> Update User
                             </button>
-                            <a href="{{ route('users.index') }}" class="btn btn-default">
-                                <i class="fa fa-arrow-left"></i> Cancel
+                            <a href="{{ route('users.show', $user->id) }}" class="btn btn-info btn-lg">
+                                <i class="fa fa-eye"></i> View
+                            </a>
+                            <a href="{{ route('users.index') }}" class="btn btn-secondary btn-lg">
+                                <i class="fa fa-times"></i> Cancel
                             </a>
                         </div>
                     </form>
@@ -166,10 +174,21 @@
                 </div>
             </div>
         </div>
-    </section>
 </div>
 
+{{-- Loading Overlay --}}
+@include('components.loading-overlay')
+
+@endsection
+
+@push('scripts')
 <script>
+// Form loading state
+$('#user-edit-form').on('submit', function() {
+    showLoading('Updating user...');
+});
+
+// Password change toggle
 document.getElementById('change_password').addEventListener('change', function() {
     var passwordFields = document.getElementById('password_fields');
     var passwordInput = document.getElementById('password');
@@ -188,4 +207,4 @@ document.getElementById('change_password').addEventListener('change', function()
     }
 });
 </script>
-@endsection
+@endpush

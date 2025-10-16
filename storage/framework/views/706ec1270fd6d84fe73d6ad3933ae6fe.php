@@ -2,21 +2,39 @@
 
 <?php $__env->startSection('title', 'KPI Dashboard'); ?>
 
+<?php $__env->startPush('styles'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('css/dashboard-widgets.css')); ?>">
+<?php $__env->stopPush(); ?>
+
 <?php $__env->startSection('main-content'); ?>
-<div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title"><i class="fa fa-dashboard"></i> Key Performance Indicators Dashboard</h3>
-                <div class="box-tools pull-right">
-                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                        <i class="fa fa-minus"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="box-body">
-                
-                <!-- Summary Cards -->
+<div class="content-wrapper">
+    <?php echo $__env->make('components.page-header', [
+        'title' => 'KPI Dashboard',
+        'subtitle' => 'Key Performance Indicators & Metrics',
+        'icon' => 'fa-line-chart',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'KPI Dashboard', 'active' => true]
+        ]
+    ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+    <?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><i class="fa fa-bar-chart"></i> Performance Overview</h3>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="box-body">
+                        
+                        <!-- Summary Cards -->
                 <div class="row">
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-aqua">
@@ -352,7 +370,21 @@ if (assetsCanvas) {
     }
     });
 }
-</script>
+
+    // Hide loading overlay when charts are loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 500);
+    });
+    
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
+                </script>
+            </div>
+        </div>
+    </section>
+</div>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\Quty1\resources\views/kpi/dashboard.blade.php ENDPATH**/ ?>

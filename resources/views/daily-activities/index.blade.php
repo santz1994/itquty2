@@ -1,35 +1,51 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/custom-tables.css') }}">
+@endpush
+
 @section('main-content')
-<div class="row">
-    <div class="col-md-12">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-calendar-check-o"></i> Daily Activities
-                </h3>
-                <div class="box-tools pull-right">
-                    <a href="{{ route('daily-activities.create') }}" class="btn btn-primary btn-sm">
+<div class="content-wrapper">
+    @include('components.page-header', [
+        'title' => 'Daily Activities',
+        'subtitle' => 'Track and manage daily work activities',
+        'icon' => 'fa-calendar-check-o',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'Daily Activities', 'active' => true]
+        ],
+        'actions' => '<a href="' . route('daily-activities.create') . '" class="btn btn-primary">
                         <i class="fa fa-plus"></i> Add Activity
-                    </a>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-download"></i> Reports <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="{{ route('daily-activities.daily-report') }}?date={{ request('date', today()) }}">
-                                <i class="fa fa-file-text-o"></i> Daily Report
-                            </a></li>
-                            <li><a href="{{ route('daily-activities.weekly-report') }}">
-                                <i class="fa fa-calendar"></i> Weekly Report
-                            </a></li>
-                            <li><a href="{{ route('daily-activities.export-pdf') }}?date={{ request('date', today()) }}">
-                                <i class="fa fa-file-pdf-o"></i> Export PDF
-                            </a></li>
-                        </ul>
+                      </a>
+                      <div class="btn-group">
+                          <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                              <i class="fa fa-download"></i> Reports <span class="caret"></span>
+                          </button>
+                          <ul class="dropdown-menu" role="menu">
+                              <li><a href="' . route('daily-activities.daily-report') . '?date=' . request('date', today()) . '">
+                                  <i class="fa fa-file-text-o"></i> Daily Report
+                              </a></li>
+                              <li><a href="' . route('daily-activities.weekly-report') . '">
+                                  <i class="fa fa-calendar"></i> Weekly Report
+                              </a></li>
+                              <li><a href="' . route('daily-activities.export-pdf') . '?date=' . request('date', today()) . '">
+                                  <i class="fa fa-file-pdf-o"></i> Export PDF
+                              </a></li>
+                          </ul>
+                      </div>'
+    ])
+
+    @include('components.loading-overlay')
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">
+                            <i class="fa fa-list"></i> Activities List
+                        </h3>
                     </div>
-                </div>
-            </div>
             
             <!-- Filters -->
             <div class="box-body">
@@ -235,14 +251,23 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 </div>
 @endsection
 
-@section('footer')
+@push('scripts')
 <script>
 $(document).ready(function() {
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 300);
+    });
+    
     // Show full description modal
     $('.show-full-description').on('click', function(e) {
         e.preventDefault();
@@ -251,11 +276,9 @@ $(document).ready(function() {
         $('#descriptionModal').modal('show');
     });
     
-    // Auto-refresh every 5 minutes for real-time updates
-    setTimeout(function() {
-        location.reload();
-    }, 300000); // 5 minutes
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
 });
 </script>
-@endsection
+@endpush
 

@@ -40,7 +40,12 @@
                 
 
                 <!-- Notifications Menu -->
-                
+                <li class="notification-bell-container">
+                    <a href="#" id="notification-bell" class="notification-bell">
+                        <i class="fa fa-bell"></i>
+                        <span id="notification-badge" class="notification-badge hidden">0</span>
+                    </a>
+                </li>
                 <!-- Tasks Menu -->
                 
                 

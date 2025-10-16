@@ -1,35 +1,51 @@
 
 
+<?php $__env->startPush('styles'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('css/custom-tables.css')); ?>">
+<?php $__env->stopPush(); ?>
+
 <?php $__env->startSection('main-content'); ?>
-<div class="row">
-    <div class="col-md-12">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-calendar-check-o"></i> Daily Activities
-                </h3>
-                <div class="box-tools pull-right">
-                    <a href="<?php echo e(route('daily-activities.create')); ?>" class="btn btn-primary btn-sm">
+<div class="content-wrapper">
+    <?php echo $__env->make('components.page-header', [
+        'title' => 'Daily Activities',
+        'subtitle' => 'Track and manage daily work activities',
+        'icon' => 'fa-calendar-check-o',
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
+            ['label' => 'Daily Activities', 'active' => true]
+        ],
+        'actions' => '<a href="' . route('daily-activities.create') . '" class="btn btn-primary">
                         <i class="fa fa-plus"></i> Add Activity
-                    </a>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-download"></i> Reports <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="<?php echo e(route('daily-activities.daily-report')); ?>?date=<?php echo e(request('date', today())); ?>">
-                                <i class="fa fa-file-text-o"></i> Daily Report
-                            </a></li>
-                            <li><a href="<?php echo e(route('daily-activities.weekly-report')); ?>">
-                                <i class="fa fa-calendar"></i> Weekly Report
-                            </a></li>
-                            <li><a href="<?php echo e(route('daily-activities.export-pdf')); ?>?date=<?php echo e(request('date', today())); ?>">
-                                <i class="fa fa-file-pdf-o"></i> Export PDF
-                            </a></li>
-                        </ul>
+                      </a>
+                      <div class="btn-group">
+                          <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                              <i class="fa fa-download"></i> Reports <span class="caret"></span>
+                          </button>
+                          <ul class="dropdown-menu" role="menu">
+                              <li><a href="' . route('daily-activities.daily-report') . '?date=' . request('date', today()) . '">
+                                  <i class="fa fa-file-text-o"></i> Daily Report
+                              </a></li>
+                              <li><a href="' . route('daily-activities.weekly-report') . '">
+                                  <i class="fa fa-calendar"></i> Weekly Report
+                              </a></li>
+                              <li><a href="' . route('daily-activities.export-pdf') . '?date=' . request('date', today()) . '">
+                                  <i class="fa fa-file-pdf-o"></i> Export PDF
+                              </a></li>
+                          </ul>
+                      </div>'
+    ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+    <?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">
+                            <i class="fa fa-list"></i> Activities List
+                        </h3>
                     </div>
-                </div>
-            </div>
             
             <!-- Filters -->
             <div class="box-body">
@@ -241,14 +257,23 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 </div>
 <?php $__env->stopSection(); ?>
 
-<?php $__env->startSection('footer'); ?>
+<?php $__env->startPush('scripts'); ?>
 <script>
 $(document).ready(function() {
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            hideLoadingOverlay();
+        }, 300);
+    });
+    
     // Show full description modal
     $('.show-full-description').on('click', function(e) {
         e.preventDefault();
@@ -257,13 +282,11 @@ $(document).ready(function() {
         $('#descriptionModal').modal('show');
     });
     
-    // Auto-refresh every 5 minutes for real-time updates
-    setTimeout(function() {
-        location.reload();
-    }, 300000); // 5 minutes
+    // Tooltip initialization
+    $('[data-toggle="tooltip"]').tooltip();
 });
 </script>
-<?php $__env->stopSection(); ?>
+<?php $__env->stopPush(); ?>
 
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\Quty1\resources\views/daily-activities/index.blade.php ENDPATH**/ ?>

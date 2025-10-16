@@ -1,21 +1,23 @@
 @extends('layouts.app')
 
 @section('main-content')
-<div class="content-wrapper">
-    <section class="content-header">
-        <h1>
-            Create New User
-            <small>Add a new user to the system</small>
-        </h1>
-        <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="{{ route('users.index') }}">Users</a></li>
-            <li class="active">Create</li>
-        </ol>
-    </section>
 
-    <section class="content">
-        <div class="row">
+{{-- Page Header --}}
+@include('components.page-header', [
+    'title' => 'Create New User',
+    'subtitle' => 'Add a new user to the system',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home'), 'icon' => 'home'],
+        ['label' => 'Users', 'url' => route('users.index')],
+        ['label' => 'Create']
+    ],
+    'actions' => '<a href="'.route('users.index').'" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Back to List
+    </a>'
+])
+
+<div class="container-fluid">
+    <div class="row">
             <div class="col-md-8">
                 <div class="box box-primary">
                     <div class="box-header with-border">
@@ -23,7 +25,7 @@
                             <i class="fa fa-user-plus"></i> User Information
                         </h3>
                     </div>
-                    <form method="POST" action="{{ route('users.store') }}">
+                    <form method="POST" action="{{ route('users.store') }}" id="user-create-form">
                         @csrf
                         <div class="box-body">
                             <div class="form-group">
@@ -96,11 +98,11 @@
                             </div>
                         </div>
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fa fa-save"></i> Create User
                             </button>
-                            <a href="{{ route('users.index') }}" class="btn btn-default">
-                                <i class="fa fa-arrow-left"></i> Cancel
+                            <a href="{{ route('users.index') }}" class="btn btn-secondary btn-lg">
+                                <i class="fa fa-times"></i> Cancel
                             </a>
                         </div>
                     </form>
@@ -142,6 +144,20 @@
                 </div>
             </div>
         </div>
-    </section>
 </div>
+
+{{-- Loading Overlay --}}
+@include('components.loading-overlay')
+
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Form loading state
+    $('#user-create-form').on('submit', function() {
+        showLoading('Creating user...');
+    });
+});
+</script>
+@endpush

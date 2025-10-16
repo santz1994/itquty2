@@ -14,11 +14,17 @@
     <link href="<?php echo e(asset('/css/enhanced-ux.css')); ?>" rel="stylesheet" type="text/css" />
     
     <!-- Custom UI/UX Enhancements -->
+    <link href="<?php echo e(asset('/css/color-palette.css')); ?>" rel="stylesheet" type="text/css" />
     <link href="<?php echo e(asset('/css/custom-tables.css')); ?>" rel="stylesheet" type="text/css" />
     <link href="<?php echo e(asset('/css/loading-states.css')); ?>" rel="stylesheet" type="text/css" />
     <link href="<?php echo e(asset('/css/dashboard-widgets.css')); ?>" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('/css/button-standards.css')); ?>" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('/css/search-enhancement.css')); ?>" rel="stylesheet" type="text/css" />
+    <link href="<?php echo e(asset('/css/notification-ui.css')); ?>" rel="stylesheet" type="text/css" />
     
     <script src="<?php echo e(asset('/plugins/jQuery/jQuery-2.1.4.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('/js/search-enhancement.js')); ?>"></script>
+    <script src="<?php echo e(asset('/js/notification-ui.js')); ?>"></script>
 
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->

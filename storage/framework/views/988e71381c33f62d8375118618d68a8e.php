@@ -1,14 +1,22 @@
 
 
 <?php $__env->startSection('main-content'); ?>
+
+<?php echo $__env->make('components.page-header', [
+    'title' => 'Create New Ticket',
+    'subtitle' => 'Submit a new support ticket',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('admin.dashboard'), 'icon' => 'home'],
+        ['label' => 'Tickets', 'url' => route('tickets.index')],
+        ['label' => 'Create']
+    ]
+], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
   <div class="row">
     <div class="col-md-6">
       <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title"><?php echo e($pageTitle); ?></h3>
-        </div>
         <div class="box-body">
-          <form method="POST" action="<?php echo e(url('tickets')); ?>">
+          <form method="POST" action="<?php echo e(url('tickets')); ?>" id="ticket-create-form">
             <?php echo e(csrf_field()); ?>
 
             <div class="form-group">
@@ -114,6 +122,9 @@
       </div>
     </div>
   </div>
+
+<?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('footer'); ?>
@@ -124,6 +135,11 @@
       $(".ticket_type_id").select2();
       $(".ticket_priority_id").select2();
       $(".subject").select2();
+
+      // Add loading overlay on form submit
+      $('#ticket-create-form').on('submit', function() {
+        showLoading('Creating ticket...');
+      });
     });
   </script>
 <?php $__env->stopSection(); ?>
