@@ -1,0 +1,294 @@
+name: Automated Tests
+
+on:
+  push:
+    branches: [ master, develop, staging ]
+  pull_request:
+    branches: [ master, develop ]
+  schedule:
+    # Run daily at 2 AM UTC (to catch any intermittent failures)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  # Job 1: Fast API Tests (runs first, ~2 minutes)
+  api-tests:
+    name: API Tests (Fast)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite
+          coverage: none
+          
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+            
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        
+      - name: Copy environment file
+        run: cp .env.example .env.testing
+        
+      - name: Generate application key
+        run: php artisan key:generate --env=testing
+        
+      - name: Create SQLite database
+        run: touch database/database.sqlite
+        
+      - name: Run database migrations
+        run: php artisan migrate --env=testing --force
+        
+      - name: Run API/Feature tests
+        run: php artisan test --testsuite=Feature --stop-on-failure
+        
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-test-results-php${{ matrix.php-version }}
+          path: storage/logs/
+          retention-days: 7
+
+  # Job 2: Browser Tests (runs after API tests pass, ~10 minutes)
+  browser-tests:
+    name: Browser Tests (E2E)
+    runs-on: ubuntu-latest
+    needs: api-tests # Only run if API tests pass
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP 8.1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite
+          coverage: none
+          
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+            
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        
+      - name: Install Laravel Dusk
+        run: |
+          composer require --dev laravel/dusk
+          php artisan dusk:install
+          
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+          
+      - name: Install ChromeDriver
+        run: php artisan dusk:chrome-driver --detect
+        
+      - name: Copy environment file
+        run: cp .env.example .env.dusk.local
+        
+      - name: Configure environment
+        run: |
+          echo "APP_URL=http://127.0.0.1:8000" >> .env.dusk.local
+          echo "DB_CONNECTION=sqlite" >> .env.dusk.local
+          echo "DB_DATABASE=:memory:" >> .env.dusk.local
+          
+      - name: Generate application key
+        run: php artisan key:generate
+        
+      - name: Create SQLite database
+        run: touch database/database.sqlite
+        
+      - name: Run database migrations
+        run: php artisan migrate --seed --force
+        
+      - name: Start Chrome Driver
+        run: ./vendor/laravel/dusk/bin/chromedriver-linux > /dev/null 2>&1 &
+        
+      - name: Start Laravel server
+        run: php artisan serve --no-reload > /dev/null 2>&1 &
+        
+      - name: Wait for server to be ready
+        run: |
+          timeout 30 bash -c 'until curl -s http://127.0.0.1:8000 > /dev/null; do sleep 1; done'
+          
+      - name: Run Dusk tests
+        run: php artisan dusk --stop-on-failure
+        
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dusk-screenshots
+          path: tests/Browser/screenshots/
+          retention-days: 7
+          
+      - name: Upload console logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dusk-console-logs
+          path: tests/Browser/console/
+          retention-days: 7
+          
+      - name: Upload Laravel logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: laravel-logs
+          path: storage/logs/
+          retention-days: 7
+
+  # Job 3: Test Report Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [api-tests, browser-tests]
+    if: always() # Run even if tests fail
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Generate test summary
+        run: |
+          echo "## 🧪 Automated Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Suite Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.api-tests.result }}" == "success" ]; then
+            echo "✅ **API Tests**: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **API Tests**: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.browser-tests.result }}" == "success" ]; then
+            echo "✅ **Browser Tests**: PASSED" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.browser-tests.result }}" == "skipped" ]; then
+            echo "⏭️ **Browser Tests**: SKIPPED (API tests failed)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Browser Tests**: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Total Tests: 30 (15 API + 15 Browser)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 Target Success Rate: >95%" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚠️ Target False Positive Rate: <5%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Key Features Tested" >> $GITHUB_STEP_SUMMARY
+          echo "- Authentication & Authorization" >> $GITHUB_STEP_SUMMARY
+          echo "- Ticket Management (CRUD + Timer)" >> $GITHUB_STEP_SUMMARY
+          echo "- Asset Management (CRUD + QR Scanner)" >> $GITHUB_STEP_SUMMARY
+          echo "- Asset Request Workflow" >> $GITHUB_STEP_SUMMARY
+          echo "- User Management" >> $GITHUB_STEP_SUMMARY
+          echo "- Dashboard & KPI Cards" >> $GITHUB_STEP_SUMMARY
+          echo "- Search & Autocomplete" >> $GITHUB_STEP_SUMMARY
+          echo "- Notification System" >> $GITHUB_STEP_SUMMARY
+          echo "- Audit Logs & SLA Management" >> $GITHUB_STEP_SUMMARY
+          echo "- Responsive Design & Performance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.api-tests.result }}" == "success" ] && [ "${{ needs.browser-tests.result }}" == "success" ]; then
+            echo "### ✅ All Tests Passed!" >> $GITHUB_STEP_SUMMARY
+            echo "The code is ready for deployment." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Some Tests Failed" >> $GITHUB_STEP_SUMMARY
+            echo "Please review the test results and fix any issues before merging." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Artifacts Available:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Screenshots (if browser tests failed)" >> $GITHUB_STEP_SUMMARY
+            echo "- Console logs" >> $GITHUB_STEP_SUMMARY
+            echo "- Laravel logs" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const apiResult = '${{ needs.api-tests.result }}';
+            const browserResult = '${{ needs.browser-tests.result }}';
+            
+            let emoji = '✅';
+            let status = 'PASSED';
+            
+            if (apiResult !== 'success' || browserResult !== 'success') {
+              emoji = '❌';
+              status = 'FAILED';
+            }
+            
+            const comment = `## ${emoji} Automated Test Results
+            
+            **Status:** ${status}
+            
+            | Test Suite | Status |
+            |------------|--------|
+            | API Tests (Fast) | ${apiResult === 'success' ? '✅ PASSED' : '❌ FAILED'} |
+            | Browser Tests (E2E) | ${browserResult === 'success' ? '✅ PASSED' : browserResult === 'skipped' ? '⏭️ SKIPPED' : '❌ FAILED'} |
+            
+            **Test Coverage:**
+            - 30 automated tests (15 API + 15 Browser)
+            - 145+ assertions
+            - Target: <5% false positive rate
+            
+            ${status === 'FAILED' ? '⚠️ **Action Required:** Please review the test failures before merging.' : '✅ **Ready to merge!**'}
+            
+            [View detailed results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Job 4: Notify on failure (optional - for Slack/Discord/Email)
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [api-tests, browser-tests]
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Send notification
+        run: |
+          echo "🚨 Tests failed on master branch!"
+          echo "Repository: ${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo ""
+          echo "View results: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          # TODO: Add your notification service here
+          # Examples:
+          # - Slack webhook
+          # - Discord webhook
+          # - Email notification
+          # - Microsoft Teams
