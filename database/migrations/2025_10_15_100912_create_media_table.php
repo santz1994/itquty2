@@ -30,7 +30,7 @@ return new class extends Migration
             
             $table->timestamps();
             
-            $table->index(['model_type', 'model_id']);
+            // Note: morphs() already creates index on model_type and model_id
         });
     }
 

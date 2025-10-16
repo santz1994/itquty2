@@ -49,8 +49,21 @@ return new class extends Migration
     private function addIndexIfNotExists($table, $indexName, $columns)
     {
         try {
-            $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
-            if (empty($indexes)) {
+            // Check if index exists - compatible with both MySQL and SQLite
+            $driver = Schema::getConnection()->getDriverName();
+            
+            if ($driver === 'sqlite') {
+                // SQLite: Query sqlite_master table
+                $exists = DB::select(
+                    "SELECT name FROM sqlite_master WHERE type='index' AND name=?",
+                    [$indexName]
+                );
+            } else {
+                // MySQL: Use SHOW INDEX
+                $exists = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
+            }
+            
+            if (empty($exists)) {
                 Schema::table($table, function (Blueprint $table) use ($indexName, $columns) {
                     $table->index($columns, $indexName);
                 });
@@ -66,8 +79,19 @@ return new class extends Migration
     private function dropIndexIfExists($table, $indexName)
     {
         try {
-            $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
-            if (!empty($indexes)) {
+            // Check if index exists - compatible with both MySQL and SQLite
+            $driver = Schema::getConnection()->getDriverName();
+            
+            if ($driver === 'sqlite') {
+                $exists = DB::select(
+                    "SELECT name FROM sqlite_master WHERE type='index' AND name=?",
+                    [$indexName]
+                );
+            } else {
+                $exists = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
+            }
+            
+            if (!empty($exists)) {
                 Schema::table($table, function (Blueprint $table) use ($indexName) {
                     $table->dropIndex($indexName);
                 });
