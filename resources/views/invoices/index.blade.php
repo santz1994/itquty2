@@ -26,7 +26,7 @@
                   <div>
                     <td>{{$invoice->invoice_number}}</td>
                     <td>{{$invoice->order_number}}</td>
-                    <td>R{{$invoice->total}}</td>
+                    <td>Rp{{$invoice->total}}</td>
                     <td>{{$invoice->division->name}}</td>
                     <td>{{$invoice->supplier->name}}</td>
                     <td>{{$invoice->invoiced_date}}</td>

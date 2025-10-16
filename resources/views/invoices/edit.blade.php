@@ -29,7 +29,7 @@
               <div class="form-group {{ hasErrorForClass($errors, 'total') }}">
                 <label for="total">Invoice Total (Incl. VAT)</label>
                 <div class="input-group">
-                  <div class="input-group-addon">R</div>
+                  <div class="input-group-addon">Rp</div>
                   <input type="text"  name="total" class="form-control" value="{{$invoice->total}}">
                   {{ hasErrorForField($errors, 'total') }}
                 </div>
