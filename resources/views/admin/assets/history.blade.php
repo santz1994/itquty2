@@ -13,7 +13,7 @@ Asset History - {{ $asset->asset_tag }}
           <i class="fa fa-history"></i> Asset History: {{ $asset->asset_tag }}
         </h3>
         <div class="box-tools pull-right">
-          <a href="{{ route('admin.assets.index') }}" class="btn btn-sm btn-default">
+          <a href="{{ route('assets.index') }}" class="btn btn-sm btn-default">
             <i class="fa fa-arrow-left"></i> Back to Assets
           </a>
         </div>
@@ -89,7 +89,7 @@ Asset History - {{ $asset->asset_tag }}
                     </td>
                     <td>{{ $ticket->created_at->format('M d, Y H:i') }}</td>
                     <td>
-                      <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-xs btn-primary">
+                      <a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-xs btn-primary">
                         <i class="fa fa-eye"></i> View
                       </a>
                     </td>
@@ -148,7 +148,7 @@ Asset History - {{ $asset->asset_tag }}
                       @endif
                     </td>
                     <td>
-                      <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-xs btn-primary">
+                      <a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-xs btn-primary">
                         <i class="fa fa-eye"></i> View
                       </a>
                     </td>
@@ -196,8 +196,8 @@ Asset History - {{ $asset->asset_tag }}
                     <tr>
                       <td><strong>Warranty Status:</strong></td>
                       <td>
-                        <span class="label label-{{ $asset->getWarrantyStatus() == 'Active' ? 'success' : ($asset->getWarrantyStatus() == 'Expiring soon' ? 'warning' : 'danger') }}">
-                          {{ $asset->getWarrantyStatus() }}
+                        <span class="label label-{{ $asset->warranty_status == 'Active' ? 'success' : ($asset->warranty_status == 'Expiring soon' ? 'warning' : 'danger') }}">
+                          {{ $asset->warranty_status }}
                         </span>
                       </td>
                     </tr>

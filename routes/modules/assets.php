@@ -24,7 +24,9 @@ Route::middleware(['web', 'auth', 'role:admin|super-admin'])->group(function () 
     Route::get('/assets/my-assets', [\App\Http\Controllers\AssetsController::class, 'myAssets'])->name('assets.my-assets');
     Route::get('/assets/{asset}/qr-code', [\App\Http\Controllers\AssetsController::class, 'generateQR'])->name('assets.qr-code');
     Route::get('/assets/{asset}/qr-download', [\App\Http\Controllers\AssetsController::class, 'downloadQR'])->name('assets.qr-download');
+    Route::get('/assets/{asset}/history', [\App\Http\Controllers\AssetsController::class, 'history'])->name('assets.history');
     Route::get('/assets/{asset}/ticket-history', [\App\Http\Controllers\AssetsController::class, 'history'])->name('assets.ticket-history');
+    Route::get('/assets/{asset}/move', [\App\Http\Controllers\AssetsController::class, 'movements'])->name('assets.move');
     Route::get('/assets/{asset}/movements', [\App\Http\Controllers\AssetsController::class, 'movements'])->name('assets.movements');
     Route::post('/assets/{asset}/assign', [\App\Http\Controllers\AssetsController::class, 'assign'])->name('assets.assign');
     Route::post('/assets/{asset}/unassign', [\App\Http\Controllers\AssetsController::class, 'unassign'])->name('assets.unassign');

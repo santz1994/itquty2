@@ -21,9 +21,43 @@ class TestUsersTableSeeder extends Seeder
         // Clear users table (delete, not truncate, to avoid FK errors)
         DB::table('users')->delete();
 
-        // Insert users and fetch IDs
+        // Insert Super Admin users (Daniel, Idol, Ridwan)
+        $danielId = DB::table('users')->insertGetId([
+          'name' => 'Daniel',
+          'email' => 'daniel@quty.co.id',
+          'password' => bcrypt('123456'),
+          'api_token' => Str::random(60),
+          'created_at' => $now
+        ]);
+
+        $idolId = DB::table('users')->insertGetId([
+          'name' => 'Idol',
+          'email' => 'idol@quty.co.id',
+          'password' => bcrypt('123456'),
+          'api_token' => Str::random(60),
+          'created_at' => $now
+        ]);
+
+        $ridwanId = DB::table('users')->insertGetId([
+          'name' => 'Ridwan',
+          'email' => 'ridwan@quty.co.id',
+          'password' => bcrypt('123456'),
+          'api_token' => Str::random(60),
+          'created_at' => $now
+        ]);
+
+        // Insert management user
+        $managementId = DB::table('users')->insertGetId([
+          'name' => 'Management',
+          'email' => 'management@quty.co.id',
+          'password' => bcrypt('management'),
+          'api_token' => Str::random(60),
+          'created_at' => $now
+        ]);
+
+        // Insert original test users
         $superAdminId = DB::table('users')->insertGetId([
-          'name' => 'Super Admin User',
+          'name' => 'Super Admin',
           'email' => 'superadmin@quty.co.id',
           'password' => bcrypt('superadmin'),
           'api_token' => Str::random(60),
@@ -31,31 +65,43 @@ class TestUsersTableSeeder extends Seeder
         ]);
 
         $adminId = DB::table('users')->insertGetId([
-          'name' => 'Admin User',
-          'email' => 'adminuser@quty.co.id',
-          'password' => bcrypt('adminuser'),
+          'name' => 'Admin',
+          'email' => 'admin@quty.co.id',
+          'password' => bcrypt('admin'),
           'api_token' => Str::random(60),
           'created_at' => $now
         ]);
 
         $userId = DB::table('users')->insertGetId([
-          'name' => 'User User',
-          'email' => 'useruser@quty.co.id',
-          'password' => bcrypt('useruser'),
+          'name' => 'User',
+          'email' => 'user@quty.co.id',
+          'password' => bcrypt('user'),
           'api_token' => Str::random(60),
           'created_at' => $now
         ]);
 
         // Assign roles using Spatie model_has_roles
         $superAdminRole = DB::table('roles')->where('name', 'super-admin')->first();
+        $managementRole = DB::table('roles')->where('name', 'management')->first();
         $adminRole = DB::table('roles')->where('name', 'admin')->first();
         $userRole = DB::table('roles')->where('name', 'user')->first();
 
+        // Assign super-admin role to Daniel, Idol, Ridwan, and Super Admin test user
         if ($superAdminRole) {
           DB::table('model_has_roles')->insert([
-            'role_id' => $superAdminRole->id,
+            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $danielId],
+            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $idolId],
+            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $ridwanId],
+            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $superAdminId]
+          ]);
+        }
+        
+        // Assign management role to Management user
+        if ($managementRole) {
+          DB::table('model_has_roles')->insert([
+            'role_id' => $managementRole->id,
             'model_type' => 'App\\User',
-            'model_id' => $superAdminId
+            'model_id' => $managementId
           ]);
         }
         if ($adminRole) {

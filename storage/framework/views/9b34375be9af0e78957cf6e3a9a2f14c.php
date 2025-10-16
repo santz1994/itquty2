@@ -127,7 +127,7 @@
                 >
                   <div>
                     <td><?php echo e($asset->asset_tag); ?></td>
-                    <td><?php echo e($asset->model->asset_type->type_name); ?></td>
+                    <td><?php echo e($asset->model && $asset->model->asset_type ? $asset->model->asset_type->type_name : 'N/A'); ?></td>
                     <td><?php echo e($asset->serial_number or ''); ?></td>
                     <td>
                       <?php if(isset($age)): ?>
@@ -139,34 +139,40 @@
                     </td>
                     <td>
                       <div id="model<?php echo e($asset->id); ?>" class="hover-pointer">
-                        <?php echo e($asset->model->manufacturer->name); ?> - <?php echo e($asset->model->asset_model); ?>
+                        <?php echo e($asset->model ? (($asset->model->manufacturer ? $asset->model->manufacturer->name : 'N/A') . ' - ' . $asset->model->asset_model) : 'N/A'); ?>
 
                       </div>
                     </td>
                     <td>
                       <div id="location<?php echo e($asset->id); ?>" class="hover-pointer">
-                        <?php echo e($asset->movement->location->location_name); ?>
+                        <?php echo e($asset->movement ? ($asset->movement->location ? $asset->movement->location->location_name : 'N/A') : 'N/A'); ?>
 
                       </div>
                     </td>
                     <td>
                       <div id="division<?php echo e($asset->id); ?>" class="hover-pointer">
-                        <?php echo e($asset->division->name); ?>
+                        <?php echo e($asset->division ? $asset->division->name : 'N/A'); ?>
 
                       </div>
                     </td>
                     <td>
                       <div id="status<?php echo e($asset->id); ?>" class="hover-pointer">
-                        <?php if($asset->movement->status->id == 1): ?>
-                          <span class="label label-success">
-                        <?php elseif($asset->movement->status->id == 2): ?>
-                          <span class="label label-info">
-                        <?php elseif($asset->movement->status->id == 3 || $asset->movement->status->id == 4): ?>
-                          <span class="label label-warning">
-                        <?php elseif($asset->movement->status->id == 5 || $asset->movement->status->id == 6): ?>
-                          <span class="label label-danger">
+                        <?php if($asset->movement && $asset->movement->status): ?>
+                          <?php if($asset->movement->status->id == 1): ?>
+                            <span class="label label-success">
+                          <?php elseif($asset->movement->status->id == 2): ?>
+                            <span class="label label-info">
+                          <?php elseif($asset->movement->status->id == 3 || $asset->movement->status->id == 4): ?>
+                            <span class="label label-warning">
+                          <?php elseif($asset->movement->status->id == 5 || $asset->movement->status->id == 6): ?>
+                            <span class="label label-danger">
+                          <?php else: ?>
+                            <span class="label label-default">
+                          <?php endif; ?>
+                          <?php echo e($asset->movement->status->name); ?></span>
+                        <?php else: ?>
+                          <span class="label label-default">No Status</span>
                         <?php endif; ?>
-                        <?php echo e($asset->movement->status->name); ?></span>
                       </div>
                     </td>
                     <td>
@@ -177,10 +183,10 @@
                         <a href="/assets/<?php echo e($asset->id); ?>/edit" class="btn btn-primary"><span class="fa fa-pencil" aria-hidden="true"></span> <b>Edit</b></a>
                       </div>
                     </td>
-                    <td><?php echo e($asset->supplier->name); ?></td>
+                    <td><?php echo e($asset->supplier ? $asset->supplier->name : 'N/A'); ?></td>
                     <td><?php echo e($asset->purchase_date); ?></td>
                     <td><?php echo e($asset->warranty_months); ?></td>
-                    <td><?php echo e($asset->warranty_type->name); ?></td>
+                    <td><?php echo e($asset->warranty_type ? $asset->warranty_type->name : 'N/A'); ?></td>
                   </div>
                 </tr>
                 <?php $age = null; ?>
@@ -243,7 +249,13 @@
         return x;
       });
       $(model()).click(function () {
+        <?php if($asset->model && $asset->model->manufacturer): ?>
         table.search( "<?php echo e($asset->model->manufacturer->name); ?> - <?php echo e($asset->model->asset_model); ?>" ).draw();
+        <?php elseif($asset->model): ?>
+        table.search( "<?php echo e($asset->model->asset_model); ?>" ).draw();
+        <?php else: ?>
+        table.search( "N/A" ).draw();
+        <?php endif; ?>
       });
 
       // Location
@@ -252,7 +264,11 @@
         return x;
       });
       $(location()).click(function () {
+        <?php if($asset->movement && $asset->movement->location): ?>
         table.search( "<?php echo e($asset->movement->location->location_name); ?>" ).draw();
+        <?php else: ?>
+        table.search( "N/A" ).draw();
+        <?php endif; ?>
       });
 
       // Division
@@ -261,7 +277,11 @@
         return x;
       });
       $(division()).click(function () {
+        <?php if($asset->division): ?>
         table.search( "<?php echo e($asset->division->name); ?>" ).draw();
+        <?php else: ?>
+        table.search( "N/A" ).draw();
+        <?php endif; ?>
       });
 
       // Status
@@ -270,7 +290,11 @@
         return x;
       });
       $(status()).click(function () {
+        <?php if($asset->movement && $asset->movement->status): ?>
         table.search( "<?php echo e($asset->movement->status->name); ?>" ).draw();
+        <?php else: ?>
+        table.search( "N/A" ).draw();
+        <?php endif; ?>
       });
     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
   } );

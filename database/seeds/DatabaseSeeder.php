@@ -32,12 +32,15 @@ class DatabaseSeeder extends Seeder
        * Uncomment those you'd like to seed before running 'artisan db:seed'.
        */
 
-  // $this->call(\Database\Seeders\TestUsersTableSeeder::class);
+    $this->call(\Database\Seeders\TestUsersTableSeeder::class);
       // $this->call(TestAssignRolesTableSeeder::class);
       // $this->call(DivisionsTableSeeder::class);
     $this->call(LocationsTableSeeder::class);
       // $this->call(SuppliersTableSeeder::class);
       // $this->call(PcspecsTableSeeder::class);
       // $this->call(AssetModelsTableSeeder::class);
+    
+    // Note: Run DummyDataSeeder separately if needed
+    // $this->call(\Database\Seeders\DummyDataSeeder::class);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Blade;
 use App\Services\SlackNotifier;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,11 +32,11 @@ class AppServiceProvider extends ServiceProvider
     protected function registerBladeDirectives()
     {
         // Register @permission directive (alias for @can for permission checking)
-        \Blade::directive('permission', function ($expression) {
+        Blade::directive('permission', function ($expression) {
             return "<?php if(auth()->check() && auth()->user()->can($expression)): ?>";
         });
         
-        \Blade::directive('endpermission', function () {
+        Blade::directive('endpermission', function () {
             return "<?php endif; ?>";
         });
     }

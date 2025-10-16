@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AssetRequest extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'requested_by', 'asset_type_id', 'justification', 'status',
         'approved_by', 'approved_at', 'approval_notes', 

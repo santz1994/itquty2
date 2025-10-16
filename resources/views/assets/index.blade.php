@@ -127,7 +127,7 @@
                 >
                   <div>
                     <td>{{$asset->asset_tag}}</td>
-                    <td>{{$asset->model->asset_type->type_name}}</td>
+                    <td>{{ $asset->model && $asset->model->asset_type ? $asset->model->asset_type->type_name : 'N/A' }}</td>
                     <td>{{$asset->serial_number or ''}}</td>
                     <td>
                       @if (isset($age))
@@ -139,31 +139,37 @@
                     </td>
                     <td>
                       <div id="model{{$asset->id}}" class="hover-pointer">
-                        {{$asset->model->manufacturer->name}} - {{$asset->model->asset_model}}
+                        {{ $asset->model ? (($asset->model->manufacturer ? $asset->model->manufacturer->name : 'N/A') . ' - ' . $asset->model->asset_model) : 'N/A' }}
                       </div>
                     </td>
                     <td>
                       <div id="location{{$asset->id}}" class="hover-pointer">
-                        {{$asset->movement->location->location_name}}
+                        {{ $asset->movement ? ($asset->movement->location ? $asset->movement->location->location_name : 'N/A') : 'N/A' }}
                       </div>
                     </td>
                     <td>
                       <div id="division{{$asset->id}}" class="hover-pointer">
-                        {{$asset->division->name}}
+                        {{ $asset->division ? $asset->division->name : 'N/A' }}
                       </div>
                     </td>
                     <td>
                       <div id="status{{$asset->id}}" class="hover-pointer">
-                        @if($asset->movement->status->id == 1)
-                          <span class="label label-success">
-                        @elseif($asset->movement->status->id == 2)
-                          <span class="label label-info">
-                        @elseif($asset->movement->status->id == 3 || $asset->movement->status->id == 4)
-                          <span class="label label-warning">
-                        @elseif($asset->movement->status->id == 5 || $asset->movement->status->id == 6)
-                          <span class="label label-danger">
+                        @if($asset->movement && $asset->movement->status)
+                          @if($asset->movement->status->id == 1)
+                            <span class="label label-success">
+                          @elseif($asset->movement->status->id == 2)
+                            <span class="label label-info">
+                          @elseif($asset->movement->status->id == 3 || $asset->movement->status->id == 4)
+                            <span class="label label-warning">
+                          @elseif($asset->movement->status->id == 5 || $asset->movement->status->id == 6)
+                            <span class="label label-danger">
+                          @else
+                            <span class="label label-default">
+                          @endif
+                          {{$asset->movement->status->name}}</span>
+                        @else
+                          <span class="label label-default">No Status</span>
                         @endif
-                        {{$asset->movement->status->name}}</span>
                       </div>
                     </td>
                     <td>
@@ -174,10 +180,10 @@
                         <a href="/assets/{{ $asset->id }}/edit" class="btn btn-primary"><span class="fa fa-pencil" aria-hidden="true"></span> <b>Edit</b></a>
                       </div>
                     </td>
-                    <td>{{$asset->supplier->name}}</td>
+                    <td>{{ $asset->supplier ? $asset->supplier->name : 'N/A' }}</td>
                     <td>{{$asset->purchase_date}}</td>
                     <td>{{$asset->warranty_months}}</td>
-                    <td>{{$asset->warranty_type->name}}</td>
+                    <td>{{ $asset->warranty_type ? $asset->warranty_type->name : 'N/A' }}</td>
                   </div>
                 </tr>
                 <?php $age = null; ?>
@@ -240,7 +246,13 @@
         return x;
       });
       $(model()).click(function () {
+        @if($asset->model && $asset->model->manufacturer)
         table.search( "{{$asset->model->manufacturer->name}} - {{$asset->model->asset_model}}" ).draw();
+        @elseif($asset->model)
+        table.search( "{{$asset->model->asset_model}}" ).draw();
+        @else
+        table.search( "N/A" ).draw();
+        @endif
       });
 
       // Location
@@ -249,7 +261,11 @@
         return x;
       });
       $(location()).click(function () {
+        @if($asset->movement && $asset->movement->location)
         table.search( "{{$asset->movement->location->location_name}}" ).draw();
+        @else
+        table.search( "N/A" ).draw();
+        @endif
       });
 
       // Division
@@ -258,7 +274,11 @@
         return x;
       });
       $(division()).click(function () {
+        @if($asset->division)
         table.search( "{{$asset->division->name}}" ).draw();
+        @else
+        table.search( "N/A" ).draw();
+        @endif
       });
 
       // Status
@@ -267,7 +287,11 @@
         return x;
       });
       $(status()).click(function () {
+        @if($asset->movement && $asset->movement->status)
         table.search( "{{$asset->movement->status->name}}" ).draw();
+        @else
+        table.search( "N/A" ).draw();
+        @endif
       });
     @endforeach
   } );

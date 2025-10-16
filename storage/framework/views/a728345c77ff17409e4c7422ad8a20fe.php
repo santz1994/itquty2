@@ -12,7 +12,8 @@
     <title><?php echo $__env->yieldContent('htmlheader_title', 'IT Support System'); ?></title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="<?php echo e(asset('favicon.ico')); ?>">
+    <link rel="icon" type="image/png" href="<?php echo e(asset('favicon.png')); ?>">
+    <link rel="shortcut icon" type="image/png" href="<?php echo e(asset('favicon.png')); ?>">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

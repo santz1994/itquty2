@@ -4,9 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AssetType extends Model
 {
+  use HasFactory;
+  
   protected $fillable = ['type_name', 'abbreviation', 'spare'];
   public $timestamps = false;
 

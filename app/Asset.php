@@ -12,10 +12,12 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Asset extends Model implements HasMedia
 {
-  use InteractsWithMedia, Auditable;
+  use InteractsWithMedia, Auditable, HasFactory;
+  
   /**
    * Mass assignable attributes
    * @var array
