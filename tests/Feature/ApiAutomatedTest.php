@@ -9,6 +9,7 @@ use App\Asset;
 use App\AssetRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 /**
  * API Automated Tests
@@ -26,6 +27,11 @@ class ApiAutomatedTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Create roles
+        Role::create(['name' => 'super-admin', 'guard_name' => 'web']);
+        Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        Role::create(['name' => 'user', 'guard_name' => 'web']);
 
         // Create test users
         $this->superAdmin = User::factory()->create([
