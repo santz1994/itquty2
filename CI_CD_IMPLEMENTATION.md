@@ -31,7 +31,7 @@ This project uses **GitHub Actions** for continuous integration and continuous d
                  │
                  ▼
 ┌─────────────────────────────────────────────────┐
-│ Job 1: API Tests (PHP 8.1 & 8.2)               │
+│ Job 1: API Tests (PHP 8.3)                     │
 │ - Install dependencies                          │
 │ - Setup SQLite database                         │
 │ - Run 15 API tests (~2 min)                    │
@@ -79,7 +79,7 @@ This project uses **GitHub Actions** for continuous integration and continuous d
                  │
                  ▼
 ┌─────────────────────────────────────────────────┐
-│ Job: Quick API Tests (PHP 8.1 only)           │
+│ Job: Quick API Tests (PHP 8.3 only)           │
 │ - Install dependencies                          │
 │ - Run 15 API tests (~2 min)                    │
 │ - Post quick feedback on PR                     │
@@ -270,11 +270,7 @@ browser-tests: 20 minutes
 
 ### PHP Versions
 
-API tests run on multiple PHP versions:
-- PHP 8.1
-- PHP 8.2
-
-Browser tests run on PHP 8.1 only (for speed).
+All tests run on **PHP 8.3** (required by composer.lock dependencies).
 
 ### Database
 
