@@ -38,14 +38,44 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
         
-      - name: Copy environment file
-        run: cp .env.example .env.testing
+      - name: Create environment file
+        run: |
+          cat > .env.testing << 'EOF'
+          APP_NAME=Laravel
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost
+          
+          LOG_CHANNEL=stack
+          LOG_LEVEL=debug
+          
+          DB_CONNECTION=sqlite
+          DB_DATABASE=database/database.sqlite
+          
+          BROADCAST_DRIVER=log
+          CACHE_DRIVER=array
+          FILESYSTEM_DISK=local
+          QUEUE_CONNECTION=sync
+          SESSION_DRIVER=array
+          SESSION_LIFETIME=120
+          
+          MAIL_MAILER=log
+          EOF
         
       - name: Generate application key
         run: php artisan key:generate --env=testing
         
+      - name: Create storage directories
+        run: |
+          mkdir -p storage/logs
+          mkdir -p storage/framework/{sessions,views,cache}
+          chmod -R 777 storage
+        
       - name: Create SQLite database
-        run: touch database/database.sqlite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
         
       - name: Run database migrations
         run: php artisan migrate --env=testing --force

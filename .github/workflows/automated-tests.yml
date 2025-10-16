@@ -43,14 +43,44 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
         
-      - name: Copy environment file
-        run: cp .env.example .env.testing
+      - name: Create environment file
+        run: |
+          cat > .env.testing << 'EOF'
+          APP_NAME=Laravel
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost
+          
+          LOG_CHANNEL=stack
+          LOG_LEVEL=debug
+          
+          DB_CONNECTION=sqlite
+          DB_DATABASE=database/database.sqlite
+          
+          BROADCAST_DRIVER=log
+          CACHE_DRIVER=array
+          FILESYSTEM_DISK=local
+          QUEUE_CONNECTION=sync
+          SESSION_DRIVER=array
+          SESSION_LIFETIME=120
+          
+          MAIL_MAILER=log
+          EOF
         
       - name: Generate application key
         run: php artisan key:generate --env=testing
         
       - name: Create SQLite database
-        run: touch database/database.sqlite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+        
+      - name: Create storage directories
+        run: |
+          mkdir -p storage/logs
+          mkdir -p storage/framework/{sessions,views,cache}
+          chmod -R 777 storage
         
       - name: Run database migrations
         run: php artisan migrate --env=testing --force
@@ -63,8 +93,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: api-test-results-php${{ matrix.php-version }}
-          path: storage/logs/
+          path: |
+            storage/logs/*.log
+            tests/logs/*.log
           retention-days: 7
+          if-no-files-found: warn
 
   # Job 2: Browser Tests (runs after API tests pass, ~10 minutes)
   browser-tests:
@@ -108,20 +141,47 @@ jobs:
       - name: Install ChromeDriver
         run: php artisan dusk:chrome-driver --detect
         
-      - name: Copy environment file
-        run: cp .env.example .env.dusk.local
-        
-      - name: Configure environment
+      - name: Create environment file
         run: |
-          echo "APP_URL=http://127.0.0.1:8000" >> .env.dusk.local
-          echo "DB_CONNECTION=sqlite" >> .env.dusk.local
-          echo "DB_DATABASE=:memory:" >> .env.dusk.local
+          cat > .env.dusk.local << 'EOF'
+          APP_NAME=Laravel
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://127.0.0.1:8000
+          
+          LOG_CHANNEL=stack
+          LOG_LEVEL=debug
+          
+          DB_CONNECTION=sqlite
+          DB_DATABASE=:memory:
+          
+          BROADCAST_DRIVER=log
+          CACHE_DRIVER=array
+          FILESYSTEM_DISK=local
+          QUEUE_CONNECTION=sync
+          SESSION_DRIVER=array
+          SESSION_LIFETIME=120
+          
+          MAIL_MAILER=log
+          EOF
           
       - name: Generate application key
         run: php artisan key:generate
         
+      - name: Create storage directories
+        run: |
+          mkdir -p storage/logs
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p storage/app/public
+          mkdir -p tests/Browser/screenshots
+          mkdir -p tests/Browser/console
+          chmod -R 777 storage tests/Browser
+        
       - name: Create SQLite database
-        run: touch database/database.sqlite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
         
       - name: Run database migrations
         run: php artisan migrate --seed --force
@@ -144,24 +204,27 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dusk-screenshots
-          path: tests/Browser/screenshots/
+          path: tests/Browser/screenshots/*.png
           retention-days: 7
+          if-no-files-found: warn
           
       - name: Upload console logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: dusk-console-logs
-          path: tests/Browser/console/
+          path: tests/Browser/console/*.log
           retention-days: 7
+          if-no-files-found: warn
           
       - name: Upload Laravel logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: laravel-logs
-          path: storage/logs/
+          path: storage/logs/*.log
           retention-days: 7
+          if-no-files-found: warn
 
   # Job 3: Test Report Summary
   test-summary:
