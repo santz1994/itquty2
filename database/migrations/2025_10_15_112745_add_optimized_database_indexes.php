@@ -113,13 +113,9 @@ return new class extends Migration
         // Used in: API authentication
         $this->addIndexIfNotExists('users', 'users_api_token_idx', ['api_token']);
         
-        // Index for division-based queries
-        // Used in: Department user lists, division reports
-        $this->addIndexIfNotExists('users', 'users_division_idx', ['division_id']);
-        
-        // Composite index for active users in division
-        // Used in: User assignment dropdowns, staff lists
-        $this->addIndexIfNotExists('users', 'users_division_active_idx', ['division_id', 'is_active']);
+        // Note: division_id and is_active columns are added in a later migration (2025_10_15_150922)
+        // These indexes will be created after that migration runs
+        // Skipping for now to avoid errors
         
         // Index for created_at for user registration reports
         // Used in: User growth reports, registration analytics
@@ -149,7 +145,7 @@ return new class extends Migration
         
         // Composite index for user's unread notifications
         // Used in: Notification dropdown, bell icon badge count
-        $this->addIndexIfNotExists('notifications', 'notifications_user_read_idx', ['notifiable_id', 'read_at']);
+        $this->addIndexIfNotExists('notifications', 'notifications_user_read_idx', ['user_id', 'is_read']);
         
         // Index for notification type
         // Used in: Filtering notifications by type
@@ -164,17 +160,17 @@ return new class extends Migration
         // ACTIVITY_LOGS TABLE - Audit trail
         // ===================================================================
         
-        // Composite index for user activity logs
+        // Composite index for causer activity logs (who did the action)
         // Used in: User activity reports, audit trails
-        $this->addIndexIfNotExists('activity_logs', 'activity_logs_user_created_idx', ['user_id', 'created_at']);
+        $this->addIndexIfNotExists('activity_logs', 'activity_logs_causer_created_idx', ['causer_id', 'created_at']);
         
         // Composite index for model activity logs
         // Used in: Tracking changes to specific records
         $this->addIndexIfNotExists('activity_logs', 'activity_logs_subject_idx', ['subject_type', 'subject_id']);
         
-        // Index for action type
-        // Used in: Filtering logs by action (created, updated, deleted)
-        $this->addIndexIfNotExists('activity_logs', 'activity_logs_action_idx', ['action']);
+        // Index for event type (replaces 'action')
+        // Used in: Filtering logs by event (created, updated, deleted)
+        $this->addIndexIfNotExists('activity_logs', 'activity_logs_event_idx', ['event']);
         
         // Composite index for causer (who made the change)
         // Used in: User accountability reports
@@ -202,9 +198,9 @@ return new class extends Migration
         // ASSET_MAINTENANCE_LOGS TABLE - Maintenance tracking
         // ===================================================================
         
-        // Composite index for asset maintenance history
+        // Composite index for asset maintenance history (uses completed_at, not performed_at)
         // Used in: Asset maintenance timeline
-        $this->addIndexIfNotExists('asset_maintenance_logs', 'maintenance_logs_asset_performed_idx', ['asset_id', 'performed_at']);
+        $this->addIndexIfNotExists('asset_maintenance_logs', 'maintenance_logs_asset_completed_idx', ['asset_id', 'completed_at']);
         
         // Index for maintenance type
         // Used in: Filtering by maintenance type (preventive, corrective, etc.)
@@ -222,18 +218,18 @@ return new class extends Migration
         // Used in: Linking maintenance to support tickets
         $this->addIndexIfNotExists('asset_maintenance_logs', 'maintenance_logs_ticket_idx', ['ticket_id', 'status']);
         
-        // Index for next maintenance date
+        // Index for scheduled maintenance date
         // Used in: Upcoming maintenance schedules
-        $this->addIndexIfNotExists('asset_maintenance_logs', 'maintenance_logs_next_date_idx', ['next_maintenance_date']);
+        $this->addIndexIfNotExists('asset_maintenance_logs', 'maintenance_logs_scheduled_date_idx', ['scheduled_at']);
         
         
         // ===================================================================
         // LOCATIONS TABLE - Physical locations
         // ===================================================================
         
-        // Index for location name searches
+        // Index for location name searches (column is 'location_name', not 'name')
         // Used in: Location dropdowns, search
-        $this->addIndexIfNotExists('locations', 'locations_name_idx', ['name']);
+        $this->addIndexIfNotExists('locations', 'locations_name_idx', ['location_name']);
         
         
         // ===================================================================
@@ -339,8 +335,7 @@ return new class extends Migration
         $this->dropIndexIfExists('users', 'users_email_idx');
         $this->dropIndexIfExists('users', 'users_name_idx');
         $this->dropIndexIfExists('users', 'users_api_token_idx');
-        $this->dropIndexIfExists('users', 'users_division_idx');
-        $this->dropIndexIfExists('users', 'users_division_active_idx');
+        // division_id indexes skipped (added in later migration)
         $this->dropIndexIfExists('users', 'users_created_at_idx');
         
         // Asset Models
@@ -354,9 +349,9 @@ return new class extends Migration
         $this->dropIndexIfExists('notifications', 'notifications_created_at_idx');
         
         // Activity Logs
-        $this->dropIndexIfExists('activity_logs', 'activity_logs_user_created_idx');
+        $this->dropIndexIfExists('activity_logs', 'activity_logs_causer_created_idx');
         $this->dropIndexIfExists('activity_logs', 'activity_logs_subject_idx');
-        $this->dropIndexIfExists('activity_logs', 'activity_logs_action_idx');
+        $this->dropIndexIfExists('activity_logs', 'activity_logs_event_idx');
         $this->dropIndexIfExists('activity_logs', 'activity_logs_causer_idx');
         
         // File Attachments
@@ -365,12 +360,12 @@ return new class extends Migration
         $this->dropIndexIfExists('file_attachments', 'file_attachments_file_type_idx');
         
         // Maintenance Logs
-        $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_asset_performed_idx');
+        $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_asset_completed_idx');
         $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_type_idx');
         $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_status_idx');
         $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_performed_by_idx');
         $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_ticket_idx');
-        $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_next_date_idx');
+        $this->dropIndexIfExists('asset_maintenance_logs', 'maintenance_logs_scheduled_date_idx');
         
         // Locations
         $this->dropIndexIfExists('locations', 'locations_name_idx');
@@ -409,16 +404,26 @@ return new class extends Migration
                 return;
             }
             
-            // Check if index already exists
-            $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
+            // Check if index already exists - database-agnostic approach
+            $exists = false;
             
-            if (empty($indexes)) {
+            if (DB::connection()->getDriverName() === 'sqlite') {
+                // SQLite: Use PRAGMA index_list
+                $indexes = DB::select("PRAGMA index_list({$table})");
+                $exists = collect($indexes)->contains('name', $indexName);
+            } else {
+                // MySQL/MariaDB: Use SHOW INDEX
+                $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
+                $exists = !empty($indexes);
+            }
+            
+            if (!$exists) {
                 Schema::table($table, function (Blueprint $table) use ($indexName, $columns) {
                     $table->index($columns, $indexName);
                 });
-                echo "✅ Added index: {$indexName} on table {$table}\n";
+                echo "✅ Added index: {$indexName}\n";
             } else {
-                echo "⏭️  Index '{$indexName}' already exists on table '{$table}'. Skipping.\n";
+                echo "⏭️  Index '{$indexName}' already exists. Skipping.\n";
             }
         } catch (\Exception $e) {
             echo "❌ Could not add index '{$indexName}' on table '{$table}': " . $e->getMessage() . "\n";
@@ -437,10 +442,20 @@ return new class extends Migration
                 return;
             }
             
-            // Check if index exists
-            $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
+            // Check if index exists - database-agnostic approach
+            $exists = false;
             
-            if (!empty($indexes)) {
+            if (DB::connection()->getDriverName() === 'sqlite') {
+                // SQLite: Use PRAGMA index_list
+                $indexes = DB::select("PRAGMA index_list({$table})");
+                $exists = collect($indexes)->contains('name', $indexName);
+            } else {
+                // MySQL/MariaDB: Use SHOW INDEX
+                $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$indexName}'");
+                $exists = !empty($indexes);
+            }
+            
+            if ($exists) {
                 Schema::table($table, function (Blueprint $table) use ($indexName) {
                     $table->dropIndex($indexName);
                 });
