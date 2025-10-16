@@ -44,7 +44,12 @@ return new class extends Migration
             $table->index('status');
             $table->index('author_id');
             $table->index('published_at');
-            $table->fullText(['title', 'content']); // Full-text search
+            
+            // Full-text search (only for MySQL/MariaDB)
+            // SQLite doesn't support fulltext indexes
+            if (config('database.default') !== 'sqlite') {
+                $table->fullText(['title', 'content']);
+            }
         });
     }
 
