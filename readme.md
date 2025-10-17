@@ -29,14 +29,16 @@ Comprehensive IT Asset Management System built with Laravel Framework featuring 
 
 ## 📋 Requirements
 
-- PHP >= 7.4 (recommended 8.0+)
+- PHP >= 8.0 (recommended 8.1+)
 - MySQL 5.7+ or SQLite
-- Composer 2.0+
-- Node.js & NPM (for asset compilation)
+- Composer 2.2+
+- Node.js 14+ and NPM/Yarn (for asset compilation)
 
 ## 🔧 Installation
 
-### Quick Setup
+### Quick Setup (Development)
+Follow these steps to get a local development instance running.
+
 ```bash
 # Clone repository
 git clone <repository-url>
@@ -46,7 +48,8 @@ cd Quty1
 composer install
 
 # Install Node dependencies
-npm install
+npm ci
+# or: yarn install
 
 # Environment setup
 cp .env.example .env
@@ -56,38 +59,49 @@ cp .env.example .env
 php artisan key:generate
 
 # Database setup
-php artisan migrate
-php artisan db:seed
+php artisan migrate --seed
 
-# Install Spatie permissions
-php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+# Publish Spatie permissions (if not published by seed)
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="config"
 
-# Compile assets
+# Compile assets (watch during development)
 npm run dev
 
 # Start development server
-php artisan serve
+php artisan serve --host=0.0.0.0 --port=8000
 ```
 
-### Production Setup
+### Production Setup (Recommendations)
+These steps assume a production-ready server with PHP-FPM + Nginx/Apache.
+
 ```bash
-# Additional production steps
+# Install dependencies
+composer install --no-dev --optimize-autoloader
+npm ci && npm run prod
+
+# Environment configuration (set proper values in .env)
+
+# Run migrations and seeders (careful in production)
+php artisan migrate --force
+
+# Build caches for performance
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan optimize
 
-# Queue worker (recommended for production)
-php artisan queue:work --daemon
+# Run queue worker (supervisor/systemd recommended)
+php artisan queue:work --sleep=3 --tries=3
 ```
 
-## 👥 Default Users
+## 👥 Default Users (Seeded)
 
-After seeding, you can login with:
+The seeders create a set of test accounts for development. After running `php artisan db:seed` you'll find the following example accounts. Passwords in the development seed are `123456` unless otherwise noted in the seeder files.
 
-- **Super Admin**: admin@example.com / password
-- **Admin**: manager@example.com / password  
-- **User**: user@example.com / password
+- **Super Admins**: daniel@quty.co.id, idol@quty.co.id, ridwan@quty.co.id (password: 123456)
+- **Other test users** are created by `DummyDataSeeder` (see `database/seeders` for details)
+
+If you need to change seeded passwords, update `database/seeders/TestUsersTableSeeder.php` and re-run the seeder for development database only.
 
 ## 🏗 Architecture Overview
 
@@ -248,9 +262,14 @@ vendor/bin/phpstan analyse
 
 ## 📚 Documentation
 
-- `IMPLEMENTATION_REPORT.md` - Detailed implementation documentation
-- `DEVELOPMENT_CHECKLIST.md` - Development standards and guidelines
-- `PERFORMANCE_SECURITY_IMPROVEMENTS.md` - Performance and security enhancements
+This repository includes a set of user-facing and technical documents in the `docs/` folder. Key documents:
+
+- `docs/Admin_Documentation.md` - Admin manual and operational playbook
+- `docs/API.md` - Key API endpoints and examples
+- `docs/Deployment_Guide.md` - Production deployment checklist and tips
+- `docs/CHANGELOG.md` - Project changelog and release notes
+
+Other implementation and development docs are kept in the project root as before (see `IMPLEMENTATION_REPORT.md`, `DEVELOPMENT_CHECKLIST.md`, etc.).
 
 ## 🐛 Troubleshooting
 
@@ -285,4 +304,4 @@ For technical support or questions:
 
 **Version**: 2.1.0  
 **Last Updated**: October 2025
-**Maintained By**: Daniel Rizaldy S. W. 
+**Maintained By**: D-Riz
