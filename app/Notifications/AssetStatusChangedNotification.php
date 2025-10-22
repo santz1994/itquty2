@@ -24,7 +24,7 @@ class AssetStatusChangedNotification extends Notification implements ShouldQueue
      * Create a new notification instance.
      */
     public function __construct(Asset $asset, ?Status $oldStatus, Status $newStatus, ?User $changedBy, ?string $notes = null)
-        $this->changedBy = $changedBy;
+    {
         $this->asset = $asset;
         $this->oldStatus = $oldStatus;
         $this->newStatus = $newStatus;
@@ -54,7 +54,7 @@ class AssetStatusChangedNotification extends Notification implements ShouldQueue
             ->line('**Asset Tag:** ' . $this->asset->asset_tag)
             ->line('**Old Status:** ' . ($this->oldStatus ? $this->oldStatus->name : 'None'))
             ->line('**New Status:** ' . $this->newStatus->name)
-            ->line('**Changed By:** ' . $this->changedBy->name);
+            ->line('**Changed By:** ' . ($this->changedBy?->name ?? 'System'));
 
         if ($this->notes) {
             $mailMessage->line('**Notes:** ' . $this->notes);
@@ -81,8 +81,8 @@ class AssetStatusChangedNotification extends Notification implements ShouldQueue
             'old_status_name' => $this->oldStatus?->name,
             'new_status_id' => $this->newStatus->id,
             'new_status_name' => $this->newStatus->name,
-            'changed_by_id' => $this->changedBy->id,
-            'changed_by_name' => $this->changedBy->name,
+            'changed_by_id' => $this->changedBy?->id,
+            'changed_by_name' => $this->changedBy?->name,
             'notes' => $this->notes,
             'url' => url('/assets/' . $this->asset->id),
             'message' => 'Asset ' . $this->asset->name . ' status changed from ' . 

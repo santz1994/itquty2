@@ -24,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
         // Register observers for cache invalidation
         \App\Location::observe(\App\Observers\LocationObserver::class);
         \App\Status::observe(\App\Observers\StatusObserver::class);
+    // Observe assets so status changes dispatch events
+    \App\Asset::observe(\App\Observers\AssetObserver::class);
     }
     
     /**

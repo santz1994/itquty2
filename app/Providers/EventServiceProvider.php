@@ -15,6 +15,9 @@ class EventServiceProvider extends ServiceProvider
         \Illuminate\Auth\Events\Login::class => [
             \App\Listeners\SingleDeviceLoginListener::class,
         ],
+        \App\Events\AssetStatusChanged::class => [
+            \App\Listeners\SendAssetStatusNotification::class,
+        ],
     ];
 
     /**

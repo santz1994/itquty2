@@ -9,6 +9,11 @@ require __DIR__ . '/../bootstrap/autoload.php';
 // Ensure TestCase is loaded
 require __DIR__ . '/TestCase.php';
 
+// Create a global alias for legacy tests that reference TestCase in the global namespace
+if (!class_exists('TestCase') && class_exists(\Tests\TestCase::class)) {
+	class_alias(\Tests\TestCase::class, 'TestCase');
+}
+
 // You can set up any test environment initialization here
 // Bootstrap the application and run migrations/seeds so tests have expected data.
 $cacheServices = __DIR__ . '/../bootstrap/cache/services.php';
