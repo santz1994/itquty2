@@ -1,16 +1,29 @@
 <?php
 
+
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Carbon\Carbon;
 
 class DailyActivity extends Model
 {
+    use HasFactory;
     protected $fillable = [
-        'user_id', 'activity_date', 'description', 'ticket_id', 'type', 'activity_type', 
-        'duration_minutes', 'notes', 'status'
+        'user_id',
+        'activity',
+        'title',
+        'date',
+        'activity_date',
+        'description',
+        'ticket_id',
+        'type',
+        'activity_type',
+        'duration_minutes',
+        'notes',
+        'status',
     ];
 
     protected $casts = [
