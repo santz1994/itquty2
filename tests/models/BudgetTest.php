@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\Budget;
 
 class BudgetTest extends TestCase
 {
@@ -68,7 +71,7 @@ class BudgetTest extends TestCase
            ->see('Successfully created')
            ->seeInDatabase('budgets', ['division_id' => 1, 'year' => '2099', 'total' => 199999.99]);
 
-      $budget = App\Budget::get()->last();
+      $budget = Budget::get()->last();
 
       $this->actingAs($user)
            ->visit('/budgets/' . $budget->id . '/edit')

@@ -7,11 +7,17 @@ use App\Http\Requests\Manufacturers\StoreManufacturerRequest;
 use App\Http\Requests\Manufacturers\UpdateManufacturerRequest;
 use Illuminate\Http\Request;
 use App\Repositories\Manufacturers\ManufacturerRepositoryInterface;
-
 use App\Http\Requests;
 
 class ManufacturersController extends Controller
 {
+  /**
+   * Repository instance.
+   *
+   * @var \App\Repositories\Manufacturers\ManufacturerRepositoryInterface
+   */
+  protected $manufacturer;
+
   public function __construct(ManufacturerRepositoryInterface $manufacturer)
   {
       $this->middleware('auth');

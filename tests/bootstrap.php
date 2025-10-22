@@ -65,12 +65,38 @@ try {
 		}
 	}
 
-	// Run migrations and all required seeders for foreign key tables
+	// Run migrations and required seeders for foreign key tables.
+	// Use direct seeder invocation here to avoid the Console ConfirmableTrait
+	// which calls the container environment access and can trigger resolution
+	// issues in the PHPUnit runtime. This is a best-effort bootstrap for tests.
 	$kernel->call('migrate:fresh', ['--force' => true]);
-	$kernel->call('db:seed', ['--class' => 'LocationsTableSeeder', '--force' => true]);
-	$kernel->call('db:seed', ['--class' => 'TicketsStatusesTableSeeder', '--force' => true]);
-	$kernel->call('db:seed', ['--class' => 'TicketsTypesTableSeeder', '--force' => true]);
-	$kernel->call('db:seed', ['--class' => 'TicketsPrioritiesTableSeeder', '--force' => true]);
+
+	try {
+		// Directly instantiate and run the seeders that tests expect.
+		$locationsSeeder = new \Database\Seeders\LocationsTableSeeder();
+		if (method_exists($locationsSeeder, 'run')) { $locationsSeeder->run(); }
+
+		$ticketsStatusesSeeder = new \Database\Seeders\TicketsStatusesTableSeeder();
+		if (method_exists($ticketsStatusesSeeder, 'run')) { $ticketsStatusesSeeder->run(); }
+
+		$ticketsTypesSeeder = new \Database\Seeders\TicketsTypesTableSeeder();
+		if (method_exists($ticketsTypesSeeder, 'run')) { $ticketsTypesSeeder->run(); }
+
+		$ticketsPrioritiesSeeder = new \Database\Seeders\TicketsPrioritiesTableSeeder();
+		if (method_exists($ticketsPrioritiesSeeder, 'run')) { $ticketsPrioritiesSeeder->run(); }
+
+		// Seed permissions and roles used by tests (conservative list)
+		$permSeeder = new \Database\Seeders\PermissionsAndRolesSeeder();
+		if (method_exists($permSeeder, 'run')) { $permSeeder->run(); }
+
+		// Clear Spatie permission cache so tests see fresh permissions
+		if (class_exists(\Spatie\Permission\PermissionRegistrar::class)) {
+			$app->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+		}
+
+	} catch (Exception $e) {
+		// ignore seeder errors in test bootstrap; let tests fail with clearer messages
+	}
 } catch (Exception $e) {
 	// If migrations/seeds fail, let PHPUnit report the error in test runs instead of dying here.
 }

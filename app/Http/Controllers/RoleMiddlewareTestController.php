@@ -25,11 +25,11 @@ class RoleMiddlewareTestController extends Controller
         }
         
         if ($user && method_exists($user, 'hasAnyRole')) {
-            $info['has_roles'] = [
-                'super-admin' => $user->hasAnyRole(['super-admin']),
-                'admin' => $user->hasAnyRole(['admin']),
-                'user' => $user->hasAnyRole(['user']),
-            ];
+            $info['has_roles'] = [];
+            $hasAnyRoleMethod = 'hasAnyRole';
+            $info['has_roles']['super-admin'] = (bool) $user->$hasAnyRoleMethod(['super-admin']);
+            $info['has_roles']['admin'] = (bool) $user->$hasAnyRoleMethod(['admin']);
+            $info['has_roles']['user'] = (bool) $user->$hasAnyRoleMethod(['user']);
         }
         
         return Response::json($info);

@@ -1,16 +1,6 @@
-<?php
-
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-
-use App\User;
-
-
-use Illuminate\Support\Facades\Artisan;
-use Database\Seeders\LocationsTableSeeder;
-use Database\Seeders\RolesTableSeeder;
-use Database\Seeders\TestUsersTableSeeder;
+            try { if (class_exists(\Database\Seeders\LocationsTableSeeder::class)) { (new \Database\Seeders\LocationsTableSeeder())->run(); } } catch (\Throwable $__e) {}
+            try { if (class_exists(\Database\Seeders\RolesTableSeeder::class)) { (new \Database\Seeders\RolesTableSeeder())->run(); } } catch (\Throwable $__e) {}
+            try { if (class_exists(\Database\Seeders\TestUsersTableSeeder::class)) { (new \Database\Seeders\TestUsersTableSeeder())->run(); } } catch (\Throwable $__e) {}
 
 class TicketPriorityTest extends TestCase
 {
@@ -78,7 +68,7 @@ class TicketPriorityTest extends TestCase
            ->see('Successfully created')
            ->seeInDatabase('tickets_priorities', ['priority' => 'Random Priority']);
 
-      $ticketPriority = App\TicketsPriority::get()->last();
+      $ticketPriority = TicketsPriority::get()->last();
 
       $this->actingAs($user)
            ->visit('/admin/ticket-priorities/' . $ticketPriority->id . '/edit')

@@ -24,11 +24,14 @@ class StoreAssetRequest extends Request
     public function rules()
     {
         return [
-          'asset_model_id' => 'required|exists:asset_models,id',
+          // Accept both `asset_model_id` and legacy `model_id` coming from tests or other callers
+          'asset_model_id' => 'sometimes|required|exists:asset_models,id',
+          'model_id' => 'sometimes|required|exists:asset_models,id',
           'division_id' => 'required|exists:divisions,id',
           'supplier_id' => 'required|exists:suppliers,id',
           'warranty_type_id' => 'required|exists:warranty_types,id',
           'asset_tag' => 'nullable|string|max:255|unique:assets,asset_tag',
+          'name' => 'nullable|string|max:255',
           'serial_number' => 'nullable|string|max:255',
           'purchase_date' => 'nullable|date',
           'purchase_cost' => 'nullable|numeric|min:0',
@@ -47,7 +50,9 @@ class StoreAssetRequest extends Request
     {
       return [
         'asset_model_id.required' => 'Model asset harus dipilih.',
+        'model_id.required' => 'Model asset harus dipilih.',
         'asset_model_id.exists' => 'Model asset yang dipilih tidak valid.',
+        'model_id.exists' => 'Model asset yang dipilih tidak valid.',
         'division_id.required' => 'Divisi harus dipilih.',
         'division_id.exists' => 'Divisi yang dipilih tidak valid.',
         'supplier_id.required' => 'Supplier harus dipilih.',

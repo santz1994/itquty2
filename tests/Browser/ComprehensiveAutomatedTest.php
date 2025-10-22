@@ -1,10 +1,10 @@
+<?php
+
 /**
  * Automated End-to-End Testing Suite
  * Target: <5% False Positive Rate
  * Framework: Laravel Dusk (Browser Automation)
  */
-
-<?php
 
 namespace Tests\Browser;
 

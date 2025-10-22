@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\User;
+use Spatie\Permission\Models\Role;
 
 class TestUsersTableSeeder extends Seeder
 {
@@ -21,102 +23,58 @@ class TestUsersTableSeeder extends Seeder
         // Clear users table (delete, not truncate, to avoid FK errors)
         DB::table('users')->delete();
 
-        // Insert Super Admin users (Daniel, Idol, Ridwan)
-        $danielId = DB::table('users')->insertGetId([
-          'name' => 'Daniel',
-          'email' => 'daniel@quty.co.id',
-          'password' => bcrypt('123456'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        $idolId = DB::table('users')->insertGetId([
-          'name' => 'Idol',
-          'email' => 'idol@quty.co.id',
-          'password' => bcrypt('123456'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        $ridwanId = DB::table('users')->insertGetId([
-          'name' => 'Ridwan',
-          'email' => 'ridwan@quty.co.id',
-          'password' => bcrypt('123456'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        // Insert management user
-        $managementId = DB::table('users')->insertGetId([
-          'name' => 'Management',
-          'email' => 'management@quty.co.id',
-          'password' => bcrypt('management'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        // Insert original test users
-        $superAdminId = DB::table('users')->insertGetId([
-          'name' => 'Super Admin',
-          'email' => 'superadmin@quty.co.id',
-          'password' => bcrypt('superadmin'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        $adminId = DB::table('users')->insertGetId([
-          'name' => 'Admin',
-          'email' => 'admin@quty.co.id',
-          'password' => bcrypt('admin'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        $userId = DB::table('users')->insertGetId([
-          'name' => 'User',
-          'email' => 'user@quty.co.id',
-          'password' => bcrypt('user'),
-          'api_token' => Str::random(60),
-          'created_at' => $now
-        ]);
-
-        // Assign roles using Spatie model_has_roles
-        $superAdminRole = DB::table('roles')->where('name', 'super-admin')->first();
-        $managementRole = DB::table('roles')->where('name', 'management')->first();
-        $adminRole = DB::table('roles')->where('name', 'admin')->first();
-        $userRole = DB::table('roles')->where('name', 'user')->first();
-
-        // Assign super-admin role to Daniel, Idol, Ridwan, and Super Admin test user
-        if ($superAdminRole) {
-          DB::table('model_has_roles')->insert([
-            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $danielId],
-            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $idolId],
-            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $ridwanId],
-            ['role_id' => $superAdminRole->id, 'model_type' => 'App\\User', 'model_id' => $superAdminId]
-          ]);
-        }
-        
-        // Assign management role to Management user
-        if ($managementRole) {
-          DB::table('model_has_roles')->insert([
-            'role_id' => $managementRole->id,
-            'model_type' => 'App\\User',
-            'model_id' => $managementId
-          ]);
-        }
-        if ($adminRole) {
-          DB::table('model_has_roles')->insert([
-            'role_id' => $adminRole->id,
-            'model_type' => 'App\\User',
-            'model_id' => $adminId
-          ]);
-        }
-        if ($userRole) {
-          DB::table('model_has_roles')->insert([
-            'role_id' => $userRole->id,
-            'model_type' => 'App\\User',
-            'model_id' => $userId
-          ]);
-        }
+        // Helper to create or get user and return the model instance
++        $createUser = function($name, $email, $password) use ($now) {
+            return User::firstOrCreate([
+                'email' => $email
+            ], [
+                'name' => $name,
+                'password' => bcrypt($password),
+                'api_token' => Str::random(60),
+                'created_at' => $now
+            ]);
+        };
++
++
+        // Create deterministic users used by tests
+        $daniel = $createUser('Daniel', 'daniel@quty.co.id', '123456');
+        $idol = $createUser('Idol', 'idol@quty.co.id', '123456');
+        $ridwan = $createUser('Ridwan', 'ridwan@quty.co.id', '123456');
+        $management = $createUser('Management', 'management@quty.co.id', 'management');
+        $superAdmin = $createUser('Super Admin', 'superadmin@quty.co.id', 'superadmin');
+        $admin = $createUser('Admin', 'admin@quty.co.id', 'admin');
+        $user = $createUser('User', 'user@quty.co.id', 'user');
++
++
+        // Legacy-named users expected by older tests (exact display names)
+        $legacySuperAdmin = $createUser('Super Admin User', 'superadmin.user@test', 'password');
+        $legacyAdmin = $createUser('Admin User', 'admin.user@test', 'password');
+        $legacyUser = $createUser('User User', 'user.user@test', 'password');
++
++
+        // Assign roles using Spatie assignRole (idempotent and respects guard_name)
++        $superRole = Role::where('name', 'super-admin')->first();
++        $adminRole = Role::where('name', 'admin')->first();
++        $managementRole = Role::where('name', 'management')->first();
++        $userRole = Role::where('name', 'user')->first();
++
++        if ($superRole) {
++            $daniel->assignRole($superRole->name);
++            $idol->assignRole($superRole->name);
++            $ridwan->assignRole($superRole->name);
++            $superAdmin->assignRole($superRole->name);
++            $legacySuperAdmin->assignRole($superRole->name);
++        }
++        if ($managementRole) {
++            $management->assignRole($managementRole->name);
++        }
++        if ($adminRole) {
++            $admin->assignRole($adminRole->name);
++            $legacyAdmin->assignRole($adminRole->name);
++        }
++        if ($userRole) {
++            $user->assignRole($userRole->name);
++            $legacyUser->assignRole($userRole->name);
++        }
     }
 }

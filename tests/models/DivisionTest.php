@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\Division;
 
 class DivisionTest extends TestCase
 {
@@ -64,7 +67,7 @@ class DivisionTest extends TestCase
            ->see('Successfully created')
            ->seeInDatabase('divisions', ['name' => 'Human Resources']);
 
-      $division = App\Division::get()->last();
+      $division = Division::get()->last();
 
       $this->actingAs($user)
            ->visit('/divisions/' . $division->id . '/edit')

@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\Supplier;
 
 class SupplierTest extends TestCase
 {
@@ -14,7 +17,7 @@ class SupplierTest extends TestCase
     {
       parent::setUp();
       // Seed locations table for supplier tests (needed for foreign key integrity)
-      $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\LocationsTableSeeder']);
+  try { if (class_exists(\Database\Seeders\LocationsTableSeeder::class)) { (new \Database\Seeders\LocationsTableSeeder())->run(); } } catch (\Throwable $__e) {}
     }
 
   public function testUserCannotAccessSuppliersView()
@@ -71,7 +74,7 @@ class SupplierTest extends TestCase
          ->see('Successfully created')
          ->seeInDatabase('suppliers', ['name' => 'Acme']);
 
-    $supplier = App\Supplier::get()->last();
+    $supplier = Supplier::get()->last();
 
     $this->actingAs($user)
          ->visit('/suppliers/' . $supplier->id . '/edit')

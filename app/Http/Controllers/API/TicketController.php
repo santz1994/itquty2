@@ -72,10 +72,21 @@ class TicketController extends Controller
         $perPage = $request->get('per_page', 15);
         $tickets = $query->paginate($perPage);
 
-        // Transform data
-        $tickets->through(function ($ticket) {
+        // Transform data: map over paginator items and rebuild LengthAwarePaginator to avoid calling collection methods on the paginator contract
+        $transformedItems = collect($tickets->items())->map(function ($ticket) {
             return $this->transformTicket($ticket);
-        });
+        })->values()->all();
+
+        $tickets = new \Illuminate\Pagination\LengthAwarePaginator(
+            $transformedItems,
+            $tickets->total(),
+            $tickets->perPage(),
+            $tickets->currentPage(),
+            [
+                'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
+                'query' => request()->query()
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -475,7 +486,7 @@ class TicketController extends Controller
     {
         $user = auth()->user();
         
-        return $useruser_has_any_role($user, ['admin', 'super-admin', 'management']) || 
+        return user_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $ticket->user_id == $user->id || 
                $ticket->assigned_to == $user->id;
     }
@@ -490,7 +501,7 @@ class TicketController extends Controller
     {
         $user = auth()->user();
         
-        return $useruser_has_any_role($user, ['admin', 'super-admin', 'management']) || 
+        return user_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $ticket->assigned_to == $user->id;
     }
 }

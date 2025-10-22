@@ -6,7 +6,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\AssetController;
 use App\Http\Controllers\API\TicketController;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\DailyActivityController;
+use App\Http\Controllers\API\DailyActivityApiController;
 use App\Http\Controllers\API\NotificationController;
 
 /*
@@ -73,17 +73,14 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/users/{user}/workload', [UserController::class, 'getWorkload']);
     Route::get('/users/{user}/activities', [UserController::class, 'getActivities']);
     
-    // Daily Activity API endpoints
-    Route::apiResource('daily-activities', DailyActivityController::class)->names([
-        'index' => 'api.daily-activities.index',
-        'store' => 'api.daily-activities.store',
-        'show' => 'api.daily-activities.show',
-        'update' => 'api.daily-activities.update',
-        'destroy' => 'api.daily-activities.destroy'
-    ]);
-    Route::post('/daily-activities/{activity}/complete', [DailyActivityController::class, 'markCompleted']);
-    Route::get('/daily-activities/user/{user}', [DailyActivityController::class, 'getUserActivities']);
-    Route::get('/daily-activities/summary/{user}', [DailyActivityController::class, 'getUserSummary']);
+    // DailyActivity API
+    Route::middleware('auth')->group(function () {
+        Route::get('/daily-activities', [DailyActivityApiController::class, 'index']);
+        Route::post('/daily-activities', [DailyActivityApiController::class, 'store']);
+        Route::get('/daily-activities/{dailyActivity}', [DailyActivityApiController::class, 'show']);
+        Route::put('/daily-activities/{dailyActivity}', [DailyActivityApiController::class, 'update']);
+        Route::delete('/daily-activities/{dailyActivity}', [DailyActivityApiController::class, 'destroy']);
+    });
     
     // Notification API endpoints - high frequency
     Route::middleware(['throttle:api-frequent'])->group(function () {

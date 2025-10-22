@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\Location;
 
 class LocationTest extends TestCase
 {
@@ -68,7 +71,7 @@ class LocationTest extends TestCase
          ->see('Successfully created')
          ->seeInDatabase('locations', ['building' => 'F14', 'office' => '123', 'location_name' => 'Test Location']);
 
-    $location = App\Location::get()->last();
+    $location = Location::get()->last();
 
     $this->actingAs($user)
          ->visit('/locations/' . $location->id . '/edit')

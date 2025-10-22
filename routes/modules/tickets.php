@@ -28,6 +28,7 @@ Route::middleware(['web', 'auth', 'role:admin|super-admin'])->group(function () 
     Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
     Route::put('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
     Route::patch('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update']);
+    Route::delete('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy');
     
     // ========================================
     // ASSIGNMENT ROUTES (TicketAssignmentController)

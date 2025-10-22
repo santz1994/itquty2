@@ -24,6 +24,7 @@ class AuditLog extends Model
     protected $fillable = [
         'user_id',
         'action',
+        'model',
         'model_type',
         'model_id',
         'old_values',
@@ -194,6 +195,7 @@ class AuditLog extends Model
         return static::create([
             'user_id' => auth()->id(),
             'action' => $action,
+            'model' => $modelType ? class_basename($modelType) : ($modelType ?? null),
             'model_type' => $modelType,
             'model_id' => $modelId,
             'old_values' => $oldValues ? json_encode($oldValues) : null,

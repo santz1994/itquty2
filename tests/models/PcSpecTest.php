@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\PcSpec;
 
 class PcSpecTest extends TestCase
 {
@@ -68,7 +71,7 @@ class PcSpecTest extends TestCase
          ->see('Successfully created')
          ->seeInDatabase('pcspecs', ['cpu' => 'Core i3 5123', 'ram' => '4GB', 'hdd' => '500GB']);
 
-    $pcspec = App\PcSpec::get()->last();
+    $pcspec = PcSpec::get()->last();
 
     $this->actingAs($user)
          ->visit('/pcspecs/' . $pcspec->id . '/edit')

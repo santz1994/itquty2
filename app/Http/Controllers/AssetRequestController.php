@@ -45,7 +45,7 @@ class AssetRequestController extends Controller
         }
 
         // If regular user, only show their requests
-        if (!$this->user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
             $query->where('requested_by', Auth::id());
         }
 
@@ -96,7 +96,7 @@ class AssetRequestController extends Controller
     public function show(AssetRequest $assetRequest)
     {
         // Check if user can view this request
-        if (!$this->user()->hasRole(['admin', 'super_admin']) && $assetRequest->requested_by !== Auth::id()) {
+        if (!$this->user()->hasRole(['admin', 'super-admin']) && $assetRequest->requested_by !== Auth::id()) {
             abort(403, 'Tidak memiliki akses untuk melihat permintaan ini');
         }
 
@@ -111,7 +111,7 @@ class AssetRequestController extends Controller
     public function approve(Request $request, AssetRequest $assetRequest)
     {
         // Only admin can approve
-        if (!$this->user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
             abort(403, 'Tidak memiliki akses untuk menyetujui permintaan');
         }
 
@@ -140,7 +140,7 @@ class AssetRequestController extends Controller
     public function reject(Request $request, AssetRequest $assetRequest)
     {
         // Only admin can reject
-        if (!$this->user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
             abort(403, 'Tidak memiliki akses untuk menolak permintaan');
         }
 
@@ -169,7 +169,7 @@ class AssetRequestController extends Controller
     public function fulfill(Request $request, AssetRequest $assetRequest)
     {
         // Only admin can fulfill
-        if (!$this->user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
             abort(403, 'Tidak memiliki akses untuk memenuhi permintaan');
         }
 
@@ -197,7 +197,7 @@ class AssetRequestController extends Controller
     public function pending()
     {
         // Only admin can view
-        if (!$this->user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
             abort(403, 'Tidak memiliki akses');
         }
 
@@ -264,7 +264,7 @@ class AssetRequestController extends Controller
         }
 
         // If regular user, only export their requests
-        if (!$this->user()->hasRole(['admin', 'super_admin'])) {
+        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
             $query->where('requested_by', Auth::id());
         }
 

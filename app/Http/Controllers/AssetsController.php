@@ -118,12 +118,25 @@ class AssetsController extends Controller
     {
         $validated = $request->validated();
 
-        Asset::create([
-            'model_id' => $validated['model_id'],
-            'serial_number' => $validated['serial_number'],
-            'purchase_date' => $validated['purchase_date'],
-            // Other fields...
-        ]);
+        // Normalize model id (tests may send `model_id` while request uses `asset_model_id`)
+        $modelId = $validated['model_id'] ?? $validated['asset_model_id'] ?? null;
+
+        $assetData = [
+            'model_id' => $modelId,
+            'asset_tag' => $validated['asset_tag'] ?? null,
+            'name' => $validated['name'] ?? ($validated['asset_tag'] ?? null),
+            'serial_number' => $validated['serial_number'] ?? null,
+            'division_id' => $validated['division_id'] ?? null,
+            'supplier_id' => $validated['supplier_id'] ?? null,
+            'warranty_type_id' => $validated['warranty_type_id'] ?? null,
+            'status_id' => $validated['status_id'] ?? null,
+            'purchase_date' => $validated['purchase_date'] ?? null,
+            'purchase_cost' => $validated['purchase_cost'] ?? null,
+            'location_id' => $validated['location_id'] ?? null,
+            'assigned_to' => $validated['assigned_to'] ?? null,
+        ];
+
+        Asset::create($assetData);
 
         return redirect()->route('assets.index')->with('success', 'Asset created successfully.');
     }

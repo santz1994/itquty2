@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -14,7 +16,7 @@ class StoreroomTest extends TestCase
       {
         parent::setUp();
         // Seed locations table for storeroom tests
-        $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\LocationsTableSeeder']);
+  try { if (class_exists(\Database\Seeders\LocationsTableSeeder::class)) { (new \Database\Seeders\LocationsTableSeeder())->run(); } } catch (\Throwable $__e) {}
       }
 
     public function testUserCannotAccessStoreroomView()

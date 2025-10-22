@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\Manufacturer;
 
 class ManufacturerTest extends TestCase
 {
@@ -64,7 +67,7 @@ class ManufacturerTest extends TestCase
            ->see('Successfully created')
            ->seeInDatabase('manufacturers', ['name' => 'Acme']);
 
-      $manufacturer = App\Manufacturer::get()->last();
+     $manufacturer = Manufacturer::get()->last();
 
       $this->actingAs($user)
            ->visit('/manufacturers/' . $manufacturer->id . '/edit')

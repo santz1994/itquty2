@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\AssetType;
 
 class AssetTypeTest extends TestCase
 {
@@ -68,7 +71,7 @@ class AssetTypeTest extends TestCase
            ->see('Successfully created')
            ->seeInDatabase('asset_types', ['type_name' => 'Random Type', 'abbreviation' => 'Random Abbreviation', 'spare' => 0]);
 
-      $assetType = App\AssetType::get()->last();
+      $assetType = AssetType::get()->last();
 
       $this->actingAs($user)
            ->visit('/asset-types/' . $assetType->id . '/edit')

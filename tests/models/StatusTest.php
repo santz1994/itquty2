@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 use App\User;
+use App\Status;
 
 class StatusTest extends TestCase
 {
@@ -64,7 +67,7 @@ class StatusTest extends TestCase
            ->see('Successfully created')
            ->seeInDatabase('statuses', ['name' => 'Random Status']);
 
-      $status = App\Status::get()->last();
+      $status = Status::get()->last();
 
       $this->actingAs($user)
            ->visit('/admin/assets-statuses/' . $status->id . '/edit')

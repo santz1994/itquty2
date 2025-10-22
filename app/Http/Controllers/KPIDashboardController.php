@@ -7,7 +7,6 @@ use App\Ticket;
 use App\Asset;
 use App\User;
 use App\DailyActivity;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class KPIDashboardController extends Controller

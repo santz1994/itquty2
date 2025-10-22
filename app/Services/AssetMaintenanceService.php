@@ -253,9 +253,19 @@ class AssetMaintenanceService
     
     /**
      * Get recommended maintenance interval for asset type
+     *
+     * Accepts an Asset model instance or a query builder that resolves to an Asset.
+     *
+     * @param \App\Asset|\Illuminate\Database\Eloquent\Builder $asset
+     * @return int
      */
-    private function getMaintenanceInterval(Asset $asset)
+    private function getMaintenanceInterval($asset)
     {
+        // If a Builder was accidentally passed, resolve it to a model
+        if ($asset instanceof \Illuminate\Database\Eloquent\Builder) {
+            $asset = $asset->first();
+        }
+
         // Default intervals by asset type (in months)
         $intervals = [
             'Server' => 3,

@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests;
+
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -7,6 +9,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 use App\User;
+use App\Invoice;
 
 class InvoiceTest extends TestCase
 {
@@ -105,7 +108,7 @@ class InvoiceTest extends TestCase
            ->seeInDatabase('invoices', ['invoice_number' => 'TestInvoice123', 'order_number' => 'PO456', 'total' => '1999.99', 'division_id' => 1, 'supplier_id' => 1, 'invoiced_date' => '2016/06/06'])
            ->assertFileExists('storage/app/invoices/TestInvoice123.pdf');
 
-      $invoice = App\Invoice::get()->last();
+      $invoice = Invoice::get()->last();
 
       $this->actingAs($user)
            ->visit('/invoices/' . $invoice->id . '/edit')

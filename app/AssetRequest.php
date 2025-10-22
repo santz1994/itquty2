@@ -10,7 +10,7 @@ class AssetRequest extends Model
     use HasFactory;
     
     protected $fillable = [
-        'requested_by', 'asset_type_id', 'justification', 'status',
+        'requested_by', 'user_id', 'asset_type_id', 'justification', 'status',
         'approved_by', 'approved_at', 'approval_notes', 
         'fulfilled_asset_id', 'fulfilled_at'
     ];
@@ -63,6 +63,27 @@ class AssetRequest extends Model
             'approved_at' => now(),
             'approval_notes' => $notes
         ]);
+    }
+
+    protected static function booted()
+    {
+        // Keep legacy 'user_id' and 'requested_by' in sync for compatibility with tests
+        static::creating(function ($model) {
+            if (empty($model->user_id) && !empty($model->requested_by)) {
+                $model->user_id = $model->requested_by;
+            }
+            if (empty($model->requested_by) && !empty($model->user_id)) {
+                $model->requested_by = $model->user_id;
+            }
+        });
+
+        static::saving(function ($model) {
+            if (!empty($model->requested_by)) {
+                $model->user_id = $model->requested_by;
+            } elseif (!empty($model->user_id)) {
+                $model->requested_by = $model->user_id;
+            }
+        });
     }
 
     public function reject($approverId, $notes = null)

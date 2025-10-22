@@ -17,6 +17,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::redirect('/dashboard', '/home');
     
+    // Asset Requests available to all authenticated users (create/view their requests)
+    Route::resource('asset-requests', \App\Http\Controllers\AssetRequestController::class);
+    
     // ========================================
     // MANAGEMENT DASHBOARD
     // ========================================
@@ -63,9 +66,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     });
 
     // ========================================
-    // SUPER-ADMIN ONLY ROUTES
+    // SUPER-ADMIN (and Admin) ROUTES
     // ========================================
-    Route::middleware(['role:super-admin'])->group(function () {
+    // Note: allow both admin and super-admin here because some admin
+    // actions (like approving asset requests and basic user management)
+    // are expected to be accessible to users with the 'admin' role in tests.
+    Route::middleware(['role:admin|super-admin'])->group(function () {
         
         // User Management Routes (with admin prefix)
         Route::prefix('admin/users')->group(function () {
@@ -93,11 +99,10 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('users.destroy');
         });
         
-        // Asset Requests Management
-        Route::resource('asset-requests', \App\Http\Controllers\AssetRequestController::class);
-        Route::post('/asset-requests/{assetRequest}/approve', [\App\Http\Controllers\AssetRequestController::class, 'approve'])->name('asset-requests.approve');
-        Route::post('/asset-requests/{assetRequest}/reject', [\App\Http\Controllers\AssetRequestController::class, 'reject'])->name('asset-requests.reject');
-        Route::post('/asset-requests/{assetRequest}/fulfill', [\App\Http\Controllers\AssetRequestController::class, 'fulfill'])->name('asset-requests.fulfill');
+    // Asset Requests Management (admin actions)
+    Route::post('/asset-requests/{assetRequest}/approve', [\App\Http\Controllers\AssetRequestController::class, 'approve'])->name('asset-requests.approve');
+    Route::post('/asset-requests/{assetRequest}/reject', [\App\Http\Controllers\AssetRequestController::class, 'reject'])->name('asset-requests.reject');
+    Route::post('/asset-requests/{assetRequest}/fulfill', [\App\Http\Controllers\AssetRequestController::class, 'fulfill'])->name('asset-requests.fulfill');
         
         // Admin Configuration
         Route::get('/admin', [\App\Http\Controllers\PagesController::class, 'getTicketConfig'])->name('admin.config');

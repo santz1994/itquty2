@@ -52,10 +52,10 @@ class ApiAutomatedTest extends TestCase
     {
         parent::setUp();
 
-        // Create roles
-        Role::create(['name' => 'super-admin', 'guard_name' => 'web']);
-        Role::create(['name' => 'admin', 'guard_name' => 'web']);
-        Role::create(['name' => 'user', 'guard_name' => 'web']);
+    // Create roles (idempotent)
+    Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
 
         // Create test users with explicit password 'password'
         $this->superAdmin = User::factory()->create([

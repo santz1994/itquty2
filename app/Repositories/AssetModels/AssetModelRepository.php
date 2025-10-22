@@ -3,7 +3,7 @@
 namespace App\Repositories\AssetModels;
 
 use App\AssetModel;
-use Session;
+use Illuminate\Support\Facades\Session;
 use Slack;
 
 class AssetModelRepository implements AssetModelRepositoryInterface {

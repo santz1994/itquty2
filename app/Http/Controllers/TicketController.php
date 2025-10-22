@@ -297,6 +297,25 @@ class TicketController extends BaseController
     }
 
     /**
+     * Remove the specified ticket
+     */
+    public function destroy(Ticket $ticket)
+    {
+        $user = auth()->user();
+
+        if (!$this->hasAnyRole(['super-admin', 'admin']) && $ticket->assigned_to !== $user->id) {
+            return redirect()->route('tickets.index')->with('error', 'You do not have permission to delete this ticket.');
+        }
+
+        try {
+            $ticket->delete();
+            return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete ticket: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Show unassigned tickets for admin self-assignment
      */
     public function unassigned()

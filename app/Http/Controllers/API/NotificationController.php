@@ -55,9 +55,15 @@ class NotificationController extends Controller
             return $this->transformNotification($notification);
         });
 
+        // Unread count for top-level response
+        $unreadCount = Notification::where('user_id', auth()->user()->id)
+                            ->where('is_read', false)
+                            ->count();
+
         return response()->json([
             'success' => true,
-            'data' => $notifications,
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount,
             'message' => 'Notifications retrieved successfully'
         ]);
     }

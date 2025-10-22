@@ -23,7 +23,7 @@ class Asset extends Model implements HasMedia
    * @var array
    */
   protected $fillable = [
-    'asset_tag', 'serial_number', 'model_id', 'division_id', 'supplier_id', 
+    'asset_tag', 'name', 'serial_number', 'model_id', 'division_id', 'supplier_id', 
     'purchase_date', 'warranty_months', 'warranty_type_id', 'invoice_id', 
     'ip_address', 'mac_address', 'qr_code', 'status_id', 'assigned_to', 'notes'
   ];

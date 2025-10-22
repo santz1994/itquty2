@@ -8,7 +8,7 @@ use App\Location;
 use App\Status;
 use App\Http\Requests\Movements\StoreMovementRequest;
 use Illuminate\Http\Request;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 use App\Http\Requests;
 
