@@ -23,8 +23,8 @@ class AssetStatusChangedNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(Asset $asset, ?Status $oldStatus, Status $newStatus, User $changedBy, ?string $notes = null)
-    {
+    public function __construct(Asset $asset, ?Status $oldStatus, Status $newStatus, ?User $changedBy, ?string $notes = null)
+        $this->changedBy = $changedBy;
         $this->asset = $asset;
         $this->oldStatus = $oldStatus;
         $this->newStatus = $newStatus;
