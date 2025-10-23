@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Requests\Storerooms\UpdateStoreroomRequest;
 use App\Http\Requests;
+use Illuminate\Support\Facades\Log;
 
 class StoreroomsController extends Controller
 {
@@ -25,16 +26,20 @@ class StoreroomsController extends Controller
 
   public function update(UpdateStoreroomRequest $request)
   {
-  $oldStoreroom = Location::where('storeroom', 1)->first();
-  if (isset($oldStoreroom)) {
-    $oldStoreroom->storeroom = 0;
-    $oldStoreroom->update();
-  }
+    $oldStoreroom = Location::where('storeroom', 1)->first();
+    if ($oldStoreroom) {
+        $oldStoreroom->storeroom = 0;
+        $oldStoreroom->save();
+    }
 
-  $location = Location::where('id', $request->store)->first();
-  if ($location) {
-    $location->storeroom = 1;
-    $location->update();
+    // Be defensive: legacy clients/tests may send the selected value under
+    // different parameter names or as an empty value. Try several sources.
+    $storeId = $request->input('store') ?? $request->input('store_id') ?? request()->get('store');
+
+    $location = Location::find($storeId);
+    if ($location) {
+        $location->storeroom = 1;
+        $location->save();
 
     Session::flash('status', 'success');
     Session::flash('title', 'New Default Storeroom Saved');

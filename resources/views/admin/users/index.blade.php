@@ -6,11 +6,17 @@
       <div class="box box-primary">
         <div class="box-header with-border">
           <h3 class="box-title">{{$pageTitle}}</h3>
+          <div class="box-tools pull-right">
+              @if(auth()->user() && (method_exists(auth()->user(), 'canManageUsers') ? auth()->user()->canManageUsers() : false) || (auth()->user() && auth()->user()->can('delete-users')))
+              <button id="delete-selected" class="btn btn-danger btn-sm" style="display:inline-block; margin-top:5px;" disabled="disabled"><span class="fa fa-trash"></span> <b>Delete Selected</b></button>
+            @endif
+          </div>
         </div>
         <div class="box-body">
           <table id="table" class="table table-striped table-bordered table-hover">
             <thead>
               <tr>
+                <th><input type="checkbox" id="select-all" /></th>
                 <th>Name</th>
                 <th>User's Role</th>
                 <th>Actions</th>
@@ -19,6 +25,7 @@
             <tbody>
               @foreach($users as $user)
                 <tr>
+                  <td><input type="checkbox" class="row-checkbox" data-id="{{ $user->id }}" /></td>
                   <td>{{$user->name}}</td>
                   <td>
                     @foreach($usersRoles as $usersRole)
@@ -32,7 +39,14 @@
                       @endif
                     @endforeach
                   </td>
-                  <td><a href="/admin/users/{{ $user->id }}/edit" class="btn btn-primary"><span class='fa fa-edit' aria-hidden='true'></span> <b>Edit</b></a></td>
+                  <td>
+                    <a href="/admin/users/{{ $user->id }}/edit" class="btn btn-primary"><span class='fa fa-edit' aria-hidden='true'></span> <b>Edit</b></a>
+                    <form method="POST" action="/admin/users/{{ $user->id }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                      {{ csrf_field() }}
+                      {{ method_field('DELETE') }}
+                      <button type="submit" class="btn btn-danger"><span class='fa fa-trash' aria-hidden='true'></span> <b>Delete</b></button>
+                    </form>
+                  </td>
                 </tr>
               @endforeach
             </tbody>
@@ -74,12 +88,51 @@
   </div>
   <script>
     $(document).ready(function() {
-      $('#table').DataTable( {
-        columnDefs: [ {
-          orderable: false, targets: 1
-        } ],
-        order: [[ 0, "asc" ]]
+      var table = $('#table').DataTable( {
+        columnDefs: [ { orderable: false, targets: 0 } ],
+        order: [[ 1, "asc" ]]
       } );
+
+      // Select-all checkbox
+      $('#select-all').on('click', function() {
+        var checked = $(this).is(':checked');
+        $('.row-checkbox').prop('checked', checked);
+        toggleDeleteSelected();
+      });
+
+      // Row checkbox toggle
+      $(document).on('change', '.row-checkbox', function() {
+        toggleDeleteSelected();
+      });
+
+      function toggleDeleteSelected() {
+        var any = $('.row-checkbox:checked').length > 0;
+        $('#delete-selected').prop('disabled', !any);
+      }
+
+      // Delete selected handler
+      $('#delete-selected').on('click', function(e) {
+        e.preventDefault();
+        var ids = $('.row-checkbox:checked').map(function(){ return $(this).data('id'); }).get();
+        if (ids.length === 0) return;
+        if (!confirm('Are you sure you want to delete the selected users?')) return;
+        $.ajax({
+          url: '{{ url('/admin/users/bulk-delete') }}',
+          method: 'POST',
+          data: { ids: ids, _token: '{{ csrf_token() }}' },
+          success: function(resp) {
+            if (resp && resp.success) {
+              ids.forEach(function(id){ $('input.row-checkbox[data-id="'+id+'"]').closest('tr').remove(); });
+              alert('Deleted ' + resp.deleted.length + ' users.');
+            } else {
+              alert('Failed to delete users: ' + (resp && resp.message ? resp.message : 'unknown'));
+            }
+          },
+          error: function(xhr) {
+            alert('Error deleting users');
+          }
+        });
+      });
     } );
   </script>
   @php

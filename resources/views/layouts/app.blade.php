@@ -32,6 +32,9 @@
                     <div id="__flash_title">{{ session('title') }}</div>
                     <div id="__flash_message">{{ session('message') }}</div>
                     <div id="__flash_generic">{{ session('flash_message') ?? session('flash') }}</div>
+                    {{-- Support legacy compatibility: some controllers attach legacy_msg or pass a direct_legacy_message via query string --}}
+                    <div id="__legacy_msg">{{ session('legacy_msg') }}</div>
+                    <div id="__direct_legacy_message">{{ request()->query('direct_legacy_message') }}</div>
                     <div id="__validation_errors">
                         @if (isset($errors) && $errors->any())
                             @foreach ($errors->all() as $err)
@@ -51,8 +54,8 @@
 
 </div><!-- ./wrapper -->
 
+@include('layouts.partials.scripts')
 @section('scripts')
-    @include('layouts.partials.scripts')
 @show
 
 <!-- Toastr Notifications -->

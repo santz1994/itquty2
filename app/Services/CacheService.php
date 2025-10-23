@@ -90,10 +90,17 @@ class CacheService
     {
         $resolved = Ticket::whereNotNull('resolved_at')
                          ->whereNotNull('created_at')
-                         ->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as avg_hours'))
-                         ->first();
+                         ->get();
 
-        return $resolved ? round($resolved->avg_hours, 2) : 0;
+        if ($resolved->count() === 0) {
+            return 0;
+        }
+
+        $totalHours = $resolved->sum(function($ticket) {
+            return $ticket->created_at->diffInHours($ticket->resolved_at);
+        });
+
+        return round($totalHours / $resolved->count(), 2);
     }
 
     private function calculateSLACompliance()
@@ -110,8 +117,17 @@ class CacheService
 
     private function getMonthlyTicketTrend()
     {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            $monthExpr = "strftime('%Y-%m', created_at) as month";
+        } else {
+            // default to MySQL-compatible
+            $monthExpr = "DATE_FORMAT(created_at, '%Y-%m') as month";
+        }
+
         return Ticket::select(
-            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+            DB::raw($monthExpr),
             DB::raw('count(*) as total')
         )
         ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())

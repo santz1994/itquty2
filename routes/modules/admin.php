@@ -94,6 +94,8 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::get('/roles', [\App\Http\Controllers\UsersController::class, 'roles'])->name('users.roles');
             
             Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('users.store');
+            // Bulk delete endpoint for AJAX bulk actions
+            Route::post('/bulk-delete', [\App\Http\Controllers\UsersController::class, 'bulkDelete'])->name('users.bulk-delete');
             Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('users.show');
             Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('users.edit');
             Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('users.update');
@@ -256,6 +258,13 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::get('/ticket-types/{ticketsType}/edit', [\App\Http\Controllers\TicketsTypesController::class, 'edit'])->name('admin.ticket-types.edit');
             Route::put('/ticket-types/{ticketsType}', [\App\Http\Controllers\TicketsTypesController::class, 'update'])->name('admin.ticket-types.update');
             Route::delete('/ticket-types/{ticketsType}', [\App\Http\Controllers\TicketsTypesController::class, 'destroy'])->name('admin.ticket-types.destroy');
+
+            // Storeroom compatibility routes (legacy)
+            Route::middleware(['role:super-admin'])->group(function () {
+                Route::get('/storeroom', [\App\Http\Controllers\StoreroomsController::class, 'index'])->name('admin.storeroom.index');
+                Route::patch('/storeroom/update', [\App\Http\Controllers\StoreroomsController::class, 'update'])->name('admin.storeroom.update');
+                Route::post('/storeroom/update', [\App\Http\Controllers\StoreroomsController::class, 'update']);
+            });
             // Legacy admin endpoints for ticket statuses and priorities (used by tests)
             Route::get('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'index'])->name('admin.ticket-statuses.index');
             Route::post('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'store'])->name('admin.ticket-statuses.store');

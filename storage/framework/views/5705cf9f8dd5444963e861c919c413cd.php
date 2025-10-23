@@ -1,14 +1,14 @@
-@extends('layouts.app')
 
-@section('title', 'KPI Dashboard')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-widgets.css') }}">
-@endpush
+<?php $__env->startSection('title', 'KPI Dashboard'); ?>
 
-@section('main-content')
-    @include('components.loading-overlay')
-    @include('components.page-header', [
+<?php $__env->startPush('styles'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('css/dashboard-widgets.css')); ?>">
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('main-content'); ?>
+    <?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    <?php echo $__env->make('components.page-header', [
         'title' => 'KPI Dashboard',
         'subtitle' => 'Key Performance Indicators & Metrics',
         'icon' => 'fa-line-chart',
@@ -16,7 +16,7 @@
             ['label' => 'Home', 'url' => url('/home'), 'icon' => 'fa-dashboard'],
             ['label' => 'KPI Dashboard', 'active' => true]
         ]
-    ])
+    ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <section class="content">
         <div class="row">
             <div class="col-md-12">
@@ -36,7 +36,7 @@
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-aqua">
                             <div class="inner">
-                                <h3>{{ $data['totalTickets'] }}</h3>
+                                <h3><?php echo e($data['totalTickets']); ?></h3>
                                 <p>Total Tickets</p>
                             </div>
                             <div class="icon">
@@ -48,7 +48,7 @@
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-yellow">
                             <div class="inner">
-                                <h3>{{ $data['openTickets'] }}</h3>
+                                <h3><?php echo e($data['openTickets']); ?></h3>
                                 <p>Open Tickets</p>
                             </div>
                             <div class="icon">
@@ -60,7 +60,7 @@
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-green">
                             <div class="inner">
-                                <h3>{{ $data['closedTickets'] }}</h3>
+                                <h3><?php echo e($data['closedTickets']); ?></h3>
                                 <p>Closed Tickets</p>
                             </div>
                             <div class="icon">
@@ -72,7 +72,7 @@
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-red">
                             <div class="inner">
-                                <h3>{{ $data['overdueTickets'] }}</h3>
+                                <h3><?php echo e($data['overdueTickets']); ?></h3>
                                 <p>Overdue Tickets</p>
                             </div>
                             <div class="icon">
@@ -89,7 +89,7 @@
                             <span class="info-box-icon bg-blue"><i class="fa fa-clock-o"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Avg Resolution Time</span>
-                                <span class="info-box-number">{{ $data['avgResolutionTime'] }} hours</span>
+                                <span class="info-box-number"><?php echo e($data['avgResolutionTime']); ?> hours</span>
                             </div>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                             <span class="info-box-icon bg-green"><i class="fa fa-check"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">SLA Compliance</span>
-                                <span class="info-box-number">{{ $data['slaCompliance'] }}%</span>
+                                <span class="info-box-number"><?php echo e($data['slaCompliance']); ?>%</span>
                             </div>
                         </div>
                     </div>
@@ -109,7 +109,7 @@
                             <span class="info-box-icon bg-purple"><i class="fa fa-desktop"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Total Assets</span>
-                                <span class="info-box-number">{{ $data['totalAssets'] }}</span>
+                                <span class="info-box-number"><?php echo e($data['totalAssets']); ?></span>
                             </div>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                             <span class="info-box-icon bg-orange"><i class="fa fa-users"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Team Members</span>
-                                <span class="info-box-number">{{ $data['teamPerformance']->count() }}</span>
+                                <span class="info-box-number"><?php echo e($data['teamPerformance']->count()); ?></span>
                             </div>
                         </div>
                     </div>
@@ -191,16 +191,16 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($data['topBrokenAssets'] as $asset)
+                                        <?php $__empty_1 = true; $__currentLoopData = $data['topBrokenAssets']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $asset): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                         <tr>
-                                            <td>{{ $asset->asset_tag }}</td>
-                                            <td><span class="badge bg-red">{{ $asset->ticket_count }}</span></td>
+                                            <td><?php echo e($asset->asset_tag); ?></td>
+                                            <td><span class="badge bg-red"><?php echo e($asset->ticket_count); ?></span></td>
                                         </tr>
-                                        @empty
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                         <tr>
                                             <td colspan="2" class="text-center">No data available</td>
                                         </tr>
-                                        @endforelse
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -221,16 +221,16 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($data['teamPerformance'] as $member)
+                                        <?php $__empty_1 = true; $__currentLoopData = $data['teamPerformance']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                         <tr>
-                                            <td>{{ $member->name }}</td>
-                                            <td><span class="badge bg-green">{{ $member->resolved_tickets }}</span></td>
+                                            <td><?php echo e($member->name); ?></td>
+                                            <td><span class="badge bg-green"><?php echo e($member->resolved_tickets); ?></span></td>
                                         </tr>
-                                        @empty
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                         <tr>
                                             <td colspan="2" class="text-center">No data available</td>
                                         </tr>
-                                        @endforelse
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -247,23 +247,24 @@
                             </div>
                             <div class="box-body">
                                 <ul class="timeline">
-                                    @forelse($data['recentActivities'] as $activity)
+                                    <?php $__empty_1 = true; $__currentLoopData = $data['recentActivities']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $activity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                     <li>
                                         <div class="timeline-item">
-                                            <span class="time"><i class="fa fa-clock-o"></i> {{ $activity->created_at->diffForHumans() }}</span>
-                                            <h3 class="timeline-header">{{ $activity->user->name ?? 'System' }}</h3>
+                                            <span class="time"><i class="fa fa-clock-o"></i> <?php echo e($activity->created_at->diffForHumans()); ?></span>
+                                            <h3 class="timeline-header"><?php echo e($activity->user->name ?? 'System'); ?></h3>
                                             <div class="timeline-body">
-                                                {{ $activity->description }}
+                                                <?php echo e($activity->description); ?>
+
                                             </div>
                                         </div>
                                     </li>
-                                    @empty
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                     <li>
                                         <div class="timeline-item">
                                             <div class="timeline-body">No recent activities</div>
                                         </div>
                                     </li>
-                                    @endforelse
+                                    <?php endif; ?>
                                 </ul>
                             </div>
                         </div>
@@ -273,9 +274,9 @@
             </div>
         </div>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Tickets by Priority Chart
@@ -285,9 +286,9 @@ if (priorityCanvas) {
     new Chart(priorityCtx, {
     type: 'doughnut',
     data: {
-        labels: {!! json_encode($data['ticketsByPriority']->keys()) !!},
+        labels: <?php echo json_encode($data['ticketsByPriority']->keys()); ?>,
         datasets: [{
-            data: {!! json_encode($data['ticketsByPriority']->values()) !!},
+            data: <?php echo json_encode($data['ticketsByPriority']->values()); ?>,
             backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#28a745']
         }]
     },
@@ -305,9 +306,9 @@ if (statusCanvas) {
     new Chart(statusCtx, {
     type: 'doughnut',
     data: {
-        labels: {!! json_encode($data['ticketsByStatus']->keys()) !!},
+        labels: <?php echo json_encode($data['ticketsByStatus']->keys()); ?>,
         datasets: [{
-            data: {!! json_encode($data['ticketsByStatus']->values()) !!},
+            data: <?php echo json_encode($data['ticketsByStatus']->values()); ?>,
             backgroundColor: ['#ffc107', '#17a2b8', '#28a745', '#6c757d']
         }]
     },
@@ -325,10 +326,10 @@ if (trendCanvas) {
     new Chart(trendCtx, {
     type: 'line',
     data: {
-        labels: {!! json_encode($data['monthlyTicketTrend']->keys()) !!},
+        labels: <?php echo json_encode($data['monthlyTicketTrend']->keys()); ?>,
         datasets: [{
             label: 'Tickets Created',
-            data: {!! json_encode($data['monthlyTicketTrend']->values()) !!},
+            data: <?php echo json_encode($data['monthlyTicketTrend']->values()); ?>,
             borderColor: '#007bff',
             backgroundColor: 'rgba(0, 123, 255, 0.1)',
             tension: 0.4
@@ -353,9 +354,9 @@ if (assetsCanvas) {
     new Chart(assetsCtx, {
     type: 'pie',
     data: {
-        labels: {!! json_encode($data['assetsBreakdown']->keys()) !!},
+        labels: <?php echo json_encode($data['assetsBreakdown']->keys()); ?>,
         datasets: [{
-            data: {!! json_encode($data['assetsBreakdown']->values()) !!},
+            data: <?php echo json_encode($data['assetsBreakdown']->values()); ?>,
             backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#17a2b8']
         }]
     },
@@ -380,4 +381,6 @@ if (assetsCanvas) {
         </div>
     </section>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/kpi/dashboard.blade.php ENDPATH**/ ?>

@@ -24,7 +24,6 @@ if (!function_exists('formatMinutesToHumanReadable')) {
 @endpush
 
 @section('main-content')
-<div class="content-wrapper">
     @include('components.page-header', [
         'title' => 'SLA Policies',
         'subtitle' => 'Manage Service Level Agreement policies',

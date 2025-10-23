@@ -5,7 +5,6 @@
 @endpush
 
 @section('main-content')
-<div class="content-wrapper">
     @include('components.page-header', [
         'title' => 'Daily Activities',
         'subtitle' => 'Track and manage daily work activities',

@@ -17,6 +17,8 @@
     
     <!-- Enhanced UX CSS -->
     <link href="{{ asset('/css/enhanced-ux.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Main header UI enhancements (custom) -->
+    <link href="{{ asset('/css/mainheader-enhancements.css') }}" rel="stylesheet" type="text/css" />
     
     <!-- Custom UI/UX Enhancements -->
     <link href="{{ asset('/css/color-palette.css') }}" rel="stylesheet" type="text/css" />

@@ -356,9 +356,76 @@ class UsersController extends Controller
     return redirect('/admin/users?' . $qp);
   }
 
+  /**
+   * Delete a single user (per-row delete)
+   */
+  public function destroy(User $user)
+  {
+    $this->authorize('delete-users');
+
+    $current = auth()->id();
+    // Prevent self-delete
+    if ($user->id == $current) {
+      Session::flash('status', 'error');
+      Session::flash('message', 'You cannot delete your own account');
+      return back();
+    }
+
+    // Prevent deleting the last super-admin
+    try {
+      $superAdminRole = Role::where('name', 'super-admin')->first();
+      if ($superAdminRole) {
+        $usersRole = DB::table('model_has_roles')->where('model_id', $user->id)->where('model_type', User::class)->first();
+        $superAdminCount = DB::table('model_has_roles')->where('role_id', $superAdminRole->id)->count();
+        if ($usersRole && $usersRole->role_id == $superAdminRole->id && $superAdminCount <= 1) {
+          Session::flash('status', 'warning');
+          Session::flash('message', 'Cannot delete user as there must be one (1) or more users with the role of Super Administrator.');
+          return back();
+        }
+      }
+    } catch (\Throwable $e) {
+      // ignore role-counting errors and continue to attempt delete
+    }
+
+    try {
+      $user->delete();
+      Session::flash('status', 'success');
+      Session::flash('message', 'Successfully deleted');
+    } catch (\Exception $e) {
+      Session::flash('status', 'error');
+      Session::flash('message', 'Failed to delete user: ' . $e->getMessage());
+      return back();
+    }
+
+    return redirect('/admin/users');
+  }
+
   public function roles()
   {
     $roles = \Spatie\Permission\Models\Role::with('users')->get();
     return view('users.roles', compact('roles'));
+  }
+
+  /**
+   * Bulk delete users (AJAX)
+   */
+  public function bulkDelete(Request $request)
+  {
+    $this->authorize('delete-users');
+
+    $ids = $request->input('ids', []);
+    if (!is_array($ids) || empty($ids)) {
+      return response()->json(['success' => false, 'message' => 'No user ids provided'], 400);
+    }
+
+    $current = auth()->id();
+    $toDelete = array_filter($ids, function($id) use ($current) { return intval($id) !== intval($current); });
+
+    try {
+      DB::table('users')->whereIn('id', $toDelete)->delete();
+      return response()->json(['success' => true, 'deleted' => array_values($toDelete)]);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
   }
 }

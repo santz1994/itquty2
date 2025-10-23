@@ -32,6 +32,9 @@
                     <div id="__flash_title"><?php echo e(session('title')); ?></div>
                     <div id="__flash_message"><?php echo e(session('message')); ?></div>
                     <div id="__flash_generic"><?php echo e(session('flash_message') ?? session('flash')); ?></div>
+                    
+                    <div id="__legacy_msg"><?php echo e(session('legacy_msg')); ?></div>
+                    <div id="__direct_legacy_message"><?php echo e(request()->query('direct_legacy_message')); ?></div>
                     <div id="__validation_errors">
                         <?php if(isset($errors) && $errors->any()): ?>
                             <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $err): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -51,8 +54,8 @@
 
 </div><!-- ./wrapper -->
 
+<?php echo $__env->make('layouts.partials.scripts', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 <?php $__env->startSection('scripts'); ?>
-    <?php echo $__env->make('layouts.partials.scripts', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 <?php echo $__env->yieldSection(); ?>
 
 <!-- Toastr Notifications -->

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\DatabaseInspector;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 
 class DatabaseController extends Controller
 {
+    use DatabaseInspector;
     public function __construct()
     {
         $this->middleware('auth');
@@ -447,16 +449,7 @@ class DatabaseController extends Controller
         }
     }
 
-    // Helper Methods
-
-    private function getAllTables()
-    {
-        return collect(DB::select('SHOW TABLES'))
-            ->map(function($table) {
-                $tableName = head((array)$table);
-                return $tableName;
-            })->toArray();
-    }
+    // Helper Methods (trait provides DB-agnostic implementations)
 
     private function tableExists($tableName)
     {
@@ -465,50 +458,22 @@ class DatabaseController extends Controller
 
     private function getTableColumns($tableName)
     {
-        return collect(DB::select("DESCRIBE {$tableName}"))
-            ->map(function($column) {
-                return (object)[
-                    'column_name' => $column->Field,
-                    'type' => $column->Type,
-                    'nullable' => $column->Null === 'YES',
-                    'key' => $column->Key,
-                    'default' => $column->Default,
-                    'extra' => $column->Extra,
-                    'auto_increment' => strpos($column->Extra, 'auto_increment') !== false
-                ];
-            });
+        return $this->getTableColumnsNormalized($tableName);
     }
 
     private function getTableIndexes($tableName)
     {
-        return DB::select("SHOW INDEXES FROM {$tableName}");
+        return $this->getTableIndexesAgnostic($tableName);
     }
 
     private function getTableStats($tableName)
     {
-        $stats = DB::select("
-            SELECT 
-                table_rows as row_count,
-                data_length as data_size,
-                index_length as index_size,
-                (data_length + index_length) as total_size
-            FROM information_schema.tables 
-            WHERE table_schema = ? AND table_name = ?
-        ", [config('database.connections.mysql.database'), $tableName]);
-
-        return $stats ? $stats[0] : null;
+        return $this->getTableStatsAgnostic($tableName);
     }
 
     private function getDatabaseSize($databaseName)
     {
-        $result = DB::select("
-            SELECT 
-                SUM(data_length + index_length) as size 
-            FROM information_schema.tables 
-            WHERE table_schema = ?
-        ", [$databaseName]);
-
-        return $result[0]->size ?? 0;
+        return $this->getDatabaseSizeAgnostic($databaseName);
     }
 
     private function hasTimestamps($tableName)

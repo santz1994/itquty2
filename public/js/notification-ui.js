@@ -183,6 +183,14 @@
                     self.renderNotifications();
                 },
                 error: function(xhr) {
+                    // If unauthorized, stop auto-refresh and hide bell to avoid noisy console errors
+                    if (xhr && xhr.status === 401) {
+                        console.warn('Notifications unauthorized (401). Stopping auto-refresh and hiding notification UI.');
+                        try { self.stopAutoRefresh(); } catch (e) {}
+                        if (self.$bell) { self.$bell.addClass('hidden'); }
+                        return;
+                    }
+
                     console.error('Failed to fetch notifications:', xhr);
                     self.showError();
                 }

@@ -24,6 +24,14 @@ class LocationsTableSeeder extends Seeder
             'location_name' => 'Default Location',
             'storeroom' => 0
         ]);
+        // Insert a second location used by tests (id = 2)
+        DB::table('locations')->insert([
+            'id' => 2,
+            'building' => 'Annex',
+            'office' => 'Branch',
+            'location_name' => 'Secondary Location',
+            'storeroom' => 0
+        ]);
         // Optionally add more locations if needed
     }
 }

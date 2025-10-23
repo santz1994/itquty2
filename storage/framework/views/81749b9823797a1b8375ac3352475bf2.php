@@ -1,14 +1,14 @@
-@extends('layouts.app')
 
-@section('main-content')
+
+<?php $__env->startSection('main-content'); ?>
     <section class="content-header">
         <h1>
             Cache Management
             <small>Application cache control and optimization</small>
         </h1>
         <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="{{ route('admin.dashboard') }}">Admin</a></li>
+            <li><a href="<?php echo e(url('/home')); ?>"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="<?php echo e(route('admin.dashboard')); ?>">Admin</a></li>
             <li class="active">Cache</li>
         </ol>
     </section>
@@ -27,45 +27,50 @@
                         <table class="table table-condensed">
                             <tr>
                                 <td><strong>Cache Driver:</strong></td>
-                                <td>{{ $cache_info['driver'] ?? 'file' }}</td>
+                                <td><?php echo e($cache_info['driver'] ?? 'file'); ?></td>
                             </tr>
                             <tr>
                                 <td><strong>Cache Status:</strong></td>
                                 <td>
-                                    <span class="label label-{{ $cache_status['working'] ? 'success' : 'danger' }}">
-                                        {{ $cache_status['working'] ? 'Working' : 'Not Working' }}
+                                    <span class="label label-<?php echo e($cache_status['working'] ? 'success' : 'danger'); ?>">
+                                        <?php echo e($cache_status['working'] ? 'Working' : 'Not Working'); ?>
+
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>Application Cache:</strong></td>
                                 <td>
-                                    <span class="label label-{{ $cache_status['application'] ? 'success' : 'warning' }}">
-                                        {{ $cache_status['application'] ? 'Cached' : 'Not Cached' }}
+                                    <span class="label label-<?php echo e($cache_status['application'] ? 'success' : 'warning'); ?>">
+                                        <?php echo e($cache_status['application'] ? 'Cached' : 'Not Cached'); ?>
+
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>Route Cache:</strong></td>
                                 <td>
-                                    <span class="label label-{{ $cache_status['routes'] ? 'success' : 'warning' }}">
-                                        {{ $cache_status['routes'] ? 'Cached' : 'Not Cached' }}
+                                    <span class="label label-<?php echo e($cache_status['routes'] ? 'success' : 'warning'); ?>">
+                                        <?php echo e($cache_status['routes'] ? 'Cached' : 'Not Cached'); ?>
+
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>Config Cache:</strong></td>
                                 <td>
-                                    <span class="label label-{{ $cache_status['config'] ? 'success' : 'warning' }}">
-                                        {{ $cache_status['config'] ? 'Cached' : 'Not Cached' }}
+                                    <span class="label label-<?php echo e($cache_status['config'] ? 'success' : 'warning'); ?>">
+                                        <?php echo e($cache_status['config'] ? 'Cached' : 'Not Cached'); ?>
+
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>View Cache:</strong></td>
                                 <td>
-                                    <span class="label label-{{ $cache_status['views'] ? 'success' : 'warning' }}">
-                                        {{ $cache_status['views'] ? 'Cached' : 'Not Cached' }}
+                                    <span class="label label-<?php echo e($cache_status['views'] ? 'success' : 'warning'); ?>">
+                                        <?php echo e($cache_status['views'] ? 'Cached' : 'Not Cached'); ?>
+
                                     </span>
                                 </td>
                             </tr>
@@ -85,8 +90,8 @@
                     <div class="box-body">
                         <div class="row">
                             <div class="col-xs-6">
-                                <form method="POST" action="{{ route('admin.cache.clear') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('admin.cache.clear')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="cache_type" value="application">
                                     <button type="submit" class="btn btn-warning btn-block">
                                         <i class="fa fa-trash"></i> Clear App Cache
@@ -94,8 +99,8 @@
                                 </form>
                             </div>
                             <div class="col-xs-6">
-                                <form method="POST" action="{{ route('admin.cache.clear') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('admin.cache.clear')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="cache_type" value="config">
                                     <button type="submit" class="btn btn-info btn-block">
                                         <i class="fa fa-cogs"></i> Clear Config
@@ -103,8 +108,8 @@
                                 </form>
                             </div>
                             <div class="col-xs-6">
-                                <form method="POST" action="{{ route('admin.cache.clear') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('admin.cache.clear')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="cache_type" value="route">
                                     <button type="submit" class="btn btn-success btn-block">
                                         <i class="fa fa-road"></i> Clear Routes
@@ -112,8 +117,8 @@
                                 </form>
                             </div>
                             <div class="col-xs-6">
-                                <form method="POST" action="{{ route('admin.cache.clear') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('admin.cache.clear')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="cache_type" value="view">
                                     <button type="submit" class="btn btn-primary btn-block">
                                         <i class="fa fa-eye"></i> Clear Views
@@ -124,8 +129,8 @@
                         <br>
                         <div class="row">
                             <div class="col-xs-6">
-                                <form method="POST" action="{{ route('admin.cache.clear') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('admin.cache.clear')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="cache_type" value="all">
                                     <button type="submit" class="btn btn-danger btn-block">
                                         <i class="fa fa-bomb"></i> Clear All Cache
@@ -133,8 +138,8 @@
                                 </form>
                             </div>
                             <div class="col-xs-6">
-                                <form method="POST" action="{{ route('admin.cache.optimize') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('admin.cache.optimize')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <button type="submit" class="btn btn-success btn-block">
                                         <i class="fa fa-rocket"></i> Optimize Cache
                                     </button>
@@ -156,14 +161,14 @@
                         </h3>
                     </div>
                     <div class="box-body">
-                        @if(isset($cache_stats) && count($cache_stats) > 0)
+                        <?php if(isset($cache_stats) && count($cache_stats) > 0): ?>
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-aqua"><i class="fa fa-files-o"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Cache Files</span>
-                                        <span class="info-box-number">{{ $cache_stats['total_files'] ?? 0 }}</span>
+                                        <span class="info-box-number"><?php echo e($cache_stats['total_files'] ?? 0); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +177,7 @@
                                     <span class="info-box-icon bg-green"><i class="fa fa-hdd-o"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Cache Size</span>
-                                        <span class="info-box-number">{{ $cache_stats['total_size'] ?? '0 MB' }}</span>
+                                        <span class="info-box-number"><?php echo e($cache_stats['total_size'] ?? '0 MB'); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -181,7 +186,7 @@
                                     <span class="info-box-icon bg-yellow"><i class="fa fa-clock-o"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Last Cleared</span>
-                                        <span class="info-box-number">{{ $cache_stats['last_cleared'] ?? 'Never' }}</span>
+                                        <span class="info-box-number"><?php echo e($cache_stats['last_cleared'] ?? 'Never'); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -190,12 +195,12 @@
                                     <span class="info-box-icon bg-red"><i class="fa fa-tachometer"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Hit Rate</span>
-                                        <span class="info-box-number">{{ $cache_stats['hit_rate'] ?? '0%' }}</span>
+                                        <span class="info-box-number"><?php echo e($cache_stats['hit_rate'] ?? '0%'); ?></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -211,7 +216,7 @@
                         </h3>
                     </div>
                     <div class="box-body">
-                        @if(isset($cache_files) && count($cache_files) > 0)
+                        <?php if(isset($cache_files) && count($cache_files) > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -225,36 +230,37 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($cache_files as $file)
+                                    <?php $__currentLoopData = $cache_files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
-                                        <td><strong>{{ $file['type'] }}</strong></td>
-                                        <td><code>{{ $file['path'] }}</code></td>
-                                        <td>{{ $file['size'] }}</td>
-                                        <td>{{ $file['modified'] }}</td>
+                                        <td><strong><?php echo e($file['type']); ?></strong></td>
+                                        <td><code><?php echo e($file['path']); ?></code></td>
+                                        <td><?php echo e($file['size']); ?></td>
+                                        <td><?php echo e($file['modified']); ?></td>
                                         <td>
-                                            <span class="label label-{{ $file['exists'] ? 'success' : 'danger' }}">
-                                                {{ $file['exists'] ? 'Exists' : 'Missing' }}
+                                            <span class="label label-<?php echo e($file['exists'] ? 'success' : 'danger'); ?>">
+                                                <?php echo e($file['exists'] ? 'Exists' : 'Missing'); ?>
+
                                             </span>
                                         </td>
                                         <td>
-                                            @if($file['exists'])
-                                            <form method="POST" action="{{ route('admin.cache.clear') }}" style="display: inline;">
-                                                @csrf
-                                                <input type="hidden" name="cache_type" value="{{ $file['type'] }}">
+                                            <?php if($file['exists']): ?>
+                                            <form method="POST" action="<?php echo e(route('admin.cache.clear')); ?>" style="display: inline;">
+                                                <?php echo csrf_field(); ?>
+                                                <input type="hidden" name="cache_type" value="<?php echo e($file['type']); ?>">
                                                 <button type="submit" class="btn btn-xs btn-warning">
                                                     <i class="fa fa-trash"></i> Clear
                                                 </button>
                                             </form>
-                                            @endif
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
-                        @else
+                        <?php else: ?>
                         <p class="text-muted">No cache files found or unable to retrieve cache information.</p>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -270,7 +276,7 @@
                         </h3>
                     </div>
                     <div class="box-body">
-                        @if(isset($recent_cache_activity) && count($recent_cache_activity) > 0)
+                        <?php if(isset($recent_cache_activity) && count($recent_cache_activity) > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -283,33 +289,37 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($recent_cache_activity as $activity)
+                                    <?php $__currentLoopData = $recent_cache_activity; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $activity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
-                                        <td>{{ $activity['time'] }}</td>
+                                        <td><?php echo e($activity['time']); ?></td>
                                         <td>
-                                            <span class="label label-{{ $activity['action_type'] }}">
-                                                {{ $activity['action'] }}
+                                            <span class="label label-<?php echo e($activity['action_type']); ?>">
+                                                <?php echo e($activity['action']); ?>
+
                                             </span>
                                         </td>
-                                        <td>{{ $activity['cache_type'] }}</td>
-                                        <td>{{ $activity['user'] }}</td>
+                                        <td><?php echo e($activity['cache_type']); ?></td>
+                                        <td><?php echo e($activity['user']); ?></td>
                                         <td>
-                                            <span class="label label-{{ $activity['success'] ? 'success' : 'danger' }}">
-                                                {{ $activity['success'] ? 'Success' : 'Failed' }}
+                                            <span class="label label-<?php echo e($activity['success'] ? 'success' : 'danger'); ?>">
+                                                <?php echo e($activity['success'] ? 'Success' : 'Failed'); ?>
+
                                             </span>
                                         </td>
                                     </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
-                        @else
+                        <?php else: ?>
                         <p class="text-muted">No recent cache activity to display.</p>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/admin/cache.blade.php ENDPATH**/ ?>

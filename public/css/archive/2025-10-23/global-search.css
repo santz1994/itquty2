@@ -1,10 +1,26 @@
-/* NOTE: This file was archived on 2025-10-23.
-   Full original content moved to:
-   public/css/archive/2025-10-23/global-search-original-2025-10-23.css
+/* Archived copy of public/css/global-search.css - archived on 2025-10-23 */
 
-   Left as a stub to avoid breaking existing asset references. */
+/**
+ * Global Search Styles
+ */
 
-/* No active styles in this file. */
+/* Search Modal */
+#globalSearchModal .modal-dialog {
+    margin-top: 100px;
+}
+
+#globalSearchModal .modal-body {
+    padding: 20px;
+}
+
+#globalSearchInput {
+    font-size: 18px;
+    height: 50px;
+}
+
+#searchEntityType {
+    height: 50px;
+}
 
 /* Search Results */
 .search-results {

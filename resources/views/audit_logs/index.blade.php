@@ -5,7 +5,6 @@
 @endpush
 
 @section('main-content')
-<div class="content-wrapper">
     @include('components.page-header', [
         'title' => 'Audit Logs',
         'subtitle' => 'System activity and change tracking',

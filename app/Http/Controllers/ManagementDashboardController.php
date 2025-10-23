@@ -12,6 +12,7 @@ use App\User;
 use App\AdminOnlineStatus;
 use App\DailyActivity;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ManagementDashboardController extends Controller
 {
@@ -277,12 +278,27 @@ class ManagementDashboardController extends Controller
 
     private function getWarrantyExpiring()
     {
-        return Asset::whereNotNull('purchase_date')
+        // Compute warranty expiration using PHP (Carbon) to be DB-agnostic
+        $now = now();
+        $nextMonth = now()->addMonth();
+
+        $assets = Asset::whereNotNull('purchase_date')
                    ->whereNotNull('warranty_months')
-                   ->whereRaw('DATE_ADD(purchase_date, INTERVAL warranty_months MONTH) <= ?', [now()->addMonth()])
-                   ->whereRaw('DATE_ADD(purchase_date, INTERVAL warranty_months MONTH) > ?', [now()])
                    ->with(['model', 'assignedTo'])
-                   ->get();
+                   ->get()
+                   ->filter(function($asset) use ($now, $nextMonth) {
+                       try {
+                           $purchase = Carbon::parse($asset->purchase_date);
+                       } catch (\Exception $e) {
+                           return false;
+                       }
+
+                       $expiry = $purchase->copy()->addMonths($asset->warranty_months);
+
+                       return $expiry->lte($nextMonth) && $expiry->gt($now);
+                   });
+
+        return $assets->values();
     }
 
     private function getAverageResolutionTime($startDate, $endDate)

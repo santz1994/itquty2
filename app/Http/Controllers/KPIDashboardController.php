@@ -148,9 +148,16 @@ class KPIDashboardController extends Controller
     private function getMonthlyTicketTrend()
     {
         $startDate = now()->subMonths(11)->startOfMonth();
-        
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            $monthExpr = "strftime('%Y-%m', created_at) as month";
+        } else {
+            $monthExpr = "DATE_FORMAT(created_at, '%Y-%m') as month";
+        }
+
         return Ticket::select(
-                    DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                    DB::raw($monthExpr),
                     DB::raw('count(*) as total')
                 )
                 ->where('created_at', '>=', $startDate)

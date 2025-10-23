@@ -5,7 +5,6 @@
 @endpush
 
 @section('main-content')
-<div class="content-wrapper">
     @include('components.page-header', [
         'title' => 'Management Dashboard',
         'subtitle' => 'Strategic overview and KPI metrics',

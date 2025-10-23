@@ -1,173 +1,64 @@
-<!-- Main Header -->
 <header class="main-header">
 
-    <!-- Logo -->
     <a href="{{ url('/home') }}" class="logo">
-        <!-- mini logo for sidebar mini 50x50 pixels -->
         <span class="logo-mini">QUTY Assets</span>
-        <!-- logo for regular state and mobile devices -->
         <span class="logo-lg"><b>QUTY</b>Assets </span>
     </a>
 
-    <!-- Header Navbar -->
     <nav class="navbar navbar-static-top" role="navigation">
-        <!-- Sidebar toggle button-->
-        <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button" aria-label="Toggle navigation">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </a>
-        <!-- Navbar Right Menu -->
+        
         <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
-                <!-- Global Search -->
                 @auth
-                <li class="dropdown" style="width: 300px;">
-                    <form class="navbar-form" style="margin: 8px 10px;">
-                        <div class="input-group">
-                            <input type="text" id="global-search" class="form-control" placeholder="Search (Ctrl+K)..." style="border-radius: 20px;">
-                            <span class="input-group-btn">
-                                <button type="button" class="btn btn-flat" style="border-radius: 0 20px 20px 0;">
-                                    <i class="fa fa-search"></i>
-                                </button>
-                            </span>
+                <li class="nav-search-item">
+                    <form class="navbar-form">
+                        <div class="enhanced-search">
+                            <div class="input-group">
+                                <input type="text" id="global-search" class="form-control" placeholder="Search (Ctrl+K)...">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-flat" aria-label="Search">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </form>
                 </li>
                 @endauth
-                <!-- Messages: style can be found in dropdown.less-->
-                {{-- <li class="dropdown messages-menu">
-                    <!-- Menu toggle button -->
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-envelope-o"></i>
-                        <span class="label label-success">4</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li class="header">You have 4 messages</li>
-                        <li>
-                            <!-- inner menu: contains the messages -->
-                            <ul class="menu">
-                                <li><!-- start message -->
-                                    <a href="#">
-                                        <div class="pull-left">
-                                            <!-- User Image -->
-                                            <img src="/img/user2-160x160.jpg" class="img-circle" alt="User Image"/>
-                                        </div>
-                                        <!-- Message title and timestamp -->
-                                        <h4>
-                                            Support Team
-                                            <small><i class="fa fa-clock-o"></i> 5 mins</small>
-                                        </h4>
-                                        <!-- The message -->
-                                        <p>Why not buy a new awesome theme?</p>
-                                    </a>
-                                </li><!-- end message -->
-                            </ul><!-- /.menu -->
-                        </li>
-                        <li class="footer"><a href="#">See All Messages</a></li>
-                    </ul>
-                </li><!-- /.messages-menu --> --}}
 
-                <!-- Notifications Menu -->
                 <li class="notification-bell-container">
                     <a href="#" id="notification-bell" class="notification-bell">
                         <i class="fa fa-bell"></i>
                         <span id="notification-badge" class="notification-badge hidden">0</span>
                     </a>
                 </li>
-                <!-- Tasks Menu -->
-                {{-- <li class="dropdown tasks-menu">
-                    <!-- Menu Toggle Button -->
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-flag-o"></i>
-                        <span class="label label-danger">9</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li class="header">You have 9 tasks</li>
-                        <li>
-                            <!-- Inner menu: contains the tasks -->
-                            <ul class="menu">
-                                <li><!-- Task item -->
-                                    <a href="#">
-                                        <!-- Task title and progress text -->
-                                        <h3>
-                                            Design some buttons
-                                            <small class="pull-right">20%</small>
-                                        </h3>
-                                        <!-- The progress bar -->
-                                        <div class="progress xs">
-                                            <!-- Change the css width attribute to simulate progress -->
-                                            <div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="sr-only">20% Complete</span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li><!-- end task item -->
-                            </ul>
-                        </li>
-                        <li class="footer">
-                            <a href="#">View all tasks</a>
-                        </li>
-                    </ul>
-                </li> --}}
                 
                 @if (Auth::guest())
                     <li><a href="{{ url('/login') }}">Login</a></li>
-                    {{-- <li><a href="{{ url('/register') }}">Register</a></li> --}}
                 @else
-                    <!-- User Account Menu -->
                     <li class="dropdown user user-menu">
-                        <!-- Menu Toggle Button -->
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            <!-- The user image in the navbar-->
-                            {{-- <img src="/img/user2-160x160.jpg" class="user-image" alt="User Image"/> --}}
-                            <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="hidden-xs">{{ Auth::user()->name }}</span>
+                            <i class="fa fa-angle-down" style="margin-left: 5px;"></i>
                         </a>
                         <ul class="dropdown-menu">
-                            <!-- The user image in the menu -->
-                            {{-- <li class="user-header">
-                                <img src="/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
-                                <p>
-                                    {{ Auth::user()->name }}
-                                    <small>Member since Nov. 2012</small>
-                                </p>
-                            </li>
-                            <!-- Menu Body -->
-                            <li class="user-body">
-                                <div class="col-xs-4 text-center">
-                                    <a href="#">Followers</a>
-                                </div>
-                                <div class="col-xs-4 text-center">
-                                    <a href="#">Sales</a>
-                                </div>
-                                <div class="col-xs-4 text-center">
-                                    <a href="#">Friends</a>
-                                </div>
-                            </li> --}}
-                            <!-- Menu Footer-->
                             <li class="user-footer">
-                                {{-- <div class="pull-left">
-                                    <a href="#" class="btn btn-default btn-flat">Profile</a>
-                                </div> --}}
-                                <div class="pull-right">
-                                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-default btn-flat" style="border: none; background: transparent; color: inherit; cursor: pointer;">
-                                            Sign out
-                                        </button>
-                                    </form>
-                                </div>
+                                <form method="POST" action="{{ route('logout') }}" style="display: block; width: 100%;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-flat btn-logout">
+                                        Sign out
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </li>
                 @endif
-
-                <!-- Control Sidebar Toggle Button -->
-                <li>
-                    {{-- <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a> --}}
-                </li>
             </ul>
         </div>
     </nav>

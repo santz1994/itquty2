@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Traits\DatabaseInspector;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use App\User;
@@ -14,6 +15,7 @@ use App\AssetRequest;
 
 class AdminController extends Controller
 {
+    use DatabaseInspector;
     public function __construct()
     {
         $this->middleware(['auth', 'role:super-admin']);
@@ -326,10 +328,10 @@ class AdminController extends Controller
     private function getDatabaseStats()
     {
         try {
-            $tables = DB::select('SHOW TABLES');
+            $tables = $this->getAllTables();
             return [
                 'total_tables' => count($tables),
-                'database_size' => 'Unknown' // Would calculate actual size
+                'database_size' => 'Unknown' // Size available via trait if needed
             ];
         } catch (\Exception $e) {
             return ['total_tables' => 0, 'database_size' => 'Unknown'];
@@ -339,15 +341,16 @@ class AdminController extends Controller
     private function getTableInfo()
     {
         try {
-            $tables = DB::select('SHOW TABLE STATUS');
+            $tables = $this->getAllTables();
             $result = [];
-            foreach ($tables as $table) {
+            foreach ($tables as $tableName) {
+                $stats = $this->getTableStatsAgnostic($tableName);
                 $result[] = [
-                    'name' => $table->Name,
-                    'rows' => $table->Rows,
-                    'size' => round($table->Data_length / 1024 / 1024, 2) . ' MB',
-                    'engine' => $table->Engine,
-                    'created' => $table->Create_time
+                    'name' => $tableName,
+                    'rows' => $stats->row_count ?? null,
+                    'size' => isset($stats->total_size) ? round($stats->total_size / 1024 / 1024, 2) . ' MB' : 'Unknown',
+                    'engine' => null,
+                    'created' => null
                 ];
             }
             return $result;
@@ -376,30 +379,46 @@ class AdminController extends Controller
 
     private function optimizeTables()
     {
-        $tables = DB::select('SHOW TABLES');
-        foreach ($tables as $table) {
-            $tableName = array_values((array) $table)[0];
-            DB::statement("OPTIMIZE TABLE `$tableName`");
+        $tables = $this->getAllTables();
+        foreach ($tables as $tableName) {
+            try {
+                // OPTIMIZE TABLE is MySQL-specific; skip for other drivers
+                if (DB::connection()->getDriverName() === 'mysql') {
+                    DB::statement("OPTIMIZE TABLE `{$tableName}`");
+                }
+            } catch (\Exception $e) {
+                // ignore per-table errors
+            }
         }
     }
 
     private function repairTables()
     {
-        $tables = DB::select('SHOW TABLES');
-        foreach ($tables as $table) {
-            $tableName = array_values((array) $table)[0];
-            DB::statement("REPAIR TABLE `$tableName`");
+        $tables = $this->getAllTables();
+        foreach ($tables as $tableName) {
+            try {
+                if (DB::connection()->getDriverName() === 'mysql') {
+                    DB::statement("REPAIR TABLE `{$tableName}`");
+                }
+            } catch (\Exception $e) {
+                // ignore per-table errors
+            }
         }
     }
 
     private function checkTables()
     {
-        $tables = DB::select('SHOW TABLES');
+        $tables = $this->getAllTables();
         $errors = 0;
-        foreach ($tables as $table) {
-            $tableName = array_values((array) $table)[0];
-            $result = DB::select("CHECK TABLE `$tableName`");
-            if ($result[0]->Msg_text !== 'OK') {
+        foreach ($tables as $tableName) {
+            try {
+                if (DB::connection()->getDriverName() === 'mysql') {
+                    $result = DB::select("CHECK TABLE `{$tableName}`");
+                    if (isset($result[0]) && ($result[0]->Msg_text ?? '') !== 'OK') {
+                        $errors++;
+                    }
+                }
+            } catch (\Exception $e) {
                 $errors++;
             }
         }
