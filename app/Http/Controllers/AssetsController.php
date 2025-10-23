@@ -70,28 +70,26 @@ class AssetsController extends Controller
 
         $assets = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        // Calculate asset statistics for dashboard - optimized with single query
-        $totalAssets = Asset::count();
-        
-        // Get status counts in a single query
-        $statusCounts = Asset::join('statuses', 'assets.status_id', '=', 'statuses.id')
-                             ->select('statuses.name', DB::raw('count(*) as total'))
-                             ->groupBy('statuses.name')
-                             ->pluck('total', 'name');
-
-        $deployed = $statusCounts->get('Deployed', 0);
-        $readyToDeploy = $statusCounts->get('Ready to Deploy', 0);
-        $repairs = $statusCounts->get('Out for Repair', 0);
-        $writtenOff = $statusCounts->get('Written off', 0);
+    // Get KPI statistics from service
+    $stats = $this->assetService->getAssetStatistics();
+    $totalAssets = $stats['total'] ?? 0;
+    $deployed = $stats['in_use'] ?? 0;
+    $readyToDeploy = $stats['in_stock'] ?? 0;
+    $repairs = $stats['in_repair'] ?? 0;
+    $writtenOff = $stats['disposed'] ?? 0;
 
         // Get filter options - ViewComposer will handle dropdown data
-        $types = AssetType::orderBy('type_name')->get();
-        $locations = Location::orderBy('location_name')->get();
+    $types = AssetType::orderBy('type_name')->get();
+    $locations = Location::orderBy('location_name')->get();
         $statuses = Status::orderBy('name')->get();
         $users = User::orderBy('name')->get();
+    // Assets by location for KPI widget
+    $assetsByLocation = $this->assetService->getAssetsByLocation();
+    $assetsByStatus = $this->assetService->assetsByStatusBreakdown();
+    $monthlyNewAssets = $this->assetService->monthlyNewAssets(6);
 
-        return view('assets.index', compact('assets', 'types', 'locations', 'statuses', 'users', 
-                                          'totalAssets', 'deployed', 'readyToDeploy', 'repairs', 'writtenOff'));
+    return view('assets.index', compact('assets', 'types', 'locations', 'statuses', 'users', 
+                      'totalAssets', 'deployed', 'readyToDeploy', 'repairs', 'writtenOff', 'assetsByLocation', 'assetsByStatus', 'monthlyNewAssets'));
     }
 
     /**
@@ -345,6 +343,45 @@ class AssetsController extends Controller
     }
 
     /**
+     * Download import errors as CSV when import_summary exists in session
+     */
+    public function downloadImportErrors()
+    {
+        if (!session()->has('import_summary')) {
+            abort(404);
+        }
+
+        $summary = session('import_summary');
+        $errors = $summary['errors'] ?? [];
+
+        $callback = function() use ($errors) {
+            $out = fopen('php://output', 'w');
+            // Header
+            fputcsv($out, ['row', 'messages', 'data']);
+
+            foreach ($errors as $err) {
+                $row = $err['row'] ?? '';
+                $messages = '';
+                if (!empty($err['errors'])) {
+                    $messages = implode('; ', $err['errors']);
+                } else {
+                    $messages = $err['error'] ?? '';
+                }
+                $data = isset($err['data']) ? json_encode($err['data']) : '';
+
+                fputcsv($out, [$row, $messages, $data]);
+            }
+
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="import_errors.csv"',
+        ]);
+    }
+
+    /**
      * Import assets from Excel
      */
     public function import(Request $request)
@@ -358,9 +395,27 @@ class AssetsController extends Controller
         ]);
 
         try {
+            $file = $request->file('file');
+
+            // If CSV, use fallback importer with row-level validation
+            if ($file->getClientOriginalExtension() === 'csv') {
+                $importer = new \App\Imports\AssetsCsvImport($file);
+                $result = $importer->import();
+
+                if (!empty($result['errors'])) {
+                    return redirect()->route('assets.importForm')
+                                     ->with('import_summary', $result);
+                }
+
+                return redirect()->route('assets.index')
+                                 ->with('success', 'Assets imported successfully!')
+                                 ->with('import_summary', $result);
+            }
+
+            // For Excel files, use the maatwebsite importer if available
             $excel = app(\Maatwebsite\Excel\Excel::class);
-            $excel->import(new \App\Imports\AssetsImport, $request->file('file'));
-            
+            $excel->import(new \App\Imports\AssetsImport, $file);
+
             return redirect()->route('assets.index')
                            ->with('success', 'Assets imported successfully!');
         } catch (\Exception $e) {

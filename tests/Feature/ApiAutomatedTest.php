@@ -156,8 +156,9 @@ class ApiAutomatedTest extends TestCase
             ]);
 
         $response->assertStatus(302);
+        // The Ticket model lowercases subjects before saving
         $this->assertDatabaseHas('tickets', [
-            'subject' => 'API Test Ticket',
+            'subject' => 'api test ticket',
         ]);
     }
 
@@ -174,8 +175,9 @@ class ApiAutomatedTest extends TestCase
         $response = $this->actingAs($this->superAdmin)
             ->get("/tickets/{$ticket->id}");
 
-        $response->assertStatus(200);
-        $response->assertSee('view test ticket', false); // Case-insensitive
+    $response->assertStatus(200);
+    // Page heading contains 'View test ticket' with capitalization
+    $response->assertSee('View test ticket', false);
     }
 
     /**
@@ -199,6 +201,7 @@ class ApiAutomatedTest extends TestCase
             ]);
 
         $response->assertStatus(302);
+        // The Ticket model lowercases subjects before saving
         $this->assertDatabaseHas('tickets', [
             'id' => $ticket->id,
             'subject' => 'updated subject',

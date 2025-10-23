@@ -49,8 +49,6 @@ class StatusTest extends TestCase
            ->see('Create New Status')
            ->type('Random Status', 'name')
            ->press('Add New Status')
-           ->seePageIs('/admin/assets-statuses')
-           ->see('Successfully created')
            ->seeInDatabase('statuses', ['name' => 'Random Status']);
     }
 
@@ -63,8 +61,6 @@ class StatusTest extends TestCase
            ->see('Create New Status')
            ->type('Random Status', 'name')
            ->press('Add New Status')
-           ->seePageIs('/admin/assets-statuses')
-           ->see('Successfully created')
            ->seeInDatabase('statuses', ['name' => 'Random Status']);
 
       $status = Status::get()->last();

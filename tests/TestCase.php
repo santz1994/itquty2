@@ -76,6 +76,9 @@ abstract class TestCase extends BaseTestCase
         return $app;
     }
 
+    // Note: static seeding was removed due to bootstrap-time container issues.
+    // Runtime seeding is performed in createApplication() and setUp() instead.
+
     protected function setUp(): void
     {
         parent::setUp();

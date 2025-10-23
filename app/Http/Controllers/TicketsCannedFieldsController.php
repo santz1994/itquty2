@@ -25,6 +25,11 @@ class TicketsCannedFieldsController extends Controller
 
   public function index()
   {
+    $user = auth()->user();
+    if (!$user || $user->role !== 'super-admin') {
+      abort(403);
+    }
+
     $pageTitle = 'Canned Ticket Fields';
     $ticketsCannedFields = TicketsCannedField::all();
     $ticketsPriorities = TicketsPriority::all();
@@ -37,6 +42,11 @@ class TicketsCannedFieldsController extends Controller
 
   public function store(StoreTicketsCannedFieldRequest $request)
   {
+    $user = auth()->user();
+    if (!$user || $user->role !== 'super-admin') {
+      abort(403);
+    }
+
     $ticketsCannedField = TicketsCannedField::create($request->validated());
 
     Session::flash('status', 'success');
@@ -62,6 +72,11 @@ class TicketsCannedFieldsController extends Controller
 
   public function edit(TicketsCannedField $ticketsCannedField)
   {
+    $user = auth()->user();
+    if (!$user || $user->role !== 'super-admin') {
+      abort(403);
+    }
+
     $pageTitle = 'Edit Ticket Canned Fields - ' . $ticketsCannedField->subject;
     $ticketsPriorities = TicketsPriority::all();
     $ticketsStatuses = TicketsStatus::all();
@@ -73,6 +88,11 @@ class TicketsCannedFieldsController extends Controller
 
   public function update(StoreTicketsCannedFieldRequest $request, TicketsCannedField $ticketsCannedField)
   {
+    $user = auth()->user();
+    if (!$user || $user->role !== 'super-admin') {
+      abort(403);
+    }
+
     $ticketsCannedField->update($request->validated());
 
     Session::flash('status', 'success');

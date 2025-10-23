@@ -190,6 +190,16 @@ class User extends Authenticatable
   }
 
   /**
+   * Backwards-compatibility accessor for legacy code that expects a
+   * string $user->role property. Returns the first assigned role name
+   * (if any) or null.
+   */
+  public function getRoleAttribute()
+  {
+    return $this->roles->first()?->name ?? null;
+  }
+
+  /**
    * Get user's role color for UI
    */
   protected function roleColor(): Attribute

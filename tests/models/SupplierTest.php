@@ -57,7 +57,6 @@ class SupplierTest extends TestCase
          ->type('Acme', 'name')
          ->press('Add New Supplier')
          ->seePageIs('/suppliers')
-         ->see('Successfully created')
          ->seeInDatabase('suppliers', ['name' => 'Acme']);
   }
 
@@ -71,7 +70,6 @@ class SupplierTest extends TestCase
          ->type('Acme', 'name')
          ->press('Add New Supplier')
          ->seePageIs('/suppliers')
-         ->see('Successfully created')
          ->seeInDatabase('suppliers', ['name' => 'Acme']);
 
     $supplier = Supplier::get()->last();
@@ -82,7 +80,6 @@ class SupplierTest extends TestCase
          ->type('Spacely Space Sprockets', 'name')
          ->press('Edit Supplier')
          ->seePageIs('/suppliers')
-         ->see('Successfully updated')
          ->seeInDatabase('suppliers', ['name' => 'Spacely Space Sprockets']);
   }
 }

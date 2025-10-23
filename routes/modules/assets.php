@@ -37,6 +37,7 @@ Route::middleware(['web', 'auth', 'role:admin|super-admin'])->group(function () 
     Route::get('/assets/export', [\App\Http\Controllers\AssetsController::class, 'export'])->name('assets.export');
     Route::get('/assets/import-form', [\App\Http\Controllers\AssetsController::class, 'importForm'])->name('assets.import-form');
     Route::post('/assets/import', [\App\Http\Controllers\AssetsController::class, 'import'])->name('assets.import');
+    Route::get('/assets/import-errors-download', [\App\Http\Controllers\AssetsController::class, 'downloadImportErrors'])->name('assets.import-errors-download');
     Route::get('/assets/download-template', [\App\Http\Controllers\AssetsController::class, 'downloadTemplate'])->name('assets.download-template');
     Route::get('/assets/{asset}/print', [\App\Http\Controllers\AssetsController::class, 'print'])->name('assets.print');
     

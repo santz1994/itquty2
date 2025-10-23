@@ -88,6 +88,62 @@
     </div>
   </div>
   <div class="row">
+    <div class="col-md-4">
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title">Assets by Status</h3>
+        </div>
+        <div class="box-body">
+          @if(!empty($assetsByStatus) && count($assetsByStatus) > 0)
+            <table class="table table-condensed">
+              <thead>
+                <tr><th>Status</th><th class="text-right">Count</th></tr>
+              </thead>
+              <tbody>
+                @foreach($assetsByStatus as $s)
+                  <tr>
+                    <td>{{ $s->status_name }}</td>
+                    <td class="text-right">{{ $s->count }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          @else
+            <p>No data available</p>
+          @endif
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="box box-warning">
+        <div class="box-header with-border">
+          <h3 class="box-title">New Assets (Last 6 months)</h3>
+        </div>
+        <div class="box-body">
+          @if(!empty($monthlyNewAssets) && count($monthlyNewAssets) > 0)
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr><th>Month</th><th class="text-right">New Assets</th></tr>
+                </thead>
+                <tbody>
+                  @foreach($monthlyNewAssets as $m)
+                    <tr>
+                      <td>{{ $m['month'] ?? $m->month ?? 'N/A' }}</td>
+                      <td class="text-right">{{ $m['count'] ?? $m->count ?? 0 }}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          @else
+            <p>No recent assets</p>
+          @endif
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-md-12 col-xs-12 col-lg-12">
       <div class="box box-primary">
         <div class="box-body">

@@ -38,6 +38,9 @@ if (file_exists($legacy)) {
         }
         return redirect('/login');
     });
+    
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard.index')->middleware('auth');
 }
 
 // ========================================

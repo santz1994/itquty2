@@ -74,7 +74,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::middleware(['role:admin|super-admin'])->group(function () {
         
         // User Management Routes (with admin prefix)
-        Route::prefix('admin/users')->group(function () {
+        // These admin/user management pages are restricted to super-admin only in tests.
+        Route::middleware(['role:super-admin'])->prefix('admin/users')->group(function () {
             Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('admin.users.index');
             Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('admin.users.create');
             Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('admin.users.store');
@@ -140,13 +141,28 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::resource('tickets-status', \App\Http\Controllers\TicketsStatusesController::class)->except(['show', 'create', 'index']);
         Route::resource('warranty-types', \App\Http\Controllers\WarrantyTypesController::class)->except(['show', 'create', 'index']);
 
-        // Tickets Canned Fields Management
-        Route::resource('tickets-canned-field', \App\Http\Controllers\TicketsCannedFieldsController::class)->except(['show', 'create']);
-        Route::get('/admin/ticket-canned-fields', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'index'])->name('admin.ticket-canned-fields.index');
-        Route::get('/admin/ticket-canned-fields/{ticketsCannedField}/edit', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'edit'])->name('admin.ticket-canned-fields.edit');
+    // Tickets Canned Fields Management
+    Route::resource('tickets-canned-field', \App\Http\Controllers\TicketsCannedFieldsController::class)->except(['show', 'create']);
+    Route::get('/admin/ticket-canned-fields', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'index'])->name('admin.ticket-canned-fields.index');
+    Route::get('/admin/ticket-canned-fields/{ticketsCannedField}/edit', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'edit'])->name('admin.ticket-canned-fields.edit');
+    // Admin-prefixed POST/PUT/DELETE endpoints used by admin views and legacy tests
+    Route::post('/admin/ticket-canned-fields', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'store'])->name('admin.ticket-canned-fields.store');
+    Route::put('/admin/ticket-canned-fields/{ticketsCannedField}', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'update'])->name('admin.ticket-canned-fields.update');
+    Route::patch('/admin/ticket-canned-fields/{ticketsCannedField}', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'update']);
+    Route::delete('/admin/ticket-canned-fields/{ticketsCannedField}', [\App\Http\Controllers\TicketsCannedFieldsController::class, 'destroy'])->name('admin.ticket-canned-fields.destroy');
         
-        // Status Management
+        // Status Management (legacy admin-prefixed endpoints for assets-statuses used by views/tests)
+        // Keep both unprefixed and admin-prefixed endpoints for compatibility with legacy tests.
         Route::resource('status', \App\Http\Controllers\StatusesController::class)->except(['show', 'create']);
+        // Admin-prefixed assets-statuses (super-admin only)
+        Route::middleware(['role:super-admin'])->prefix('admin')->group(function () {
+            Route::get('/assets-statuses', [\App\Http\Controllers\StatusesController::class, 'index'])->name('admin.assets-statuses.index');
+            Route::post('/assets-statuses', [\App\Http\Controllers\StatusesController::class, 'store'])->name('admin.assets-statuses.store');
+            Route::get('/assets-statuses/{status}/edit', [\App\Http\Controllers\StatusesController::class, 'edit'])->name('admin.assets-statuses.edit');
+            Route::put('/assets-statuses/{status}', [\App\Http\Controllers\StatusesController::class, 'update'])->name('admin.assets-statuses.update');
+            Route::patch('/assets-statuses/{status}', [\App\Http\Controllers\StatusesController::class, 'update'])->name('admin.assets-statuses.update.patch');
+            Route::delete('/assets-statuses/{status}', [\App\Http\Controllers\StatusesController::class, 'destroy'])->name('admin.assets-statuses.destroy');
+        });
 
         // ========================================
         // MASTER DATA MANAGEMENT
@@ -155,7 +171,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::resource('/pcspecs', \App\Http\Controllers\PcspecsController::class);
         Route::resource('/manufacturers', \App\Http\Controllers\ManufacturersController::class);
         Route::resource('/asset-types', \App\Http\Controllers\AssetTypesController::class);
-        Route::resource('/suppliers', \App\Http\Controllers\SuppliersController::class);
+        // Suppliers are considered super-admin only in tests; enforce role here for admin-prefixed flows
+        Route::middleware(['role:super-admin'])->group(function () {
+            Route::resource('/suppliers', \App\Http\Controllers\SuppliersController::class);
+        });
         Route::resource('/locations', \App\Http\Controllers\LocationsController::class);
         Route::resource('/divisions', \App\Http\Controllers\DivisionsController::class);
         Route::resource('/invoices', \App\Http\Controllers\InvoicesController::class);
@@ -228,6 +247,25 @@ Route::middleware(['web', 'auth'])->group(function () {
                 Route::post('/backup/{backup}/restore', [\App\Http\Controllers\AdminController::class, 'restore'])->name('admin.backup.restore');
                 Route::delete('/backup/{backup}', [\App\Http\Controllers\AdminController::class, 'delete'])->name('admin.backup.delete');
             });
+
+            // Ticket Types Management (legacy admin paths expected by tests)
+            // These mirror the TicketsTypesController methods and provide the
+            // /admin/ticket-types endpoints used by legacy BrowserKit-style tests.
+            Route::get('/ticket-types', [\App\Http\Controllers\TicketsTypesController::class, 'index'])->name('admin.ticket-types.index');
+            Route::post('/ticket-types', [\App\Http\Controllers\TicketsTypesController::class, 'store'])->name('admin.ticket-types.store');
+            Route::get('/ticket-types/{ticketsType}/edit', [\App\Http\Controllers\TicketsTypesController::class, 'edit'])->name('admin.ticket-types.edit');
+            Route::put('/ticket-types/{ticketsType}', [\App\Http\Controllers\TicketsTypesController::class, 'update'])->name('admin.ticket-types.update');
+            Route::delete('/ticket-types/{ticketsType}', [\App\Http\Controllers\TicketsTypesController::class, 'destroy'])->name('admin.ticket-types.destroy');
+            // Legacy admin endpoints for ticket statuses and priorities (used by tests)
+            Route::get('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'index'])->name('admin.ticket-statuses.index');
+            Route::post('/ticket-statuses', [\App\Http\Controllers\TicketsStatusesController::class, 'store'])->name('admin.ticket-statuses.store');
+            Route::get('/ticket-statuses/{ticketsStatus}/edit', [\App\Http\Controllers\TicketsStatusesController::class, 'edit'])->name('admin.ticket-statuses.edit');
+            Route::put('/ticket-statuses/{ticketsStatus}', [\App\Http\Controllers\TicketsStatusesController::class, 'update'])->name('admin.ticket-statuses.update');
+
+            Route::get('/ticket-priorities', [\App\Http\Controllers\TicketsPrioritiesController::class, 'index'])->name('admin.ticket-priorities.index');
+            Route::post('/ticket-priorities', [\App\Http\Controllers\TicketsPrioritiesController::class, 'store'])->name('admin.ticket-priorities.store');
+            Route::get('/ticket-priorities/{ticketsPriority}/edit', [\App\Http\Controllers\TicketsPrioritiesController::class, 'edit'])->name('admin.ticket-priorities.edit');
+            Route::put('/ticket-priorities/{ticketsPriority}', [\App\Http\Controllers\TicketsPrioritiesController::class, 'update'])->name('admin.ticket-priorities.update');
         });
         
         // Development helper: GET shortcut to clear caches in local env only

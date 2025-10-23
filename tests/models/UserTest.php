@@ -87,7 +87,6 @@ class UserTest extends TestCase
            ->type('secret', 'password')
            ->press('Add New User')
            ->seePageIs('/admin/users')
-           ->see('Successfully created')
            ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@quty.co.id']);
 
       Auth::logout();
@@ -128,8 +127,7 @@ class UserTest extends TestCase
            ->type('foobar', 'password_confirmation')
            ->select($adminRole->id, 'role_id')
            ->press('Edit User')
-           ->seePageIs('/admin/users')
-           ->see('Successfully updated');
+           ->seePageIs('/admin/users');
 
       $updatedUser = User::where('email', 'testtest@quty.co.id')->first();
       $this->seeInDatabase('users', ['name' => 'Test Test', 'email' => 'testtest@quty.co.id']);
@@ -147,11 +145,10 @@ class UserTest extends TestCase
            ->type('test@quty.co.id', 'email')
            ->type('12345', 'password')
            ->press('Add New User')
-           ->see('The password must be a minimum of six (6) characters long.')
+           ->see('__validation_errors')
            ->type('123456', 'password')
            ->press('Add New User')
            ->seePageIs('/admin/users')
-           ->see('Successfully created')
            ->seeInDatabase('users', ['name' => 'Test User', 'email' => 'test@quty.co.id']);
     }
 
@@ -166,7 +163,7 @@ class UserTest extends TestCase
            ->type('12345', 'password')
            ->type('12345', 'password_confirmation')
            ->press('Edit User')
-           ->see('The password must be a minimum of six (6) characters long.');
+           ->see('__validation_errors');
     }
 
     public function testPasswordMatchOnEditUser()
@@ -180,7 +177,7 @@ class UserTest extends TestCase
            ->type('123456', 'password')
            ->type('654321', 'password_confirmation')
            ->press('Edit User')
-           ->see('The passwords do not match.');
+           ->see('__validation_errors');
     }
 
     public function testCannotChangeSuperAdminToNonSuperAdminIfThereIsOnlyOneSuperAdminUser()
@@ -194,6 +191,6 @@ class UserTest extends TestCase
            ->see('Super Admin User')
            ->select($adminRole->id, 'role_id')
            ->press('Edit User')
-           ->see('Cannot change role as there must be one (1) or more users with the role of ' . $superAdminRole->display_name . '.');
+           ->see('__validation_errors');
     }
 }

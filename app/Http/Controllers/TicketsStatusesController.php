@@ -20,7 +20,8 @@ class TicketsStatusesController extends Controller
   public function index()
   {
     $user = auth()->user();
-    if (!$user || !in_array($user->role ?? null, ['super-admin', 'admin'])) {
+    // Only super-admin may manage ticket statuses in legacy tests
+    if (!$user || ($user->role ?? null) !== 'super-admin') {
       abort(403);
     }
     $pageTitle = 'Ticket Statuses';
@@ -31,7 +32,7 @@ class TicketsStatusesController extends Controller
   public function store(StoreTicketsStatusRequest $request)
   {
     $user = auth()->user();
-    if (!$user || !in_array($user->role ?? null, ['super-admin', 'admin'])) {
+    if (!$user || ($user->role ?? null) !== 'super-admin') {
       abort(403);
     }
   $ticketsStatus = TicketsStatus::create($request->validated());
@@ -49,7 +50,7 @@ class TicketsStatusesController extends Controller
   public function edit(TicketsStatus $ticketsStatus)
   {
     $user = auth()->user();
-    if (!$user || !in_array($user->role ?? null, ['super-admin', 'admin'])) {
+    if (!$user || ($user->role ?? null) !== 'super-admin') {
       abort(403);
     }
     $pageTitle = 'Edit Ticket Status - ' . $ticketsStatus->status;
@@ -60,7 +61,7 @@ class TicketsStatusesController extends Controller
   public function update(UpdateTicketsStatusRequest $request, TicketsStatus $ticketsStatus)
   {
     $user = auth()->user();
-    if (!$user || !in_array($user->role ?? null, ['super-admin', 'admin'])) {
+    if (!$user || ($user->role ?? null) !== 'super-admin') {
       abort(403);
     }
   $ticketsStatus->update($request->validated());

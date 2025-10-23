@@ -22,20 +22,25 @@ class AssetsImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function model(array $row)
     {
-        // Find related models by name or create new ones
-        $model = AssetModel::where('name', $row['model'])->first();
-        $division = Division::where('name', $row['division'])->first();
-        $supplier = Supplier::where('name', $row['supplier'])->first();
-        $status = Status::where('name', $row['status'])->first() ?: Status::first();
+        // Lookup related models by name; do not auto-create to avoid DB integrity
+        // errors in environments (tests) where additional fields are required.
+        $model = AssetModel::where('asset_model', $row['model'] ?? null)->first();
+        $division = Division::where('name', $row['division'] ?? null)->first();
+        $supplier = Supplier::where('name', $row['supplier'] ?? null)->first();
+
+        $status = Status::where('name', $row['status'] ?? null)->first();
+        if (!$status) {
+            $status = Status::first();
+        }
+
         $assignedTo = null;
-        
         if (!empty($row['assigned_to'])) {
             $assignedTo = User::where('name', $row['assigned_to'])->first();
         }
 
         return new Asset([
-            'asset_tag' => $row['asset_tag'],
-            'serial_number' => $row['serial_number'],
+            'asset_tag' => $row['asset_tag'] ?? null,
+            'serial_number' => $row['serial_number'] ?? null,
             'model_id' => $model ? $model->id : null,
             'division_id' => $division ? $division->id : null,
             'supplier_id' => $supplier ? $supplier->id : null,
@@ -43,7 +48,7 @@ class AssetsImport implements ToModel, WithHeadingRow, WithValidation
             'warranty_months' => $row['warranty_months'] ?? null,
             'ip_address' => $row['ip_address'] ?? null,
             'mac_address' => $row['mac_address'] ?? null,
-            'status_id' => $status->id,
+            'status_id' => $status?->id,
             'assigned_to' => $assignedTo ? $assignedTo->id : null,
             'notes' => $row['notes'] ?? null,
         ]);

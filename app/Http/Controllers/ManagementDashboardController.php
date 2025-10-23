@@ -124,6 +124,8 @@ class ManagementDashboardController extends Controller
             'total_tickets_today' => Ticket::whereDate('created_at', today())->count(),
             'total_tickets_month' => Ticket::whereMonth('created_at', now()->month)->count(),
             'overdue_tickets' => $this->ticketService->getOverdueTickets()->count(),
+            // Provide a small list of recent overdue tickets for the widget
+            'recent_overdue_tickets' => $this->ticketService->getOverdueTickets()->sortByDesc('created_at')->take(5),
             'unassigned_tickets' => $this->ticketService->getUnassignedTickets()->count(),
             'total_assets' => Asset::count(),
             'active_admins' => User::role('admin')->whereHas('adminOnlineStatus', function($q) {

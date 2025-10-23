@@ -92,6 +92,11 @@
             </div>
         </div>
 
+        <!-- Overdue Tickets Widget Row -->
+        <div class="row">
+            <?php echo $__env->make('management.widgets.overdue-tickets', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        </div>
+
         <!-- Modern KPI Cards - Row 2: System Overview -->
         <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-12">

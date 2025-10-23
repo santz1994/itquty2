@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Exception;
@@ -27,9 +28,25 @@ class AssetService
             if (isset($data['generate_qr']) && $data['generate_qr']) {
                 $this->generateQRCode($asset);
             }
-            
+            // Invalidate KPI cache after creating
+            $this->invalidateKpiCache();
             return $asset;
         });
+    }
+
+    public function invalidateKpiCache()
+    {
+        try {
+            Cache::forget('asset_statistics');
+            Cache::forget('assets_by_location');
+            Cache::forget('assets_by_status');
+            // Clear monthly caches for common window sizes (1..12 months)
+            for ($m = 1; $m <= 12; $m++) {
+                Cache::forget('assets_monthly_new_' . $m);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to clear KPI cache: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -44,7 +61,8 @@ class AssetService
             if (isset($data['regenerate_qr']) && $data['regenerate_qr']) {
                 $this->generateQRCode($asset);
             }
-            
+            // Invalidate KPI cache after update
+            $this->invalidateKpiCache();
             return $asset;
         });
     }
@@ -112,6 +130,8 @@ class AssetService
             //     'notes' => 'Asset assigned to user'
             // ]);
             
+            // Invalidate KPI cache after assign
+            $this->invalidateKpiCache();
             return $asset;
         });
     }
@@ -138,6 +158,8 @@ class AssetService
             //     'notes' => 'Asset returned/unassigned'
             // ]);
             
+            // Invalidate KPI cache after unassign
+            $this->invalidateKpiCache();
             return $asset;
         });
     }
@@ -187,6 +209,9 @@ class AssetService
             $request->fulfill($asset->id);
             $this->assignAsset($asset, $request->requested_by);
 
+            // Invalidate KPI cache after fulfillment
+            $this->invalidateKpiCache();
+
             return $request;
         });
     }
@@ -196,17 +221,19 @@ class AssetService
      */
     public function getAssetStatistics()
     {
-        return [
-            'total' => Asset::count(),
-            'in_use' => Asset::inUse()->count(),
-            'in_stock' => Asset::inStock()->count(),
-            'in_repair' => Asset::inRepair()->count(),
-            'disposed' => Asset::disposed()->count(),
-            'with_qr_codes' => Asset::whereNotNull('qr_code')->count(),
-            'lemon_assets' => Asset::whereHas('tickets', function($q) {
-                $q->where('created_at', '>=', now()->subMonths(6));
-            }, '>=', 3)->count()
-        ];
+        return Cache::remember('asset_statistics', 300, function () {
+            return [
+                'total' => Asset::count(),
+                'in_use' => Asset::inUse()->count(),
+                'in_stock' => Asset::inStock()->count(),
+                'in_repair' => Asset::inRepair()->count(),
+                'disposed' => Asset::disposed()->count(),
+                'with_qr_codes' => Asset::whereNotNull('qr_code')->count(),
+                'lemon_assets' => Asset::whereHas('tickets', function($q) {
+                    $q->where('created_at', '>=', now()->subMonths(6));
+                }, '>=', 3)->count()
+            ];
+        });
     }
 
     /**
@@ -214,11 +241,48 @@ class AssetService
      */
     public function getAssetsByLocation()
     {
-        return Asset::select('divisions.name as division_name', DB::raw('count(*) as count'))
-                   ->join('divisions', 'assets.division_id', '=', 'divisions.id')
-                   ->groupBy('divisions.name')
-                   ->orderBy('count', 'desc')
-                   ->get();
+        return Cache::remember('assets_by_location', 300, function () {
+            return Asset::select('divisions.name as division_name', DB::raw('count(*) as count'))
+                       ->join('divisions', 'assets.division_id', '=', 'divisions.id')
+                       ->groupBy('divisions.name')
+                       ->orderBy('count', 'desc')
+                       ->get();
+        });
+    }
+
+    /**
+     * Breakdown of assets by status
+     */
+    public function assetsByStatusBreakdown()
+    {
+        return Cache::remember('assets_by_status', 300, function () {
+            return Asset::select('statuses.name as status_name', DB::raw('count(*) as count'))
+                        ->join('statuses', 'assets.status_id', '=', 'statuses.id')
+                        ->groupBy('statuses.name')
+                        ->orderBy('count', 'desc')
+                        ->get();
+        });
+    }
+
+    /**
+     * Number of new assets per month for the last N months
+     */
+    public function monthlyNewAssets($months = 6)
+    {
+        $key = 'assets_monthly_new_' . intval($months);
+        return Cache::remember($key, 300, function () use ($months) {
+            $results = [];
+            for ($i = $months - 1; $i >= 0; $i--) {
+                $start = now()->startOfMonth()->subMonths($i)->toDateString();
+                $end = now()->endOfMonth()->subMonths($i)->toDateString();
+                $label = now()->subMonths($i)->format('Y-m');
+                $results[] = [
+                    'month' => $label,
+                    'count' => Asset::whereBetween('created_at', [$start, $end])->count()
+                ];
+            }
+            return collect($results);
+        });
     }
 
     /**
@@ -347,7 +411,9 @@ class AssetService
      */
     public function bulkUpdateAssets(array $assetIds, array $updateData)
     {
-        return Asset::whereIn('id', $assetIds)->update($updateData);
+        $result = Asset::whereIn('id', $assetIds)->update($updateData);
+        $this->invalidateKpiCache();
+        return $result;
     }
     
     /**

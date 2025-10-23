@@ -11,6 +11,7 @@ namespace Tests\Browser;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
 use App\User;
+use Spatie\Permission\Models\Role;
 use App\Ticket;
 use App\Asset;
 use App\AssetRequest;
@@ -38,7 +39,11 @@ class ComprehensiveAutomatedTest extends DuskTestCase
             'email' => 'test.superadmin@example.com',
             'password' => Hash::make('password123'),
         ]);
-        $this->superAdmin->assignRole('super-admin');
+                // Ensure roles exist (Dusk runs separate process/migrations so seeders may not have run)
+                Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+                Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+                Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+                $this->superAdmin->assignRole('super-admin');
 
         $this->admin = User::factory()->create([
             'name' => 'Test Admin',

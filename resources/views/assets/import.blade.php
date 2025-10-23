@@ -21,6 +21,55 @@
             <form action="{{ route('assets.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="box-body">
+                    @if (session('import_summary'))
+                        @php $summary = session('import_summary'); @endphp
+                        <div class="alert alert-success">
+                            <strong>{{ $summary['created'] ?? 0 }} assets imported.</strong>
+                        </div>
+
+                        @if (!empty($summary['errors']))
+                            <div class="box box-danger">
+                                <div class="box-header with-border">
+                                    <h4 class="box-title">Import Errors</h4>
+                                    <div class="box-tools pull-right">
+                                        <a href="{{ route('assets.import-errors-download') }}" class="btn btn-sm btn-warning">
+                                            <i class="fa fa-download"></i> Download Errors CSV
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="box-body">
+                                    <table class="table table-striped table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th>Row</th>
+                                                <th>Messages</th>
+                                                <th>Data</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach($summary['errors'] as $err)
+                                            <tr>
+                                                <td>{{ $err['row'] ?? '?' }}</td>
+                                                <td>
+                                                    @if(!empty($err['errors']))
+                                                        <ul class="mb-0">
+                                                            @foreach($err['errors'] as $m)
+                                                                <li>{{ $m }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                    @else
+                                                        {{ $err['error'] ?? 'Unknown error' }}
+                                                    @endif
+                                                </td>
+                                                <td><pre style="white-space:pre-wrap">{{ json_encode($err['data'] ?? [], JSON_PRETTY_PRINT) }}</pre></td>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
                     @if ($errors->any())
                         <div class="alert alert-danger">
                             <h4><i class="icon fa fa-ban"></i> Error!</h4>
