@@ -101,6 +101,14 @@ class Asset extends Model implements HasMedia
     return $this->belongsTo(Division::class);
   }
 
+  /**
+   * Location relation (assets have a location_id)
+   */
+  public function location()
+  {
+    return $this->belongsTo(Location::class, 'location_id');
+  }
+
   public function supplier()
   {
     return $this->belongsTo(Supplier::class);
@@ -109,6 +117,14 @@ class Asset extends Model implements HasMedia
   public function movement()
   {
     return $this->belongsTo(Movement::class);
+  }
+
+  /**
+   * Movements history for this asset (hasMany)
+   */
+  public function movements()
+  {
+    return $this->hasMany(Movement::class, 'asset_id');
   }
 
   public function warranty_type()
@@ -613,6 +629,17 @@ class Asset extends Model implements HasMedia
     } else {
       return 'Active';
     }
+  }
+
+  /**
+   * Convenience accessor to expose the asset type via the related model.
+   * Many views reference `$asset->assetType` for display; this accessor
+   * returns the related AssetType model (or null) while preserving the
+   * canonical relation which lives on AssetModel.
+   */
+  public function getAssetTypeAttribute()
+  {
+    return $this->model ? $this->model->asset_type : null;
   }
 
   /**

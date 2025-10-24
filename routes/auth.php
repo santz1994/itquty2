@@ -65,3 +65,36 @@ if (app()->environment('local')) {
         return redirect('/login')->with('message', '<strong>Session cleared!</strong> Please login again to refresh your roles.');
     });
 }
+
+// Registration routes (web)
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
+
+Route::post('/register', function (\Illuminate\Http\Request $request) {
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|confirmed|min:8',
+    ]);
+
+    $user = new \App\User();
+    $user->name = $data['name'];
+    $user->email = $data['email'];
+    $user->password = $data['password']; // User model hashes password via mutator
+    $user->is_active = true;
+    $user->save();
+
+    // Assign default role if Spatie roles exist
+    try {
+        if (\Spatie\Permission\Models\Role::where('name', 'user')->exists()) {
+            $user->assignRole('user');
+        }
+    } catch (\Exception $e) {
+        // ignore if permission tables not available
+    }
+
+    Auth::login($user);
+
+    return redirect()->intended('/home');
+});

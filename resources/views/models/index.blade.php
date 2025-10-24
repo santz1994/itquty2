@@ -47,11 +47,11 @@
             </thead>
             <tbody>
               @foreach($asset_models as $asset_model)
-                <tr>
-                    <td>{{$asset_model->manufacturer->name}}</td>
-                    <td>{{$asset_model->asset_model}}</td>
-                    <td>{{$asset_model->asset_type->type_name}}</td>
-                    <td>{{$asset_model->pcspec->cpu or ''}} {{$asset_model->pcspec->ram or ''}} {{$asset_model->pcspec->hdd or ''}}</td>
+        <tr>
+          <td>{{ optional($asset_model->manufacturer)->name }}</td>
+          <td>{{ $asset_model->asset_model }}</td>
+          <td>{{ optional($asset_model->asset_type)->type_name }}</td>
+          <td>{{ optional($asset_model->pcspec)->cpu }} {{ optional($asset_model->pcspec)->ram }} {{ optional($asset_model->pcspec)->hdd }}</td>
                     <td><a href="/models/{{ $asset_model->id }}/edit" class="btn btn-primary"><span class='fa fa-pencil' aria-hidden='true'></span> <b>Edit</b></a></td>
                 </tr>
               @endforeach

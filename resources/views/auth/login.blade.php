@@ -14,7 +14,7 @@
                 <h2 style="color: #333; margin: 0; font-weight: 700;">
                     <span style="color: #667eea;">IT</span><span style="color: #764ba2;">Support</span>
                 </h2>
-                <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Asset & Ticket Management System</p>
+                <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">IT Management System Quty</p>
             </div>
         </div>
 
@@ -95,7 +95,7 @@
                 </div>
 
                 <!-- Remember Me & Forgot Password -->
-                <div class="row" style="margin-bottom: 30px; align-items: center;">
+                <div class="row" style="margin-bottom: 10px; align-items: center;">
                     <div class="col-xs-6">
                         <div class="checkbox" style="margin: 0;">
                             <label style="color: #666; font-size: 14px; cursor: pointer;">
@@ -104,13 +104,18 @@
                             </label>
                         </div>
                     </div>
-                    <div class="col-xs-6" style="text-align: right;">
-                        <a href="{{ url('/password/reset') }}" 
+                </div>
+                <div class="row">
+                    <div class="col-xs-6" style="text-align: center;">
+                        <p>
+                            <a href="{{ url('/password/reset') }}" 
                            style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 500;">
                             Forgot Password?
-                        </a>
+                            </a>
+                        </p>
                     </div>
                 </div>
+
 
                 <!-- Login Button -->
                 <button type="submit" 

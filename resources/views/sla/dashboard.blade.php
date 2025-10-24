@@ -16,6 +16,30 @@
         </div>
     </div>
 
+    <!-- Page Info -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            @php
+                $driver = config('database.default');
+                $dbHost = config("database.connections.{${"driver"}}.host") ?? config("database.connections.{$driver}.host");
+                $dbName = config("database.connections.{$driver}.database");
+            @endphp
+            <div class="card border-info">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Page Info</h5>
+                        <small class="text-muted">App: {{ config('app.name') }} • Env: {{ config('app.env') }} • Laravel: {{ app()->version() }} • PHP: {{ PHP_VERSION }}</small>
+                    </div>
+                    <div class="text-right">
+                        <div><strong>DB:</strong> {{ $driver }} / {{ $dbName }}</div>
+                        <div class="text-muted small">Host: {{ $dbHost ?? 'n/a' }}</div>
+                        <div class="mt-2"><small>Logged in as: {{ optional(Auth::user())->name ?? 'Guest' }}</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filters -->
     <div class="row mb-3">
         <div class="col-md-12">
@@ -154,6 +178,30 @@
         </div>
     </div>
 
+    <!-- Small charts -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">SLA Compliance</h5>
+                    <div class="chart-card">
+                        <canvas id="slaComplianceChart" aria-label="SLA compliance chart" role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tickets by Priority</h5>
+                    <div class="chart-card">
+                        <canvas id="ticketsPriorityChart" aria-label="Tickets by priority chart" role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Average Times -->
     <div class="row mb-3">
         <div class="col-md-6">
@@ -261,7 +309,7 @@
                             </table>
                         </div>
                         
-                        @if($breachedTickets->hasPages())
+                        @if(method_exists($breachedTickets, 'hasPages') && $breachedTickets->hasPages())
                             <div class="mt-3">
                                 {{ $breachedTickets->appends(request()->query())->links() }}
                             </div>
@@ -365,7 +413,7 @@
                             </table>
                         </div>
                         
-                        @if($criticalTickets->hasPages())
+                        @if(method_exists($criticalTickets, 'hasPages') && $criticalTickets->hasPages())
                             <div class="mt-3">
                                 {{ $criticalTickets->appends(request()->query())->links() }}
                             </div>
@@ -460,5 +508,49 @@
     font-size: 2.5rem;
     font-weight: bold;
 }
+/* improved table responsiveness and minor visual tweaks */
+.table-responsive { overflow-x: auto; }
+.card .card-title { font-weight: 600; }
+.badge { font-size: .9rem; }
+.chart-card { height: 220px; max-height: 320px; position: relative; }
+.chart-card canvas { width: 100% !important; height: 220px !important; display: block; }
 </style>
+@endsection
+
+@section('scripts')
+<!-- Chart.js for small dashboard charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    try {
+        const slaMet = {{ json_encode($metrics['sla_met'] ?? 0) }};
+        const slaBreached = {{ json_encode($metrics['sla_breached'] ?? 0) }};
+
+        const slaCtx = document.getElementById('slaComplianceChart');
+        if (slaCtx && slaCtx.getContext) {
+            new Chart(slaCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['SLA Met','SLA Breached'],
+                    datasets: [{ data: [slaMet, slaBreached], backgroundColor: ['#28a745','#dc3545'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        const priorities = {!! json_encode($priorities->pluck('name')->toArray() ?? []) !!};
+        const ticketsByPriority = {!! json_encode($metrics['tickets_by_priority'] ?? []) !!};
+        const prCtx = document.getElementById('ticketsPriorityChart');
+        if (prCtx && prCtx.getContext && Array.isArray(priorities) && priorities.length) {
+            new Chart(prCtx.getContext('2d'), {
+                type: 'bar',
+                data: { labels: priorities, datasets: [{ label: 'Tickets', data: ticketsByPriority, backgroundColor: '#007bff' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+        }
+    } catch (e) {
+        console.warn('SLA dashboard init error', e);
+    }
+});
+</script>
 @endsection

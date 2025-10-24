@@ -80,8 +80,17 @@ class AssetsCsvImport
                     continue;
                 }
 
+                $tag = trim($rowData['asset tag'] ?? $rowData['asset_tag'] ?? '');
+
+                // Prevent DB unique constraint errors by skipping rows with duplicate asset tags.
+                if (!empty($tag) && \App\Asset::where('asset_tag', $tag)->exists()) {
+                    $this->errors[] = ['row' => $rowNumber, 'error' => 'Duplicate asset tag: ' . $tag, 'data' => $rowData];
+                    $rowIndex++;
+                    continue;
+                }
+
                 Asset::create([
-                    'asset_tag' => $rowData['asset tag'] ?? $rowData['asset_tag'] ?? null,
+                    'asset_tag' => $tag,
                     'serial_number' => $rowData['serial number'] ?? $rowData['serial_number'] ?? null,
                     'model_id' => $model->id,
                     'division_id' => $division->id,

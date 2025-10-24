@@ -144,8 +144,10 @@ class AssetsController extends Controller
      */
     public function show(Asset $asset)
     {
-        // Use scope for consistent eager loading
-        $asset->load(['assetType', 'location', 'user', 'manufacturer', 'status', 'tickets', 'movements']);
+    // Use scope for consistent eager loading. AssetType and Manufacturer are reached via the related model,
+    // so eager-load the nested relations `model.asset_type` and `model.manufacturer` instead of non-existent direct relations.
+    // Also eager-load `assignedTo` (alias for the user the asset is assigned to) and movements history.
+    $asset->load(['model.asset_type', 'model.manufacturer', 'location', 'assignedTo', 'status', 'tickets', 'movements']);
         
         return view('assets.show', compact('asset'));
     }
