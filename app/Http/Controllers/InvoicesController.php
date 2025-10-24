@@ -64,7 +64,9 @@ class InvoicesController extends Controller
     Session::flash('message', 'Successfully created');
 
     if (getenv('SLACK_ENABLED')) {
-      $message = "New Invoice Created: #{$invoice->invoice_number} - Order: {$invoice->order_number} - Total: {$invoice->total} - Supplier: {$invoice->supplier->name} - Division: {$invoice->division->name}";
+      $supplierName = optional($invoice->supplier)->name ?? 'N/A';
+      $divisionName = optional($invoice->division)->name ?? 'N/A';
+      $message = "New Invoice Created: #{$invoice->invoice_number} - Order: {$invoice->order_number} - Total: {$invoice->total} - Supplier: {$supplierName} - Division: {$divisionName}";
       $this->slack->notify($message);
     }
 

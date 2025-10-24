@@ -1,10 +1,135 @@
+<!DOCTYPE html>
+<html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="ZWWzEJmdbogDdO9598DBp8IWi2tVtcpevCZDfFtQ">
+    
+    <title>    Log in - IT Support System
+</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="http://192.168.1.122/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="http://192.168.1.122/favicon.png">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="http://192.168.1.122/css/AdminLTE.min.css">
+    
+    <!-- Custom Auth Styles -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .login-page {
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .login-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+            z-index: -1;
+        }
+        
+        /* Remove default AdminLTE login styles */
+        .login-box {
+            margin: 0 auto;
+        }
+        
+        .login-box-body {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        /* Form enhancements */
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+        
+        .alert {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .login-box {
+                width: 95% !important;
+                margin: 10px auto !important;
+            }
+            
+            .login-box-body {
+                padding: 25px 20px !important;
+            }
+            
+            .login-logo {
+                margin-bottom: 20px !important;
+            }
+            
+            .login-logo div {
+                padding: 20px !important;
+            }
+            
+            .login-logo h2 {
+                font-size: 24px !important;
+            }
+            
+            .login-logo i {
+                font-size: 36px !important;
+            }
+        }
+    </style>
+    
+    </head>
 
-<?php $__env->startSection('htmlheader_title'); ?>
-    Log in - IT Support System
-<?php $__env->stopSection(); ?>
-
-<?php $__env->startSection('main-content'); ?>
 <body class="hold-transition login-page" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
     <div class="login-box" style="width: 400px; margin: 5% auto;">
         <!-- Logo Section -->
@@ -19,34 +144,9 @@
         </div>
 
         <!-- Alert Messages -->
-        <?php if(count($errors) > 0): ?>
-            <div class="alert alert-danger" style="border-radius: 10px; border: none; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);">
-                <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                <strong>Login Failed!</strong> Please check your credentials.
-                <ul style="margin-top: 10px; margin-bottom: 0;">
-                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <li><?php echo e($error); ?></li>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <?php if(session('warning')): ?>
-            <div class="alert alert-warning" style="border-radius: 10px; border: none; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);">
-                <i class="fas fa-clock" style="margin-right: 8px;"></i>
-                <?php echo e(session('warning')); ?>
-
-            </div>
-        <?php endif; ?>
-
-        <?php if(session('message')): ?>
-            <div class="alert alert-info" style="border-radius: 10px; border: none; box-shadow: 0 4px 15px rgba(23, 162, 184, 0.2);">
-                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
-                <?php echo e(session('message')); ?>
-
-            </div>
-        <?php endif; ?>
-
+        
+        
+        
         <!-- Login Form -->
         <div class="login-box-body" style="background: white; border-radius: 15px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: none;">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -54,9 +154,8 @@
                 <p style="color: #666; margin: 0; font-size: 14px;">Sign in to access your IT Support dashboard</p>
             </div>
 
-            <form action="<?php echo e(url('/login')); ?>" method="post" id="loginForm">
-                <?php echo csrf_field(); ?>
-                
+            <form action="http://192.168.1.122/login" method="post" id="loginForm">
+                <input type="hidden" name="_token" value="ZWWzEJmdbogDdO9598DBp8IWi2tVtcpevCZDfFtQ" autocomplete="off">                
                 <!-- Email Field -->
                 <div class="form-group" style="margin-bottom: 25px;">
                     <label for="email" style="color: #555; font-weight: 500; margin-bottom: 8px; display: block;">
@@ -67,7 +166,7 @@
                            id="email"
                            name="email" 
                            placeholder="Enter your email address"
-                           value="<?php echo e(old('email')); ?>"
+                           value=""
                            required
                            style="height: 50px; border-radius: 10px; border: 2px solid #e1e5e9; padding: 0 20px; font-size: 16px; transition: all 0.3s ease;"
                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
@@ -107,7 +206,7 @@
                         </div>
                     </div>
                     <div class="col-xs-6" style="text-align: right;">
-                        <a href="<?php echo e(url('/password/reset')); ?>" 
+                        <a href="http://192.168.1.122/password/reset" 
                            style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 500;">
                             Forgot Password?
                         </a>
@@ -131,7 +230,7 @@
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                 <p style="color: #999; font-size: 12px; margin: 0;">
                     <i class="fas fa-shield-alt" style="margin-right: 5px;"></i>
-                    Secure login with session timeout (<?php echo e(config('session.lifetime')); ?> minutes)
+                    Secure login with session timeout (60 minutes)
                 </p>
                 <p style="color: #999; font-size: 12px; margin: 5px 0 0 0;">
                     <i class="fas fa-desktop" style="margin-right: 5px;"></i>
@@ -149,8 +248,12 @@
         </div>
     </div>
 
-    <?php echo $__env->make('layouts.partials.scripts_auth', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-
+    <!-- jQuery 2.1.4 -->
+<script src="http://192.168.1.122/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<!-- Bootstrap 3.3.2 JS -->
+<script src="http://192.168.1.122/js/bootstrap.min.js" type="text/javascript"></script>
+<!-- iCheck -->
+<script src="http://192.168.1.122/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
     <script>
         // Enhanced login form functionality
         $(document).ready(function() {
@@ -249,7 +352,7 @@
         // Session timeout warning
         let inactivityTimer;
         let warningTimer;
-        const sessionTimeout = <?php echo e(config('session.lifetime') * 60); ?>; // Convert to seconds
+        const sessionTimeout = 3600; // Convert to seconds
         const warningTime = sessionTimeout - 300; // Show warning 5 minutes before timeout
         
         function resetInactivityTimer() {
@@ -263,7 +366,7 @@
                     fetch('/extend-session', {
                         method: 'POST',
                         headers: {
-                            'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                            'X-CSRF-TOKEN': 'ZWWzEJmdbogDdO9598DBp8IWi2tVtcpevCZDfFtQ',
                             'Content-Type': 'application/json'
                         }
                     }).then(() => {
@@ -344,7 +447,17 @@
     </style>
 </body>
 
-<?php $__env->stopSection(); ?>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE JS -->
+<script src="http://192.168.1.122/js/app.min.js"></script>
 
 
-<?php echo $__env->make('layouts.auth', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/auth/login.blade.php ENDPATH**/ ?>
+</html>
+
+</html>

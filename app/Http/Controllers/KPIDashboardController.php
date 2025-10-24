@@ -9,6 +9,7 @@ use App\User;
 use App\DailyActivity;
 use Illuminate\Support\Facades\DB;
 
+
 class KPIDashboardController extends Controller
 {
     public function __construct()

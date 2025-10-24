@@ -348,7 +348,9 @@ class AssetsController extends Controller
     public function downloadImportErrors()
     {
         if (!session()->has('import_summary')) {
-            abort(404);
+            // Better user experience: redirect back to import form with a message
+            return redirect()->route('assets.import-form')
+                             ->with('error', 'No import summary available for download.');
         }
 
         $summary = session('import_summary');
@@ -403,7 +405,7 @@ class AssetsController extends Controller
                 $result = $importer->import();
 
                 if (!empty($result['errors'])) {
-                    return redirect()->route('assets.importForm')
+                    return redirect()->route('assets.import-form')
                                      ->with('import_summary', $result);
                 }
 

@@ -443,6 +443,58 @@ Route::get('/debug-current-user', function() {
     return $html;
 });
 
+// Temporary: Seed import_summary in session and redirect to download for testing
+Route::get('/debug-seed-import-summary', function() {
+    $summary = [
+        'errors' => [
+            ['row' => 2, 'errors' => ['Missing asset tag'], 'data' => ['name' => 'Sample Asset 1']],
+            ['row' => 5, 'errors' => ['Invalid model'], 'data' => ['name' => 'Sample Asset 2']],
+        ]
+    ];
+
+    session(['import_summary' => $summary]);
+
+    return redirect()->route('assets.import-errors-download');
+});
+
+// Debug: seed a sample import_summary and stream the CSV directly (no auth)
+Route::get('/debug-download-import-errors', function() {
+    $summary = [
+        'errors' => [
+            ['row' => 2, 'errors' => ['Missing asset tag'], 'data' => ['name' => 'Sample Asset 1']],
+            ['row' => 5, 'errors' => ['Invalid model'], 'data' => ['name' => 'Sample Asset 2']],
+        ]
+    ];
+
+    $errors = $summary['errors'] ?? [];
+
+    $callback = function() use ($errors) {
+        $out = fopen('php://output', 'w');
+        // Header
+        fputcsv($out, ['row', 'messages', 'data']);
+
+        foreach ($errors as $err) {
+            $row = $err['row'] ?? '';
+            $messages = '';
+            if (!empty($err['errors'])) {
+                $messages = implode('; ', $err['errors']);
+            } else {
+                $messages = $err['error'] ?? '';
+            }
+            $data = isset($err['data']) ? json_encode($err['data']) : '';
+
+            fputcsv($out, [$row, $messages, $data]);
+        }
+
+        fclose($out);
+    };
+
+    return response()->stream($callback, 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="import_errors_debug.csv"',
+    ]);
+});
+
 // Quick login routes for testing
 Route::get('/quick-login-superadmin', function() {
     Auth::loginUsingId(1);

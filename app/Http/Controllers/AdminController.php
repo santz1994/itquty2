@@ -591,15 +591,22 @@ class AdminController extends Controller
     public function optimize()
     {
         try {
-            // Get all tables
-            $tables = DB::select('SHOW TABLES');
-            $database = DB::getDatabaseName();
-            $key = "Tables_in_{$database}";
-            
+            // Get all tables in a DB-agnostic way (DatabaseInspector trait)
+            if (method_exists($this, 'getAllTables')) {
+                $tables = $this->getAllTables();
+            } else {
+                // fallback to Doctrine or empty
+                $tables = [];
+            }
+
+            $driver = DB::connection()->getDriverName();
+
             $optimizedTables = [];
-            foreach ($tables as $table) {
-                $tableName = $table->$key;
-                DB::statement("OPTIMIZE TABLE `{$tableName}`");
+            foreach ($tables as $tableName) {
+                // Only run OPTIMIZE on MySQL
+                if ($driver === 'mysql') {
+                    DB::statement("OPTIMIZE TABLE `{$tableName}`");
+                }
                 $optimizedTables[] = $tableName;
             }
             
