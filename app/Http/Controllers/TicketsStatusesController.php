@@ -6,9 +6,6 @@ use App\TicketsStatus;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\TicketsStatuses\StoreTicketsStatusRequest;
 use App\Http\Requests\TicketsStatuses\UpdateTicketsStatusRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class TicketsStatusesController extends Controller
 {

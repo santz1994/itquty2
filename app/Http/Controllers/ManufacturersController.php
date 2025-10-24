@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Manufacturer;
 use App\Http\Requests\Manufacturers\StoreManufacturerRequest;
 use App\Http\Requests\Manufacturers\UpdateManufacturerRequest;
-use Illuminate\Http\Request;
 use App\Repositories\Manufacturers\ManufacturerRepositoryInterface;
-use App\Http\Requests;
 
 class ManufacturersController extends Controller
 {

@@ -8,10 +8,7 @@ use App\TicketsEntry;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Http\Request;
 use App\Http\Requests\Tickets\StoreNoteForTicketRequest;
-
-use App\Http\Requests;
 
 class TicketsEntriesController extends Controller
 {

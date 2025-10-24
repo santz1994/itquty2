@@ -60,6 +60,8 @@ require __DIR__ . '/modules/tickets.php';
 require __DIR__ . '/modules/assets.php';
 require __DIR__ . '/modules/admin.php';
 require __DIR__ . '/modules/user-portal.php';
+// Master data import/export landing
+require __DIR__ . '/modules/masterdata.php';
 
 // ========================================
 // DEBUG/TEST ROUTES (Local environment only)

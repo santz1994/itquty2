@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\AssetMaintenanceLog;
 use App\Asset;
 use App\Ticket;
-use App\Services\CacheService;
 use App\Http\Requests\StoreAssetMaintenanceLogRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

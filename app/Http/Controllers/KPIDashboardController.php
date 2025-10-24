@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Ticket;
 use App\Asset;
 use App\User;
 use App\DailyActivity;
 use Illuminate\Support\Facades\DB;
-
 
 class KPIDashboardController extends Controller
 {

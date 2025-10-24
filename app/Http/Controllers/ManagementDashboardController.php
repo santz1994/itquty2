@@ -9,8 +9,6 @@ use App\Services\KPIService;
 use App\Ticket;
 use App\Asset;
 use App\User;
-use App\AdminOnlineStatus;
-use App\DailyActivity;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 

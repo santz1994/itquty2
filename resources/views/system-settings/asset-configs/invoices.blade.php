@@ -284,7 +284,8 @@
 $(document).ready(function() {
     $('#invoicesTable').DataTable({
         columnDefs: [{
-            orderable: false, targets: 6 // Actions column
+            // Actions column is the last column (index 7)
+            orderable: false, targets: 7
         }],
         order: [[ 0, "asc" ]]
     });

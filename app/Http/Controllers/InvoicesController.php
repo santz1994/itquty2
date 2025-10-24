@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Invoice;
 use App\Supplier;
 use App\Division;
 use Illuminate\Support\Facades\Session;
 use App\Services\SlackNotifier;
-use App\Http\Requests;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Invoices\StoreInvoiceRequest;
 use App\Http\Requests\Invoices\UpdateInvoiceRequest;
-use Illuminate\Http\Response;
-use Slack;
 
 class InvoicesController extends Controller
 {

@@ -5,10 +5,7 @@ namespace App\Http\Controllers;
 use App\Location;
 use App\Http\Requests\Locations\StoreLocationRequest;
 use App\Http\Requests\Locations\UpdateLocationRequest;
-use Illuminate\Http\Request;
 use App\Repositories\Locations\LocationRepositoryInterface;
-
-use App\Http\Requests;
 
 class LocationsController extends Controller
 {

@@ -4,10 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Location;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Http\Request;
 use App\Http\Requests\Storerooms\UpdateStoreroomRequest;
-use App\Http\Requests;
-use Illuminate\Support\Facades\Log;
 
 class StoreroomsController extends Controller
 {

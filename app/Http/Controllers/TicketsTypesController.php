@@ -6,9 +6,6 @@ use App\TicketsType;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\TicketsTypes\StoreTicketsTypeRequest;
 use App\Http\Requests\TicketsTypes\UpdateTicketsTypeRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class TicketsTypesController extends Controller
 {

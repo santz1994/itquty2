@@ -8,7 +8,6 @@ use App\Asset;
 use App\User;
 use App\Location;
 use App\KnowledgeBaseArticle;
-use Illuminate\Support\Facades\DB;
 
 class SearchController extends Controller
 {

@@ -30,7 +30,6 @@
                         </div>
                     </div>
                     <div class="box-body">
-                        
                         <!-- Summary Cards -->
                 <div class="row">
                     <div class="col-lg-3 col-xs-6">
@@ -43,8 +42,7 @@
                                 <i class="fa fa-ticket"></i>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-yellow">
                             <div class="inner">
@@ -55,8 +53,7 @@
                                 <i class="fa fa-folder-open"></i>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-green">
                             <div class="inner">
@@ -67,8 +64,7 @@
                                 <i class="fa fa-check-circle"></i>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-lg-3 col-xs-6">
                         <div class="small-box bg-red">
                             <div class="inner">
@@ -81,7 +77,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Performance Metrics -->
                 <div class="row">
                     <div class="col-md-3">
@@ -92,8 +87,7 @@
                                 <span class="info-box-number">{{ $data['avgResolutionTime'] }} hours</span>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-green"><i class="fa fa-check"></i></span>
@@ -102,8 +96,7 @@
                                 <span class="info-box-number">{{ $data['slaCompliance'] }}%</span>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-purple"><i class="fa fa-desktop"></i></span>
@@ -112,8 +105,7 @@
                                 <span class="info-box-number">{{ $data['totalAssets'] }}</span>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-orange"><i class="fa fa-users"></i></span>
@@ -124,7 +116,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Charts Row 1 -->
                 <div class="row">
                     <div class="col-md-6">
@@ -136,8 +127,7 @@
                                 <canvas id="priorityChart" width="400" height="200"></canvas>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-md-6">
                         <div class="box box-success">
                             <div class="box-header with-border">
@@ -149,7 +139,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Charts Row 2 -->
                 <div class="row">
                     <div class="col-md-8">
@@ -161,8 +150,7 @@
                                 <canvas id="trendChart" width="400" height="150"></canvas>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-md-4">
                         <div class="box box-warning">
                             <div class="box-header with-border">
@@ -174,7 +162,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Top Broken Assets -->
                 <div class="row">
                     <div class="col-md-6">
@@ -205,8 +192,7 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <div class="col-md-6">
                         <div class="box box-success">
                             <div class="box-header with-border">
@@ -237,7 +223,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Recent Activities -->
                 <div class="row">
                     <div class="col-md-12">
@@ -269,7 +254,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>

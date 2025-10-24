@@ -3,18 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\TicketsCannedField;
-use App\TicketsEntry;
 use App\TicketsPriority;
 use App\TicketsStatus;
 use App\TicketsType;
 use App\Location;
 use App\User;
-use App\Ticket;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\TicketsCannedFields\StoreTicketsCannedFieldRequest;
 use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class TicketsCannedFieldsController extends Controller
 {

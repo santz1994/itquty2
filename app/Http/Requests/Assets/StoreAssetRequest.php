@@ -23,14 +23,24 @@ class StoreAssetRequest extends Request
      */
     public function rules()
     {
-        return [
+    $assetId = null;
+    if ($this->route('asset')) {
+      $assetParam = $this->route('asset');
+      $assetId = is_object($assetParam) ? ($assetParam->id ?? null) : $assetParam;
+    }
+
+    return [
           // Accept both `asset_model_id` and legacy `model_id` coming from tests or other callers
           'asset_model_id' => 'sometimes|required|exists:asset_models,id',
           'model_id' => 'sometimes|required|exists:asset_models,id',
           'division_id' => 'required|exists:divisions,id',
           'supplier_id' => 'required|exists:suppliers,id',
           'warranty_type_id' => 'required|exists:warranty_types,id',
-          'asset_tag' => 'nullable|string|max:255|unique:assets,asset_tag',
+          'invoice_id' => 'nullable|exists:invoices,id',
+          'warranty_months' => 'nullable|integer|min:0',
+          'ip_address' => 'nullable|ip',
+          'mac_address' => 'nullable|string|max:255',
+          'asset_tag' => $assetId ? 'nullable|string|max:255|unique:assets,asset_tag,' . $assetId : 'nullable|string|max:255|unique:assets,asset_tag',
           'name' => 'nullable|string|max:255',
           'serial_number' => 'nullable|string|max:255',
           'purchase_date' => 'nullable|date',

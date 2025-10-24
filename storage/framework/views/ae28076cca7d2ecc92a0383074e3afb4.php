@@ -133,12 +133,12 @@
               <a href="javascript:void(0)"><i class='fa fa-exchange'></i> <span>Import/Export</span> <i class="fa fa-angle-left pull-right"></i></a>
               <ul class="treeview-menu">
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-data')): ?>
-                <li><a href="<?php echo e(url('/exports')); ?>">Export Data</a></li>
+                <li><a href="<?php echo e(route('masterdata.index')); ?>">Export Data</a></li>
                 <?php endif; ?>
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('import-data')): ?>
-                <li><a href="<?php echo e(url('/imports')); ?>">Import Data</a></li>
+                <li><a href="<?php echo e(route('masterdata.imports')); ?>">Import Data</a></li>
                 <?php endif; ?>
-                <li><a href="<?php echo e(url('/exports/templates')); ?>">Download Templates</a></li>
+                <li><a href="<?php echo e(route('masterdata.templates')); ?>">Download Templates</a></li>
               </ul>
             </li>
             <?php endif; ?>            

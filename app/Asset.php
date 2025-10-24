@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

@@ -84,11 +84,11 @@
             </div>
             <div class="form-group">
               <label for="purchase_date">Purchase Date</label>
-              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{$asset->purchase_date}}">
+              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{ old('purchase_date', optional($asset->purchase_date)->format('Y-m-d')) }}">
             </div>
             <div class="form-group">
               <label for="warranty_months">Warranty Months</label>
-              <input type="text" name="warranty_months" class="form-control" id="warranty_months" value="{{$asset->warranty_months}}">
+              <input type="number" min="0" name="warranty_months" class="form-control" id="warranty_months" value="{{ old('warranty_months', $asset->warranty_months) }}">
             </div>
             <div class="form-group">
               <label for="warranty_type_id">Warranty Type</label>
@@ -104,12 +104,12 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="ip">IP Address (If PC/Laptop)</label>
-              <input type="text" name="ip" class="form-control" id="ip" value="{{$asset->ip}}">
+              <label for="ip_address">IP Address (If PC/Laptop)</label>
+              <input type="text" name="ip_address" class="form-control" id="ip_address" value="{{ old('ip_address', $asset->ip_address) }}">
             </div>
             <div class="form-group">
-              <label for="mac">MAC Address (If PC/Laptop)</label>
-              <input type="text" name="mac" class="form-control" id="mac" value="{{$asset->mac}}">
+              <label for="mac_address">MAC Address (If PC/Laptop)</label>
+              <input type="text" name="mac_address" class="form-control" id="mac_address" value="{{ old('mac_address', $asset->mac_address) }}">
             </div>
 
             <div class="form-group">

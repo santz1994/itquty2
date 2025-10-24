@@ -6,9 +6,6 @@ use App\Supplier;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Suppliers\StoreSupplierRequest;
 use App\Http\Requests\Suppliers\UpdateSupplierRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class SuppliersController extends Controller
 {

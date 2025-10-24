@@ -6,10 +6,7 @@ use App\Status;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Statuses\StoreStatusRequest;
 use App\Http\Requests\Statuses\UpdateStatusRequest;
-use Illuminate\Http\Request;
 use App\Traits\RoleBasedAccessTrait;
-
-use App\Http\Requests;
 
 class StatusesController extends Controller
 {

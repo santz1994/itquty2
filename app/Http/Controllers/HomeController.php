@@ -1,28 +1,14 @@
 <?php
 
-/*
- * Taken from
- * https://github.com/laravel/framework/blob/5.2/src/Illuminate/Auth/Console/stubs/make/controllers/HomeController.stub
- */
-
 namespace App\Http\Controllers;
 
 use App\Movement;
 use App\Asset;
 use App\Location;
-use App\Status;
-use App\Budget;
-use App\Invoice;
 use App\Division;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests;
-use Illuminate\Http\Request;
 use App\Traits\RoleBasedAccessTrait;
 
-/**
- * Class HomeController
- * @package App\Http\Controllers
- */
 class HomeController extends Controller
 {
     use RoleBasedAccessTrait;

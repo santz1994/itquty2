@@ -5,9 +5,6 @@ namespace App\Http\Controllers;
 use App\Pcspec;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Pcspecs\StorePcspecRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class PcspecsController extends Controller
 {
@@ -50,4 +47,5 @@ class PcspecsController extends Controller
 
     return redirect()->route('pcspecs.index');
   }
+
 }

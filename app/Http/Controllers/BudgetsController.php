@@ -6,9 +6,6 @@ use App\Budget;
 use App\Division;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Budgets\StoreBudgetRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class BudgetsController extends Controller
 {

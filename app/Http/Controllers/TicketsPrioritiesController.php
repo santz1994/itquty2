@@ -6,9 +6,6 @@ use App\TicketsPriority;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\TicketsPriorities\StoreTicketsPriorityRequest;
 use App\Http\Requests\TicketsPriorities\UpdateTicketsPriorityRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class TicketsPrioritiesController extends Controller
 {

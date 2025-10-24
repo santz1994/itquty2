@@ -6,9 +6,6 @@ use App\Division;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\Divisions\StoreDivisionRequest;
 use App\Http\Requests\Divisions\UpdateDivisionRequest;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 
 class DivisionsController extends Controller
 {

@@ -133,12 +133,12 @@
               <a href="javascript:void(0)"><i class='fa fa-exchange'></i> <span>Import/Export</span> <i class="fa fa-angle-left pull-right"></i></a>
               <ul class="treeview-menu">
                 @can('export-data')
-                <li><a href="{{ url('/exports')}}">Export Data</a></li>
+                <li><a href="{{ route('masterdata.index') }}">Export Data</a></li>
                 @endcan
                 @can('import-data')
-                <li><a href="{{ url('/imports')}}">Import Data</a></li>
+                <li><a href="{{ route('masterdata.imports') }}">Import Data</a></li>
                 @endcan
-                <li><a href="{{ url('/exports/templates')}}">Download Templates</a></li>
+                <li><a href="{{ route('masterdata.templates') }}">Download Templates</a></li>
               </ul>
             </li>
             @endcan            

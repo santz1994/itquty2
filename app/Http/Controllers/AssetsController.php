@@ -9,7 +9,6 @@ use App\Asset;
 use App\AssetType;
 use App\Location;
 use App\User;
-use App\Manufacturer;
 use App\Status;
 use App\AssetModel;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +17,6 @@ use App\Supplier;
 use App\Invoice;
 use App\WarrantyType;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\DB;
 use App\Traits\RoleBasedAccessTrait;
 
 class AssetsController extends Controller
@@ -170,8 +168,14 @@ class AssetsController extends Controller
      */
     public function edit(Asset $asset)
     {
-        // ViewComposer will provide dropdown data
-        return view('assets.edit', compact('asset'));
+        // Provide dropdown data explicitly so the view does not rely on a ViewComposer
+        $asset_models = AssetModel::orderBy('asset_model')->get();
+        $divisions = Division::orderBy('name')->get();
+        $suppliers = Supplier::orderBy('name')->get();
+        $invoices = Invoice::orderBy('invoiced_date', 'desc')->get();
+        $warranty_types = WarrantyType::orderBy('name')->get();
+
+        return view('assets.edit', compact('asset', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types'));
     }
 
     /**

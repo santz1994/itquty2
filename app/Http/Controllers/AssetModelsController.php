@@ -3,15 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\AssetModel;
-use App\Manufacturer;
-use App\AssetType;
-use App\Pcspec;
-use Illuminate\Http\Request;
 use App\Http\Requests\AssetModels\StoreAssetModelRequest;
 use App\Http\Requests\AssetModels\UpdateAssetModelRequest;
 use App\Repositories\AssetModels\AssetModelRepositoryInterface;
-
-use App\Http\Requests;
 
 class AssetModelsController extends Controller
 {
@@ -68,4 +62,5 @@ class AssetModelsController extends Controller
 
     return redirect()->route('models.index');
   }
+
 }

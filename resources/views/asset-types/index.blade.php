@@ -30,7 +30,16 @@
                         No
                       @endif
                     </td>
-                    <td><a href="/asset-types/{{ $asset_type->id }}/edit" class="btn btn-primary"><span class='fa fa-pencil' aria-hidden='true'></span> <b>Edit</b></a></td>
+                    <td>
+                      <div class="btn-group">
+                        <a href="/asset-types/{{ $asset_type->id }}/edit" class="btn btn-primary"><span class='fa fa-pencil' aria-hidden='true'></span> <b>Edit</b></a>
+                        <form method="POST" action="{{ url('asset-types/' . $asset_type->id) }}" style="display:inline-block; margin-left:6px;" onsubmit="return confirm('Are you sure you want to delete this asset type?');">
+                          {{ csrf_field() }}
+                          {{ method_field('DELETE') }}
+                          <button type="submit" class="btn btn-danger"><span class="fa fa-trash" aria-hidden="true"></span> <b>Delete</b></button>
+                        </form>
+                      </div>
+                    </td>
                   </div>
                 </tr>
               @endforeach
