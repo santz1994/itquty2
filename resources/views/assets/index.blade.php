@@ -25,7 +25,6 @@
       <div class="small-box bg-purple">
         <div class="inner">
           <h3>{{$totalAssets}}</h3>
-
           <p>Total</p>
         </div>
         <div class="icon">
@@ -38,7 +37,6 @@
       <div class="small-box bg-aqua">
         <div class="inner">
           <h3>{{$deployed}}</h3>
-
           <p>Deployed</p>
         </div>
         <div class="icon">
@@ -51,7 +49,6 @@
       <div class="small-box bg-green">
         <div class="inner">
           <h3>{{$readyToDeploy}}</h3>
-
           <p>Ready</p>
         </div>
         <div class="icon">
@@ -64,7 +61,6 @@
       <div class="small-box bg-yellow">
         <div class="inner">
           <h3>{{$repairs}}</h3>
-
           <p>Repairs</p>
         </div>
         <div class="icon">
@@ -77,7 +73,6 @@
       <div class="small-box bg-red">
         <div class="inner">
           <h3>{{$writtenOff}}</h3>
-
           <p>Written Off</p>
         </div>
         <div class="icon">
@@ -94,6 +89,27 @@
           <h3 class="box-title">Assets by Status</h3>
         </div>
         <div class="box-body">
+          {{-- Per-page selector: let user choose how many rows to show, or show all --}}
+          <form method="get" class="form-inline mb-2">
+            <div class="form-group">
+              <label for="per_page" class="mr-2">Show</label>
+              <select name="per_page" id="per_page" class="form-control input-sm">
+                <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>10</option>
+                <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>25</option>
+                <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50</option>
+                <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100</option>
+                <option value="all" {{ request('per_page') == 'all' || request()->boolean('all') ? 'selected' : '' }}>All</option>
+              </select>
+            </div>
+            <div class="form-group ml-2">
+              <button class="btn btn-default btn-sm">Apply</button>
+            </div>
+            {{-- Preserve other filters in querystring --}}
+            @foreach(request()->except(['per_page', 'page']) as $k => $v)
+              <input type="hidden" name="{{ $k }}" value="{{ $v }}" />
+            @endforeach
+          </form>
+
           @if(!empty($assetsByStatus) && count($assetsByStatus) > 0)
             <table class="table table-condensed">
               <thead>
@@ -246,15 +262,26 @@
               @endforeach
             </tbody>
           </table>
+          {{-- If $assets is a paginator, show Laravel pagination controls so users can navigate pages --}}
+          @if(method_exists($assets, 'links'))
+            <div class="mt-2">
+              {{ $assets->links() }}
+            </div>
+          @endif
         </div>
       </div>
     </div>
   </div>
   <script>
   $(document).ready(function() {
-    var table = $('#table').DataTable( {
-        responsive: true,
-        dom: 'l<"clear">Bfrtip',
+  var table = $('#table').DataTable( {
+    responsive: true,
+    dom: 'l<"clear">Bfrtip',
+    // Default page length and length menu. Note: DataTables paginates client-side
+    // only the rows present in the HTML. To let DataTables handle all rows client-side,
+    // request all rows by adding `?all=1` to the assets index URL (controller supports this).
+    pageLength: 25,
+    lengthMenu: [[10,25,50,100,-1],[10,25,50,100,'All']],
         buttons: [
             {
               extend: 'excel',

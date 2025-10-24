@@ -5,21 +5,17 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">
-    
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">    
     <!-- Font Awesome Icons -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <!-- Custom CSS style -->
-    <link href="{{ asset('/css/all.css') }}" rel="stylesheet" type="text/css" />
-    
+    <link href="{{ asset('/css/all.css') }}" rel="stylesheet" type="text/css" />    
     <!-- Responsive Fixes CSS -->
-    <link href="{{ asset('/css/responsive-fix.css') }}" rel="stylesheet" type="text/css" />
-    
+    <link href="{{ asset('/css/responsive-fix.css') }}" rel="stylesheet" type="text/css" />    
     <!-- Enhanced UX CSS -->
     <link href="{{ asset('/css/enhanced-ux.css') }}" rel="stylesheet" type="text/css" />
     <!-- Main header UI enhancements (custom) -->
-    <link href="{{ asset('/css/mainheader-enhancements.css') }}" rel="stylesheet" type="text/css" />
-    
+    <link href="{{ asset('/css/mainheader-enhancements.css') }}" rel="stylesheet" type="text/css" />    
     <!-- Custom UI/UX Enhancements -->
     <link href="{{ asset('/css/color-palette.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/custom-tables.css') }}" rel="stylesheet" type="text/css" />
@@ -27,12 +23,10 @@
     <link href="{{ asset('/css/dashboard-widgets.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/button-standards.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/search-enhancement.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('/css/notification-ui.css') }}" rel="stylesheet" type="text/css" />
-    
+    <link href="{{ asset('/css/notification-ui.css') }}" rel="stylesheet" type="text/css" />    
     <script src="{{ asset('/plugins/jQuery/jQuery-2.1.4.min.js') }}"></script>
     <script src="{{ asset('/js/search-enhancement.js') }}"></script>
     <script src="{{ asset('/js/notification-ui.js') }}"></script>
-
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->

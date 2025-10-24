@@ -1,30 +1,26 @@
 <!-- Left side column. contains the logo and sidebar -->
 <aside class="main-sidebar">
-
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
-
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
-            <li class="header">Navigation</li>
-            
+            <li class="header">Navigation</li>            
             <!-- 🏠 Home (Admin=2, SuperAdmin=3, Management=4) -->
             @role(['admin', 'super-admin', 'management'])
               <li><a href="{{ url('home') }}"><i class='fa fa-home'></i> <span>Home</span></a></li>
-            @endrole
-            
+            @endrole            
             <!-- 🏷️ Assets (Admin=2, SuperAdmin=3, Management=4 view-only) -->
             @can('view-assets')
               <li class="treeview">
                   <a href="javascript:void(0)"><i class='fa fa-tags'></i> <span>Assets</span> <i class="fa fa-angle-left pull-right"></i></a>
                   <ul class="treeview-menu">
                       <li><a href="{{ url('/assets')}}">All Assets</a></li>
-                      <li><a href="{{ route('assets.my-assets') }}"><i class='fa fa-briefcase'></i> My Assets</a></li>
+                      <li><a href="{{ route('assets.my-assets') }}"></i> My Assets</a></li>
                       @can('create-assets')
                       <li><a href="{{ url('/asset-maintenance')}}">Asset Maintenance</a></li>
                       <li><a href="{{ url('/spares')}}">Spares</a></li>
                       @endcan
-                      <li><a href="{{ route('assets.scan-qr') }}"><i class='fa fa-qrcode'></i> Scan QR Code</a></li>
+                      <li><a href="{{ route('assets.scan-qr') }}"></i> Scan QR Code</a></li>
                       @can('export-assets')
                       <li><a href="{{ route('assets.export') }}">Export Assets</a></li>
                       @endcan
@@ -33,8 +29,7 @@
                       @endcan
                   </ul>
               </li>
-            @endcan
-            
+            @endcan            
             <!-- 📦 Asset Requests (All authenticated users) -->
             @auth
             <li class="treeview">
@@ -44,8 +39,7 @@
                     <li><a href="{{ route('asset-requests.create') }}">New Request</a></li>
                 </ul>
             </li>
-            @endauth
-            
+            @endauth            
             <!-- 🎫 Tickets (All roles: User=1, Admin=2, SuperAdmin=3, Management=4) -->
             @can('view-tickets')
             <li class="treeview">
@@ -63,8 +57,7 @@
                     @endcan
                 </ul>
             </li>
-            @endcan
-            
+            @endcan            
       <!-- 📅 Daily Activity (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
       @can('view-daily-activities')
       <li class="treeview">
@@ -77,8 +70,7 @@
           @endcan
         </ul>
       </li>
-      @endcan
-      
+      @endcan      
       <!-- 📊 KPI Dashboard (management, admin, super-admin only) -->
       @can('view-kpi-dashboard')
       <li>
@@ -87,8 +79,7 @@
           <span>KPI Dashboard</span>
         </a>
       </li>
-      @endcan
-      
+      @endcan      
       <!-- 📋 Reports (management, admin, super-admin) -->
       @can('view-reports')
       <li class="treeview">
@@ -101,8 +92,7 @@
           @endhasrole
         </ul>
       </li>
-      @endcan
-            
+      @endcan            
             <!-- 💻 Models (SuperAdmin=3 only) -->
             @can('view-models')
               <li class="treeview">
@@ -114,23 +104,19 @@
                       <li><a href="{{ url('/asset-types')}}">Asset Types</a></li>
                   </ul>
               </li>
-            @endcan
-            
+            @endcan            
             <!-- 🛒 Suppliers (SuperAdmin=3 only) -->
             @can('view-suppliers')
               <li><a href="{{ url('/suppliers')}}"><i class='fa fa-shopping-cart'></i> <span>Suppliers</span></a></li>
-            @endcan
-            
+            @endcan            
             <!-- 🏢 Locations (SuperAdmin=3 only) -->
             @can('view-locations')
               <li><a href="{{ url('/locations')}}"><i class='fa fa-building'></i> <span>Locations</span></a></li>
-            @endcan
-            
+            @endcan            
             <!-- 👥 Divisions (SuperAdmin=3 only) -->
             @can('view-divisions')
               <li><a href="{{ url('/divisions')}}"><i class='fa fa-group'></i> <span>Divisions</span></a></li>
-            @endcan
-            
+            @endcan            
             <!-- 💰 Invoices and Budgets (SuperAdmin=3 only) -->
             @can('view-invoices')
               <li class="treeview">
@@ -140,8 +126,7 @@
                       <li><a href="{{ url('/budgets')}}">Budgets</a></li>
                   </ul>
               </li>
-            @endcan
-            
+            @endcan            
             <!-- 📥📤 Import/Export (admin & super-admin) -->
             @can('export-data')
             <li class="treeview">
@@ -156,8 +141,7 @@
                 <li><a href="{{ url('/exports/templates')}}">Download Templates</a></li>
               </ul>
             </li>
-            @endcan
-            
+            @endcan            
             <!-- 👥 User Management (admin & super-admin) -->
             @can('view-users')
             <li class="treeview">
@@ -172,20 +156,18 @@
                     @endcan
                 </ul>
             </li>
-            @endcan
-            
+            @endcan            
             <!-- ⚙️ System Settings (super-admin only) -->
             @role('super-admin')
             <li class="treeview">
                 <a href="javascript:void(0)"><i class='fa fa-cogs'></i> <span>System Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">
                     <li><a href="{{ route('system-settings.index') }}">Settings Overview</a></li>
-                    <li><a href="{{ route('sla.index') }}"><i class='fa fa-clock-o'></i> SLA Policies</a></li>
-                    <li><a href="{{ route('sla.dashboard') }}"><i class='fa fa-tachometer'></i> SLA Dashboard</a></li>
+                    <li><a href="{{ route('sla.index') }}"></i>SLA Policies</a></li>
+                    <li><a href="{{ route('sla.dashboard') }}"></i>SLA Dashboard</a></li>
                 </ul>
             </li>
-            @endrole
-            
+            @endrole            
             <!-- 📝 Audit Logs (admin & super-admin) -->
             @role(['admin', 'super-admin'])
             <li class="treeview">
@@ -195,8 +177,7 @@
                     <li><a href="{{ route('audit-logs.export') }}">Export Logs</a></li>
                 </ul>
             </li>
-            @endrole
-            
+            @endrole            
             <!-- 🔧 Admin Tools (super-admin only) -->
             @role('super-admin')
             <li class="treeview">

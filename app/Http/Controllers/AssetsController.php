@@ -68,7 +68,20 @@ class AssetsController extends Controller
             });
         }
 
-        $assets = $query->orderBy('created_at', 'desc')->paginate(20);
+        // Allow optional request to return all results for client-side DataTables
+        // or control per-page size via `per_page` query parameter.
+        // Support multiple ways to request 'all' rows:
+        // - ?all=1
+        // - ?per_page=all or ?per_page=-1
+        $perPageInput = $request->input('per_page', null);
+        $wantsAll = $request->boolean('all') || $perPageInput === 'all' || $perPageInput === '-1';
+
+        if ($wantsAll) {
+            $assets = $query->orderBy('created_at', 'desc')->get();
+        } else {
+            $perPage = is_numeric($perPageInput) ? (int) $perPageInput : 25;
+            $assets = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        }
 
     // Get KPI statistics from service
     $stats = $this->assetService->getAssetStatistics();

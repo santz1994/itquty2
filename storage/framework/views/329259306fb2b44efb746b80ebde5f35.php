@@ -1,8 +1,14 @@
 
 
+<?php $__env->startPush('styles'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('css/dashboard-widgets.css')); ?>">
+<?php $__env->stopPush(); ?>
+
 <?php $__env->startSection('main-content'); ?>
+<?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 	<?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['super-admin', 'admin'])): ?>
 		<!-- Quick summary cards -->
+	<section class="content">
 		<div class="row mb-3">
 			<div class="col-md-12">
 				<div class="card">
@@ -29,6 +35,7 @@
 				</div>
 			</div>
 		</div>
+	
 		<div class="row">
 			<div class="col-md-5 col-xs-12">
 	      <div class="box box-primary">
@@ -77,6 +84,7 @@
 				</div>
 			</div>
 		</div>
+		</section>
 	<?php endif; ?>
 <?php $__env->stopSection(); ?>
 

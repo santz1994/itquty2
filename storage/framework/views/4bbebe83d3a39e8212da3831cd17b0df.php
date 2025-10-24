@@ -1,10 +1,8 @@
 <header class="main-header">
-
     <a href="<?php echo e(url('/home')); ?>" class="logo">
         <span class="logo-mini">QUTY Assets</span>
-        <span class="logo-lg"><b>QUTY</b>Assets </span>
+        <span class="logo-lg"><b>QUTY</b> Assets</span>
     </a>
-
     <nav class="navbar navbar-static-top" role="navigation">
         <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button" aria-label="Toggle navigation">
             <span class="sr-only">Toggle navigation</span>
@@ -12,7 +10,6 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </a>
-        
         <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
                 <?php if(auth()->guard()->check()): ?>
@@ -38,7 +35,6 @@
                         <span id="notification-badge" class="notification-badge hidden">0</span>
                     </a>
                 </li>
-                
                 <?php if(Auth::guest()): ?>
                     <li><a href="<?php echo e(url('/login')); ?>">Login</a></li>
                 <?php else: ?>

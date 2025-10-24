@@ -1,8 +1,14 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-widgets.css') }}">
+@endpush
+
 @section('main-content')
+@include('components.loading-overlay')
 	@role(['super-admin', 'admin'])
 		<!-- Quick summary cards -->
+	<section class="content">
 		<div class="row mb-3">
 			<div class="col-md-12">
 				<div class="card">
@@ -28,6 +34,7 @@
 				</div>
 			</div>
 		</div>
+	
 		<div class="row">
 			<div class="col-md-5 col-xs-12">
 	      <div class="box box-primary">
@@ -75,6 +82,7 @@
 				</div>
 			</div>
 		</div>
+		</section>
 	@endrole
 @endsection
 

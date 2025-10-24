@@ -1,30 +1,26 @@
 <!-- Left side column. contains the logo and sidebar -->
 <aside class="main-sidebar">
-
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
-
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
-            <li class="header">Navigation</li>
-            
+            <li class="header">Navigation</li>            
             <!-- 🏠 Home (Admin=2, SuperAdmin=3, Management=4) -->
             <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin', 'management'])): ?>
               <li><a href="<?php echo e(url('home')); ?>"><i class='fa fa-home'></i> <span>Home</span></a></li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 🏷️ Assets (Admin=2, SuperAdmin=3, Management=4 view-only) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-assets')): ?>
               <li class="treeview">
                   <a href="javascript:void(0)"><i class='fa fa-tags'></i> <span>Assets</span> <i class="fa fa-angle-left pull-right"></i></a>
                   <ul class="treeview-menu">
                       <li><a href="<?php echo e(url('/assets')); ?>">All Assets</a></li>
-                      <li><a href="<?php echo e(route('assets.my-assets')); ?>"><i class='fa fa-briefcase'></i> My Assets</a></li>
+                      <li><a href="<?php echo e(route('assets.my-assets')); ?>"></i> My Assets</a></li>
                       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create-assets')): ?>
                       <li><a href="<?php echo e(url('/asset-maintenance')); ?>">Asset Maintenance</a></li>
                       <li><a href="<?php echo e(url('/spares')); ?>">Spares</a></li>
                       <?php endif; ?>
-                      <li><a href="<?php echo e(route('assets.scan-qr')); ?>"><i class='fa fa-qrcode'></i> Scan QR Code</a></li>
+                      <li><a href="<?php echo e(route('assets.scan-qr')); ?>"></i> Scan QR Code</a></li>
                       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-assets')): ?>
                       <li><a href="<?php echo e(route('assets.export')); ?>">Export Assets</a></li>
                       <?php endif; ?>
@@ -33,8 +29,7 @@
                       <?php endif; ?>
                   </ul>
               </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 📦 Asset Requests (All authenticated users) -->
             <?php if(auth()->guard()->check()): ?>
             <li class="treeview">
@@ -44,8 +39,7 @@
                     <li><a href="<?php echo e(route('asset-requests.create')); ?>">New Request</a></li>
                 </ul>
             </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 🎫 Tickets (All roles: User=1, Admin=2, SuperAdmin=3, Management=4) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-tickets')): ?>
             <li class="treeview">
@@ -63,8 +57,7 @@
                     <?php endif; ?>
                 </ul>
             </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
       <!-- 📅 Daily Activity (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-daily-activities')): ?>
       <li class="treeview">
@@ -77,8 +70,7 @@
           <?php endif; ?>
         </ul>
       </li>
-      <?php endif; ?>
-      
+      <?php endif; ?>      
       <!-- 📊 KPI Dashboard (management, admin, super-admin only) -->
       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-kpi-dashboard')): ?>
       <li>
@@ -87,8 +79,7 @@
           <span>KPI Dashboard</span>
         </a>
       </li>
-      <?php endif; ?>
-      
+      <?php endif; ?>      
       <!-- 📋 Reports (management, admin, super-admin) -->
       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-reports')): ?>
       <li class="treeview">
@@ -101,8 +92,7 @@
           <?php endif; ?>
         </ul>
       </li>
-      <?php endif; ?>
-            
+      <?php endif; ?>            
             <!-- 💻 Models (SuperAdmin=3 only) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-models')): ?>
               <li class="treeview">
@@ -114,23 +104,19 @@
                       <li><a href="<?php echo e(url('/asset-types')); ?>">Asset Types</a></li>
                   </ul>
               </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 🛒 Suppliers (SuperAdmin=3 only) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-suppliers')): ?>
               <li><a href="<?php echo e(url('/suppliers')); ?>"><i class='fa fa-shopping-cart'></i> <span>Suppliers</span></a></li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 🏢 Locations (SuperAdmin=3 only) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-locations')): ?>
               <li><a href="<?php echo e(url('/locations')); ?>"><i class='fa fa-building'></i> <span>Locations</span></a></li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 👥 Divisions (SuperAdmin=3 only) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-divisions')): ?>
               <li><a href="<?php echo e(url('/divisions')); ?>"><i class='fa fa-group'></i> <span>Divisions</span></a></li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 💰 Invoices and Budgets (SuperAdmin=3 only) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-invoices')): ?>
               <li class="treeview">
@@ -140,8 +126,7 @@
                       <li><a href="<?php echo e(url('/budgets')); ?>">Budgets</a></li>
                   </ul>
               </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 📥📤 Import/Export (admin & super-admin) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-data')): ?>
             <li class="treeview">
@@ -156,8 +141,7 @@
                 <li><a href="<?php echo e(url('/exports/templates')); ?>">Download Templates</a></li>
               </ul>
             </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 👥 User Management (admin & super-admin) -->
             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-users')): ?>
             <li class="treeview">
@@ -172,20 +156,18 @@
                     <?php endif; ?>
                 </ul>
             </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- ⚙️ System Settings (super-admin only) -->
             <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', 'super-admin')): ?>
             <li class="treeview">
                 <a href="javascript:void(0)"><i class='fa fa-cogs'></i> <span>System Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">
                     <li><a href="<?php echo e(route('system-settings.index')); ?>">Settings Overview</a></li>
-                    <li><a href="<?php echo e(route('sla.index')); ?>"><i class='fa fa-clock-o'></i> SLA Policies</a></li>
-                    <li><a href="<?php echo e(route('sla.dashboard')); ?>"><i class='fa fa-tachometer'></i> SLA Dashboard</a></li>
+                    <li><a href="<?php echo e(route('sla.index')); ?>"></i>SLA Policies</a></li>
+                    <li><a href="<?php echo e(route('sla.dashboard')); ?>"></i>SLA Dashboard</a></li>
                 </ul>
             </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 📝 Audit Logs (admin & super-admin) -->
             <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['admin', 'super-admin'])): ?>
             <li class="treeview">
@@ -195,8 +177,7 @@
                     <li><a href="<?php echo e(route('audit-logs.export')); ?>">Export Logs</a></li>
                 </ul>
             </li>
-            <?php endif; ?>
-            
+            <?php endif; ?>            
             <!-- 🔧 Admin Tools (super-admin only) -->
             <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', 'super-admin')): ?>
             <li class="treeview">
