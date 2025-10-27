@@ -29,16 +29,10 @@
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
-        <!-- Use MySQL for testing: set DB_CONNECTION to mysql and configure the test DB below.
-             Replace the placeholders below (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD) with
-             your MySQL test database credentials before running the test suite. -->
-        <env name="DB_CONNECTION" value="mysql"/>
-        <env name="DB_HOST" value="127.0.0.1"/>
-        <env name="DB_PORT" value="3306"/>
-        <env name="DB_DATABASE" value="itquty_test"/>
-        <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
-        <env name="DB_FOREIGN_KEYS" value="true"/>
+        <!-- Use SQLite for testing in CI/CD environments (GitHub Actions, etc.) -->
+        <!-- For local development, override with: DB_CONNECTION=mysql php vendor/bin/phpunit -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value="database/database.sqlite"/>
         <env name="MAIL_DRIVER" value="log"/>
         <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
     </php>
