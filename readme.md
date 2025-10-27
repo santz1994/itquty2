@@ -302,6 +302,6 @@ For technical support or questions:
 
 ---
 
-**Version**: 2.1.0  
+**Version**: 2.10.3
 **Last Updated**: October 2025
 **Maintained By**: D-Riz

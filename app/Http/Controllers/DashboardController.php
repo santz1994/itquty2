@@ -19,8 +19,8 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $stats = [];
-        $stats['open_tickets'] = Ticket::where('status_id', '!=', 3)->count();
-        $stats['overdue_tickets'] = Ticket::where('due_date', '<', now())->count();
+        $stats['open_tickets'] = Ticket::where('ticket_status_id', '!=', 3)->count();
+        $stats['overdue_tickets'] = Ticket::where('sla_due', '<', now())->count();
         $assetStats = $this->assetService->getAssetStatistics();
         $stats['total_assets'] = $assetStats['total'] ?? 0;
         $maintenanceDue = $this->assetService->getAssetsNeedingMaintenance();

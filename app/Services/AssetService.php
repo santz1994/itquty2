@@ -421,9 +421,17 @@ class AssetService
      */
     public function getAssetsNeedingMaintenance()
     {
-        return Asset::where('next_maintenance_date', '<=', now())
-                   ->where('status_id', '!=', 4) // Not disposed
+        // Calculate expected maintenance date from purchase date + warranty months
+        // For now, return assets with warranty expiring soon
+        return Asset::where('status_id', '!=', 4) // Not disposed
                    ->with(['model', 'assignedTo', 'status'])
-                   ->get();
+                   ->get()
+                   ->filter(function($asset) {
+                       if (!$asset->purchase_date || !$asset->warranty_months) {
+                           return false;
+                       }
+                       $maintenanceDue = $asset->purchase_date->addMonths($asset->warranty_months);
+                       return $maintenanceDue <= now();
+                   });
     }
 }

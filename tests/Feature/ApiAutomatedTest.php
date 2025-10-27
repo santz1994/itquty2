@@ -255,16 +255,19 @@ class ApiAutomatedTest extends TestCase
      */
     public function test_07_user_can_create_asset_request()
     {
+        // Use the first asset type created in setUp()
+        $assetType = $this->assetTypes->first();
+        
         $response = $this->actingAs($this->user)
             ->post('/asset-requests', [
-                'asset_type_id' => 1,
-                'justification' => 'Need for work',
+                'asset_type_id' => $assetType->id,
+                'justification' => 'Need for work to complete projects',
             ]);
 
         $response->assertStatus(302);
         $this->assertDatabaseHas('asset_requests', [
             'user_id' => $this->user->id,
-            'justification' => 'Need for work',
+            'justification' => 'Need for work to complete projects',
         ]);
     }
 

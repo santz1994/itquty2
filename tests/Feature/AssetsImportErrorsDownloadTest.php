@@ -20,7 +20,7 @@ class AssetsImportErrorsDownloadTest extends TestCase
 
         $this->actingAs($user)
              ->get(route('assets.import-errors-download'))
-             ->assertStatus(404);
+             ->assertRedirect(route('assets.import-form'));
     }
 
     /** @test */
