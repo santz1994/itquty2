@@ -42,10 +42,6 @@
                         <dt class="col-sm-3">Notes</dt>
                         <dd class="col-sm-9">{{ $assetRequest->notes ?? '—' }}</dd>
                     </dl>
-
-                    @if(Route::has('asset-requests.edit'))
-                        <a href="{{ route('asset-requests.edit', $assetRequest) }}" class="btn btn-primary">Edit Request</a>
-                    @endif
                 </div>
             </div>
         </div>

@@ -18,7 +18,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::redirect('/dashboard', '/home');
     
     // Asset Requests available to all authenticated users (create/view their requests)
-    Route::resource('asset-requests', \App\Http\Controllers\AssetRequestController::class);
+    Route::resource('asset-requests', \App\Http\Controllers\AssetRequestController::class)->except(['edit', 'update']);
     
     // ========================================
     // MANAGEMENT DASHBOARD
