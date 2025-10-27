@@ -12,6 +12,9 @@
                     <a href="{{ route('assets.index') }}" class="btn btn-default btn-sm">
                         <i class="fa fa-arrow-left"></i> Back to Assets
                     </a>
+                    <a href="{{ route('assets.history', $asset->id) }}" class="btn btn-info btn-sm">
+                        <i class="fa fa-calendar"></i> History
+                    </a>
                     <a href="{{ route('assets.edit', $asset->id) }}" class="btn btn-primary btn-sm">
                         <i class="fa fa-pencil"></i> Edit
                     </a>

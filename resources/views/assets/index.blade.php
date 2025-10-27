@@ -248,7 +248,7 @@
                       <div class="btn-group">
                         <a href="/assets/{{ $asset->id }}/move" class="btn btn-primary"><span class="fa fa-send" aria-hidden="true"></span> <b>Move</b></a>
                         <a href="/assets/{{ $asset->id }}/history" class="btn btn-primary"><span class="fa fa-calendar" aria-hidden="true"></span> <b>History</b></a>
-                        <a href="/assets/{{ $asset->id }}/ticket-history" class="btn btn-warning"><span class="fa fa-ticket" aria-hidden="true"></span> <b>Tickets</b></a>
+                        <a href="{{ route('tickets.create', ['asset_id' => $asset->id]) }}" class="btn btn-warning"><span class="fa fa-ticket" aria-hidden="true"></span> <b>Tickets</b></a>
                         <a href="/assets/{{ $asset->id }}/edit" class="btn btn-primary"><span class="fa fa-pencil" aria-hidden="true"></span> <b>Edit</b></a>
                         <form method="POST" action="{{ url('assets/' . $asset->id) }}" style="display:inline-block; margin-left:6px;" onsubmit="return confirm('Are you sure you want to delete this asset?');">
                           {{ csrf_field() }}
