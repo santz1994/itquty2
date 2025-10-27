@@ -120,11 +120,11 @@
             </div>
         </div>
         
-        <!-- Ticket History (if available) -->
-        @if(isset($ticketHistory) && $ticketHistory->count() > 0)
-            <div class="box box-info">
+        <!-- Recent Issues (Last 30 Days) -->
+        @if(isset($recentIssues) && $recentIssues->count() > 0)
+            <div class="box box-warning">
                 <div class="box-header with-border">
-                    <h3 class="box-title"><i class="fa fa-history"></i> Ticket History</h3>
+                    <h3 class="box-title"><i class="fa fa-exclamation-triangle"></i> Recent Issues (Last 30 Days)</h3>
                 </div>
                 <div class="box-body">
                     <div class="table-responsive">
@@ -132,9 +132,55 @@
                             <thead>
                                 <tr>
                                     <th>Ticket Code</th>
-                                    <th>Subject</th>
+                                    <th>Title</th>
+                                    <th>Priority</th>
                                     <th>Status</th>
-                                    <th>Date</th>
+                                    <th>Created</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($recentIssues as $ticket)
+                                    <tr>
+                                        <td><strong>{{ $ticket->ticket_code }}</strong></td>
+                                        <td>{{ $ticket->title }}</td>
+                                        <td>
+                                            <span class="label label-{{ $ticket->ticket_priority->id == 1 ? 'danger' : ($ticket->ticket_priority->id == 2 ? 'warning' : 'info') }}">
+                                                {{ $ticket->ticket_priority->name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="label label-primary">{{ optional($ticket->ticket_status)->name ?? 'Unknown' }}</span>
+                                        </td>
+                                        <td>{{ $ticket->created_at->format('d M Y') }}</td>
+                                        <td><a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
+        
+        <!-- Ticket History (if available) -->
+        @if(isset($ticketHistory) && $ticketHistory->count() > 0)
+            <div class="box box-info">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-history"></i> Complete Ticket History</h3>
+                </div>
+                <div class="box-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ticket Code</th>
+                                    <th>Type</th>
+                                    <th>Title</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Assigned To</th>
+                                    <th>Created</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -142,9 +188,18 @@
                                 @foreach($ticketHistory as $ticket)
                                     <tr>
                                         <td><strong>{{ $ticket->ticket_code }}</strong></td>
-                                        <td>{{ $ticket->subject }}</td>
-                                        <td>{{ optional($ticket->ticket_status)->status ?? 'Unknown' }}</td>
-                                        <td>{{ $ticket->created_at->format('d M Y') }}</td>
+                                        <td>{{ optional($ticket->ticket_type)->name ?? 'N/A' }}</td>
+                                        <td>{{ $ticket->title }}</td>
+                                        <td>
+                                            <span class="label label-{{ optional($ticket->ticket_priority)->id == 1 ? 'danger' : (optional($ticket->ticket_priority)->id == 2 ? 'warning' : 'info') }}">
+                                                {{ optional($ticket->ticket_priority)->name ?? 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="label label-primary">{{ optional($ticket->ticket_status)->name ?? 'Unknown' }}</span>
+                                        </td>
+                                        <td>{{ optional($ticket->user)->name ?? 'Unassigned' }}</td>
+                                        <td>{{ $ticket->created_at->format('d M Y H:i') }}</td>
                                         <td><a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a></td>
                                     </tr>
                                 @endforeach

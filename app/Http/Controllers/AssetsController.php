@@ -159,7 +159,11 @@ class AssetsController extends Controller
     // Also eager-load `assignedTo` (alias for the user the asset is assigned to) and movements history.
     $asset->load(['model.asset_type', 'model.manufacturer', 'location', 'assignedTo', 'status', 'tickets', 'movements']);
         
-        return view('assets.show', compact('asset'));
+        // Load ticket history and recent issues
+        $ticketHistory = $asset->getTicketHistory();
+        $recentIssues = $asset->getRecentIssues();
+        
+        return view('assets.show', compact('asset', 'ticketHistory', 'recentIssues'));
     }
 
     /**
