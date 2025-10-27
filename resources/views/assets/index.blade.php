@@ -226,19 +226,19 @@
                     </td>
                     <td>
                       <div id="status{{$asset->id}}" class="hover-pointer">
-                        @if($asset->movement && $asset->movement->status)
-                          @if($asset->movement->status->id == 1)
+                        @if($asset->status)
+                          @if($asset->status->id == 1)
                             <span class="label label-success">
-                          @elseif($asset->movement->status->id == 2)
+                          @elseif($asset->status->id == 2)
                             <span class="label label-info">
-                          @elseif($asset->movement->status->id == 3 || $asset->movement->status->id == 4)
+                          @elseif($asset->status->id == 3 || $asset->status->id == 4)
                             <span class="label label-warning">
-                          @elseif($asset->movement->status->id == 5 || $asset->movement->status->id == 6)
+                          @elseif($asset->status->id == 5 || $asset->status->id == 6)
                             <span class="label label-danger">
                           @else
                             <span class="label label-default">
                           @endif
-                          {{$asset->movement->status->name}}</span>
+                          {{$asset->status->name}}</span>
                         @else
                           <span class="label label-default">No Status</span>
                         @endif

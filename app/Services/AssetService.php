@@ -224,10 +224,12 @@ class AssetService
         return Cache::remember('asset_statistics', 300, function () {
             return [
                 'total' => Asset::count(),
-                'in_use' => Asset::inUse()->count(),
-                'in_stock' => Asset::inStock()->count(),
-                'in_repair' => Asset::inRepair()->count(),
-                'disposed' => Asset::disposed()->count(),
+                'deployed' => Asset::where('status_id', 2)->count(),  // Status ID 2 = Deployed
+                'active' => Asset::where('status_id', 15)->count(),   // Status ID 15 = Active
+                'in_use' => Asset::where('status_id', 15)->count(),
+                'in_stock' => Asset::where('status_id', 1)->count(),
+                'in_repair' => Asset::whereIn('status_id', [3, 4])->count(),
+                'disposed' => Asset::whereIn('status_id', [5, 6, 8, 9])->count(),
                 'with_qr_codes' => Asset::whereNotNull('qr_code')->count(),
                 'lemon_assets' => Asset::whereHas('tickets', function($q) {
                     $q->where('created_at', '>=', now()->subMonths(6));

@@ -113,6 +113,34 @@
             </div>
 
             <div class="form-group">
+              <label for="status_id">Status <span class="text-red">*</span></label>
+              <select class="form-control status_id" name="status_id" id="status_id" required>
+                <option value="">Select Status</option>
+                @foreach($statuses as $status)
+                  <option
+                    @if($asset->status_id == $status->id)
+                      selected
+                    @endif
+                  value="{{$status->id}}">{{$status->name}}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="location_id">Location</label>
+              <select class="form-control location_id" name="location_id" id="location_id">
+                <option value="">No Location</option>
+                @foreach($locations as $location)
+                  <option
+                    @if($asset->location_id == $location->id)
+                      selected
+                    @endif
+                  value="{{$location->id}}">{{$location->location_name}} - {{$location->building}}, {{$location->office}}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
               <button type="submit" class="btn btn-primary btn-lg">
                 <i class="fa fa-save"></i> <b>Update Asset</b>
               </button>
@@ -159,6 +187,8 @@
       $(".supplier_id").select2();
       $(".invoice_id").select2();
       $(".warranty_type_id").select2();
+      $(".status_id").select2();
+      $(".location_id").select2();
     });
   </script>
   <script>

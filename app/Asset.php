@@ -167,22 +167,22 @@ class Asset extends Model implements HasMedia
   // Scopes
   public function scopeInUse($query)
   {
-    return $query->where('status_id', 1); // Assuming 1 = In Use
+    return $query->where('status_id', 15); // Active
   }
 
   public function scopeInStock($query)
   {
-    return $query->where('status_id', 2); // Assuming 2 = In Stock
+    return $query->where('status_id', 1); // Ready to Deploy
   }
 
   public function scopeInRepair($query)
   {
-    return $query->where('status_id', 3); // Assuming 3 = In Repair
+    return $query->whereIn('status_id', [3, 4]); // Out for Repairs, Waiting for Repairs
   }
 
   public function scopeDisposed($query)
   {
-    return $query->where('status_id', 4); // Assuming 4 = Disposed
+    return $query->whereIn('status_id', [5, 6, 8, 9]); // Written Off - Broken, Written Off - Age, Pending Disposal, Retired
   }
 
   public function scopeForDivision($query, $divisionId)

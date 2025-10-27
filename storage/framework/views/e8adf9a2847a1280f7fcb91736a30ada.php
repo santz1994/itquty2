@@ -229,19 +229,19 @@
                     </td>
                     <td>
                       <div id="status<?php echo e($asset->id); ?>" class="hover-pointer">
-                        <?php if($asset->movement && $asset->movement->status): ?>
-                          <?php if($asset->movement->status->id == 1): ?>
+                        <?php if($asset->status): ?>
+                          <?php if($asset->status->id == 1): ?>
                             <span class="label label-success">
-                          <?php elseif($asset->movement->status->id == 2): ?>
+                          <?php elseif($asset->status->id == 2): ?>
                             <span class="label label-info">
-                          <?php elseif($asset->movement->status->id == 3 || $asset->movement->status->id == 4): ?>
+                          <?php elseif($asset->status->id == 3 || $asset->status->id == 4): ?>
                             <span class="label label-warning">
-                          <?php elseif($asset->movement->status->id == 5 || $asset->movement->status->id == 6): ?>
+                          <?php elseif($asset->status->id == 5 || $asset->status->id == 6): ?>
                             <span class="label label-danger">
                           <?php else: ?>
                             <span class="label label-default">
                           <?php endif; ?>
-                          <?php echo e($asset->movement->status->name); ?></span>
+                          <?php echo e($asset->status->name); ?></span>
                         <?php else: ?>
                           <span class="label label-default">No Status</span>
                         <?php endif; ?>

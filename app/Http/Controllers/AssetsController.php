@@ -84,7 +84,7 @@ class AssetsController extends Controller
     // Get KPI statistics from service
     $stats = $this->assetService->getAssetStatistics();
     $totalAssets = $stats['total'] ?? 0;
-    $deployed = $stats['in_use'] ?? 0;
+    $deployed = $stats['deployed'] ?? 0;
     $readyToDeploy = $stats['in_stock'] ?? 0;
     $repairs = $stats['in_repair'] ?? 0;
     $writtenOff = $stats['disposed'] ?? 0;
@@ -173,8 +173,10 @@ class AssetsController extends Controller
         $suppliers = Supplier::orderBy('name')->get();
         $invoices = Invoice::orderBy('invoiced_date', 'desc')->get();
         $warranty_types = WarrantyType::orderBy('name')->get();
+        $statuses = Status::orderBy('name')->get();
+        $locations = Location::orderBy('location_name')->get();
 
-        return view('assets.edit', compact('asset', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types'));
+        return view('assets.edit', compact('asset', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations'));
     }
 
     /**
