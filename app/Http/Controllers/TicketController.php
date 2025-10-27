@@ -101,7 +101,7 @@ class TicketController extends BaseController
     /**
      * Show the form for creating a new ticket
      */
-    public function create()
+    public function create(Request $request)
     {
         // Get dropdown data with correct variable names expected by the view using cache
         // Only show users with admin role as agents
@@ -123,9 +123,12 @@ class TicketController extends BaseController
         $pageTitle = 'Create New Ticket';
         // Provide canned fields so the view can render the right-hand column
         $ticketsCannedFields = \App\TicketsCannedField::all();
+        
+        // Pre-select asset if asset_id is passed in query string
+        $preselectedAssetId = $request->query('asset_id');
 
         return view('tickets.create', compact('users', 'locations', 'ticketsStatuses', 'ticketsTypes', 
-                                            'ticketsPriorities', 'assets', 'pageTitle', 'ticketsCannedFields'));
+                                            'ticketsPriorities', 'assets', 'pageTitle', 'ticketsCannedFields', 'preselectedAssetId'));
     }
 
     /**

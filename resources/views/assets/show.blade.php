@@ -165,6 +165,7 @@
             <div class="box-body">
                 <div class="btn-group-vertical btn-block">
                     <a href="{{ route('assets.edit', $asset->id) }}" class="btn btn-primary"><i class="fa fa-pencil"></i> Edit Asset</a>
+                    <a href="{{ route('tickets.create', ['asset_id' => $asset->id]) }}" class="btn btn-success"><i class="fa fa-plus"></i> Open Ticket</a>
                     @if($asset->qr_code)
                         <button class="btn btn-info" onclick="showQRCode()"><i class="fa fa-qrcode"></i> View QR Code</button>
                     @endif

@@ -37,7 +37,7 @@
               <select class="form-control asset_id" name="asset_id">
                 <option value="">No Asset</option>
                 @foreach($assets as $asset)
-                    <option value="{{$asset->id}}" {{ old('asset_id') == $asset->id ? 'selected' : '' }}>
+                    <option value="{{$asset->id}}" {{ old('asset_id', $preselectedAssetId ?? null) == $asset->id ? 'selected' : '' }}>
                         {{ $asset->model_name ? $asset->model_name : 'Unknown Model' }} ({{ $asset->asset_tag }})
                     </option>
                 @endforeach
