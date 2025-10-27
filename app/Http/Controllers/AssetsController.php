@@ -250,14 +250,16 @@ class AssetsController extends Controller
     public function assign(Request $request, Asset $asset)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
+            'notes' => 'nullable|string|max:500'
         ]);
 
         try {
             $this->assetService->assignAsset($asset, $request->user_id);
             
-            return redirect()->route('assets.show', $asset)
-                           ->with('success', 'Asset berhasil ditugaskan');
+            // Redirect to movements page to show the assignment
+            return redirect()->route('assets.movements', $asset)
+                           ->with('success', 'Asset berhasil ditugaskan ke pengguna');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menugaskan asset: ' . $e->getMessage());
         }
@@ -271,10 +273,21 @@ class AssetsController extends Controller
         try {
             $this->assetService->unassignAsset($asset);
             
+            // Check if request expects JSON (AJAX call)
+            if (request()->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Asset unassigned successfully']);
+            }
+            
             return redirect()->route('assets.show', $asset)
                            ->with('success', 'Asset berhasil dibatalkan penugasannya');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membatalkan penugasan asset: ' . $e->getMessage());
+            $message = 'Gagal membatalkan penugasan asset: ' . $e->getMessage();
+            
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            
+            return back()->with('error', $message);
         }
     }
 
@@ -288,7 +301,13 @@ class AssetsController extends Controller
                           ->orderBy('created_at', 'desc')
                           ->get();
         
-        return view('assets.movements', compact('asset', 'movements'));
+        // Get active users for assignment
+        $users = User::select('id', 'name')
+                    ->where('is_active', 1)
+                    ->orderBy('name')
+                    ->get();
+        
+        return view('assets.movements', compact('asset', 'movements', 'users'));
     }
 
     /**

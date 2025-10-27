@@ -1,20 +1,20 @@
-@extends('layouts.app')
 
-@section('main-content')
+
+<?php $__env->startSection('main-content'); ?>
     <div class="row">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Movement History - {{ $asset->asset_tag ?? '—' }}</h3>
+                    <h3 class="card-title">Movement History - <?php echo e($asset->asset_tag ?? '—'); ?></h3>
                     <div class="card-tools">
-                        <a href="{{ route('assets.show', $asset) }}" class="btn btn-sm btn-secondary">Back to asset</a>
+                        <a href="<?php echo e(route('assets.show', $asset)); ?>" class="btn btn-sm btn-secondary">Back to asset</a>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    @if($movements->isEmpty())
+                    <?php if($movements->isEmpty()): ?>
                         <p>No movements found for this asset.</p>
-                    @else
+                    <?php else: ?>
                         <table class="table table-striped table-bordered">
                             <thead>
                                 <tr>
@@ -26,18 +26,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($movements as $m)
+                                <?php $__currentLoopData = $movements; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
-                                        <td>{{ optional($m->created_at)->format('Y-m-d H:i') }}</td>
-                                        <td>{{ optional($m->from_location)->location_name ?? '—' }}</td>
-                                        <td>{{ optional($m->to_location)->location_name ?? '—' }}</td>
-                                        <td>{{ optional($m->moved_by)->name ?? (optional($m->user)->name ?? '—') }}</td>
-                                        <td>{{ $m->notes ?? '' }}</td>
+                                        <td><?php echo e(optional($m->created_at)->format('Y-m-d H:i')); ?></td>
+                                        <td><?php echo e(optional($m->from_location)->location_name ?? '—'); ?></td>
+                                        <td><?php echo e(optional($m->to_location)->location_name ?? '—'); ?></td>
+                                        <td><?php echo e(optional($m->moved_by)->name ?? (optional($m->user)->name ?? '—')); ?></td>
+                                        <td><?php echo e($m->notes ?? ''); ?></td>
                                     </tr>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody>
                         </table>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -51,20 +51,23 @@
                 <div class="box-body">
                     <div class="alert alert-info">
                         <strong>Current Assignment:</strong><br>
-                        {{ optional($asset->assignedTo)->name ?? 'Unassigned' }}
+                        <?php echo e(optional($asset->assignedTo)->name ?? 'Unassigned'); ?>
+
                     </div>
 
-                    <form method="POST" action="{{ route('assets.assign', $asset->id) }}" id="assignForm">
-                        {{ csrf_field() }}
+                    <form method="POST" action="<?php echo e(route('assets.assign', $asset->id)); ?>" id="assignForm">
+                        <?php echo e(csrf_field()); ?>
+
                         <div class="form-group">
                             <label for="user_id">Assign to User</label>
                             <select name="user_id" id="user_id" class="form-control" required>
                                 <option value="">-- Select User --</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ $asset->assigned_to == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }}
+                                <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($user->id); ?>" <?php echo e($asset->assigned_to == $user->id ? 'selected' : ''); ?>>
+                                        <?php echo e($user->name); ?>
+
                                     </option>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
                         <div class="form-group">
@@ -75,11 +78,11 @@
                             <button type="submit" class="btn btn-success btn-block">
                                 <i class="fa fa-save"></i> Assign Asset
                             </button>
-                            @if($asset->assigned_to)
+                            <?php if($asset->assigned_to): ?>
                                 <button type="button" class="btn btn-warning btn-block" onclick="unassignAsset()">
                                     <i class="fa fa-trash"></i> Unassign
                                 </button>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </form>
                 </div>
@@ -90,10 +93,10 @@
     <script>
         function unassignAsset() {
             if (confirm('Are you sure you want to unassign this asset?')) {
-                fetch('{{ route("assets.unassign", $asset->id) }}', {
+                fetch('<?php echo e(route("assets.unassign", $asset->id)); ?>', {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                         'Content-Type': 'application/json'
                     }
                 })
@@ -112,4 +115,6 @@
             }
         }
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/assets/movements.blade.php ENDPATH**/ ?>
