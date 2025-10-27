@@ -80,8 +80,12 @@ jobs:
       - name: Run database migrations
         run: php artisan migrate --env=testing --force
         
-      - name: Run API tests
-        run: php artisan test --testsuite=Feature
+      - name: Run quick database tests
+        run: php artisan test:database-columns
+        continue-on-error: true
+        
+      - name: Run API tests with PHPUnit
+        run: php vendor/bin/phpunit --testsuite=Feature --verbose
         
       - name: Comment on PR
         if: github.event_name == 'pull_request' && always()
