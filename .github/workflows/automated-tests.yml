@@ -43,9 +43,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
         
-      - name: Create environment file
+      - name: Create environment files
         run: |
-          cat > .env.testing << 'EOF'
+          cat > .env << 'EOF'
           APP_NAME=Laravel
           APP_ENV=testing
           APP_KEY=
@@ -67,6 +67,8 @@ jobs:
           
           MAIL_MAILER=log
           EOF
+          
+          cp .env .env.testing
         
       - name: Generate application key
         run: php artisan key:generate --env=testing
