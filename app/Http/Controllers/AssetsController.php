@@ -89,11 +89,7 @@ class AssetsController extends Controller
     $repairs = $stats['in_repair'] ?? 0;
     $writtenOff = $stats['disposed'] ?? 0;
 
-        // Get filter options - ViewComposer will handle dropdown data
-    $types = AssetType::orderBy('type_name')->get();
-    $locations = Location::orderBy('location_name')->get();
-        $statuses = Status::orderBy('name')->get();
-        $users = User::orderBy('name')->get();
+    // Filter options are now provided by AssetFormComposer (no need to fetch here)
     // Assets by location for KPI widget
     $assetsByLocation = $this->assetService->getAssetsByLocation();
     $assetsByStatus = $this->assetService->assetsByStatusBreakdown();

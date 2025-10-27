@@ -8,6 +8,7 @@ use App\Http\Controllers\API\TicketController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DailyActivityApiController;
 use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\Api\DatatableController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::get('/dashboard/stats', [UserController::class, 'getDashboardStats']);
         Route::get('/dashboard/kpi', [UserController::class, 'getKpiData']);
     });
+    
+    // Server-side DataTables API endpoints
+    Route::get('/datatables/assets', [DatatableController::class, 'assets']);
+    Route::get('/datatables/tickets', [DatatableController::class, 'tickets']);
     
 });
 

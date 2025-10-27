@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\CreateTicketRequest;
+use App\Http\Requests\UpdateTicketRequest;
 use App\Services\TicketService;
 use App\Services\CacheService;
 use App\Ticket;
@@ -137,12 +138,10 @@ class TicketController extends BaseController
             $asset = Asset::find($request->asset_id);
         }
 
-        $priorities = TicketsPriority::all();
-        $types = TicketsType::all();
-        $locations = Location::all();
+        // Dropdown data is provided by TicketFormComposer
         $assets = Asset::where('assigned_to', auth()->id())->get();
 
-        return view('tickets.create-with-asset', compact('priorities', 'types', 'locations', 'assets', 'asset'));
+        return view('tickets.create-with-asset', compact('assets', 'asset'));
     }
 
     /**
@@ -172,15 +171,8 @@ class TicketController extends BaseController
         // Get ticket entries for the view (the view expects this variable)
         $ticketEntries = $ticket->ticket_entries;
         
-        // Get dropdown data required by the view
-        $users = User::select('id', 'name')->orderBy('name')->get();
-        $locations = Location::select('id', 'location_name')->orderBy('location_name')->get();
-        $ticketsStatuses = TicketsStatus::select('id', 'status')->orderBy('status')->get();
-        $ticketsTypes = TicketsType::select('id', 'type')->orderBy('type')->get();
-        $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
-        
-        return view('tickets.show', compact('ticket', 'pageTitle', 'ticketEntries', 
-                                          'users', 'locations', 'ticketsStatuses', 'ticketsTypes', 'ticketsPriorities'));
+        // Dropdown data is provided by TicketFormComposer
+        return view('tickets.show', compact('ticket', 'pageTitle', 'ticketEntries'));
     }
 
     /**
@@ -221,24 +213,19 @@ class TicketController extends BaseController
         $ticket->load(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'ticket_type', 'location', 'asset']);
         
         // Get dropdown data for the edit form
-        $users = User::select('id', 'name')->orderBy('name')->get();
-        $locations = Location::select('id', 'location_name')->orderBy('location_name')->get();
-        $ticketsStatuses = TicketsStatus::select('id', 'status')->orderBy('status')->get();
-        $ticketsTypes = TicketsType::select('id', 'type')->orderBy('type')->get();
-        $ticketsPriorities = TicketsPriority::select('id', 'priority')->orderBy('priority')->get();
+        // Note: Most dropdown data is provided by TicketFormComposer
         $assets = Asset::select('assets.id', 'assets.asset_tag', 'asset_models.asset_model as model_name')
                       ->leftJoin('asset_models', 'assets.model_id', '=', 'asset_models.id')
                       ->orderBy('assets.asset_tag')
                       ->get();
         
-        return view('tickets.edit', compact('ticket', 'users', 'locations', 'ticketsStatuses', 
-                                          'ticketsTypes', 'ticketsPriorities', 'assets'));
+        return view('tickets.edit', compact('ticket', 'assets'));
     }
 
     /**
      * Update the specified ticket in storage
      */
-    public function update(Request $request, Ticket $ticket)
+    public function update(UpdateTicketRequest $request, Ticket $ticket)
     {
         $user = auth()->user();
         
@@ -248,37 +235,14 @@ class TicketController extends BaseController
                            ->with('error', 'You do not have permission to update this ticket.');
         }
 
-        // Log detailed request info
-        Log::info('Ticket update request received', [
-            'ticket_id' => $ticket->id,
-            'user_id' => $user->id,
-            'method' => $request->method(),
-            'request_data' => $request->all(),
-            'has_subject' => $request->has('subject'),
-            'subject_value' => $request->input('subject'),
-            'has_description' => $request->has('description'),  
-            'description_value' => $request->input('description')
-        ]);
-
-        $validated = $request->validate([
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string',
-            'ticket_priority_id' => 'required|exists:tickets_priorities,id',
-            'ticket_type_id' => 'required|exists:tickets_types,id',
-            'ticket_status_id' => 'required|exists:tickets_statuses,id',
-            'location_id' => 'nullable|exists:locations,id',
-            'asset_id' => 'nullable|exists:assets,id',
-            'assigned_to' => 'nullable|exists:users,id',
-        ]);
-
         try {
             Log::info('Attempting to update ticket', [
                 'ticket_id' => $ticket->id,
-                'validated_data' => $validated,
+                'validated_data' => $request->validated(),
                 'user_id' => $user->id
             ]);
             
-            $ticket->update($validated);
+            $ticket->update($request->validated());
             
             Log::info('Ticket updated successfully', ['ticket_id' => $ticket->id]);
             

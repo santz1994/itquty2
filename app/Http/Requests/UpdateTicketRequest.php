@@ -22,16 +22,14 @@ class UpdateTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'subject' => ['sometimes', 'required', 'string', 'max:255', 'min:5'],
-            'body' => ['sometimes', 'required', 'string', 'min:10'],
-            'priority_id' => ['sometimes', 'required', 'integer', 'exists:tickets_priorities,id'],
-            'type_id' => ['sometimes', 'required', 'integer', 'exists:tickets_types,id'],
-            'status_id' => ['sometimes', 'required', 'integer', 'exists:tickets_statuses,id'],
-            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
-            'location_id' => ['nullable', 'integer', 'exists:locations,id'],
-            'asset_id' => ['nullable', 'integer', 'exists:assets,id'],
-            'due_date' => ['nullable', 'date'],
-            'resolved_at' => ['nullable', 'date'],
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string',
+            'ticket_priority_id' => 'required|exists:tickets_priorities,id',
+            'ticket_type_id' => 'required|exists:tickets_types,id',
+            'ticket_status_id' => 'required|exists:tickets_statuses,id',
+            'location_id' => 'nullable|exists:locations,id',
+            'asset_id' => 'nullable|exists:assets,id',
+            'assigned_to' => 'nullable|exists:users,id',
         ];
     }
 
@@ -43,20 +41,20 @@ class UpdateTicketRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'subject.required' => 'The ticket subject is required.',
-            'subject.min' => 'The subject must be at least 5 characters.',
-            'subject.max' => 'The subject may not be greater than 255 characters.',
-            'body.required' => 'The ticket description is required.',
-            'body.min' => 'The description must be at least 10 characters.',
-            'priority_id.required' => 'Please select a priority.',
-            'priority_id.exists' => 'The selected priority is invalid.',
-            'type_id.required' => 'Please select a ticket type.',
-            'type_id.exists' => 'The selected ticket type is invalid.',
-            'status_id.required' => 'Please select a status.',
-            'status_id.exists' => 'The selected status is invalid.',
-            'assigned_to.exists' => 'The selected user does not exist.',
-            'location_id.exists' => 'The selected location does not exist.',
-            'asset_id.exists' => 'The selected asset does not exist.',
+            'subject.required' => 'Subjek tiket harus diisi',
+            'subject.string' => 'Subjek tiket harus berupa teks',
+            'subject.max' => 'Subjek tiket maksimal 255 karakter',
+            'description.required' => 'Deskripsi masalah harus diisi',
+            'description.string' => 'Deskripsi harus berupa teks',
+            'ticket_priority_id.required' => 'Prioritas tiket harus dipilih',
+            'ticket_priority_id.exists' => 'Prioritas tiket yang dipilih tidak valid',
+            'ticket_type_id.required' => 'Jenis tiket harus dipilih',
+            'ticket_type_id.exists' => 'Jenis tiket yang dipilih tidak valid',
+            'ticket_status_id.required' => 'Status tiket harus dipilih',
+            'ticket_status_id.exists' => 'Status tiket yang dipilih tidak valid',
+            'location_id.exists' => 'Lokasi yang dipilih tidak valid',
+            'asset_id.exists' => 'Asset yang dipilih tidak valid',
+            'assigned_to.exists' => 'User yang dipilih tidak valid',
         ];
     }
 
@@ -68,16 +66,14 @@ class UpdateTicketRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'subject' => 'ticket subject',
-            'body' => 'description',
-            'priority_id' => 'priority',
-            'type_id' => 'ticket type',
-            'status_id' => 'status',
-            'assigned_to' => 'assigned user',
-            'location_id' => 'location',
+            'subject' => 'subjek tiket',
+            'description' => 'deskripsi',
+            'ticket_priority_id' => 'prioritas',
+            'ticket_type_id' => 'jenis tiket',
+            'ticket_status_id' => 'status',
+            'assigned_to' => 'user yang ditugaskan',
+            'location_id' => 'lokasi',
             'asset_id' => 'asset',
-            'due_date' => 'due date',
-            'resolved_at' => 'resolution date',
         ];
     }
 }

@@ -142,43 +142,23 @@ class UsersController extends Controller
 
   public function update(UpdateUserRequest $request, User $user)
   {
-    // Debug: log incoming update request and route-bound user id for triage
-    try {
-      @file_put_contents(storage_path('logs/user_update_debug.log'), json_encode(['time' => date('c'), 'route_user_id' => $user->id, 'request' => $request->all()]) . PHP_EOL, FILE_APPEND);
-    } catch (\Exception $e) {
-      // ignore
-    }
-    
     try {
       // Use UserService to update user with role validation
       $data = $request->validated();
       $updatedUser = $this->userService->updateUserWithRoleValidation($user, $data);
 
-      // Debug: log role assignment outcome for test triage
-      try {
-        $dbg = [
-          'time' => date('c'),
-          'action' => 'updateUserWithRoleValidation',
-          'user_id' => $user->id,
-          'requested_role_id' => $data['role_id'] ?? null,
-          'model_has_roles' => DB::table('model_has_roles')->where('model_id', $user->id)->get()->toArray()
-        ];
-        @file_put_contents(storage_path('logs/test_shim_debug.log'), json_encode($dbg) . PHP_EOL, FILE_APPEND);
-      } catch (\Exception $e) {
-        // ignore
-      }
-
-      // Toastr popup upon successful user update
+      // Set success message
       Session::flash('status', 'success');
-      Session::flash('title', 'User: ' . $request->name);
+      Session::flash('title', 'User: ' . $updatedUser->name);
       Session::flash('message', 'Successfully updated');
 
+      // Build query params for legacy test compatibility
       $qp = http_build_query([
         'legacy_msg' => 'Successfully updated',
         'legacy_status' => 'success',
-        'legacy_title' => 'User: ' . $request->name,
+        'legacy_title' => 'User: ' . $updatedUser->name,
+        'direct_legacy_message' => 'Successfully updated'
       ]);
-      $qp .= '&' . http_build_query(['direct_legacy_message' => 'Successfully updated']);
       
       return redirect('/admin/users?' . $qp);
       
@@ -186,170 +166,20 @@ class UsersController extends Controller
       // Handle validation errors and other exceptions
       $errorMessage = $e->getMessage();
       
-      // Use query-param fallback so tests will reliably see the message
+      Session::flash('status', 'error');
+      Session::flash('title', 'Error');
+      Session::flash('message', $errorMessage);
+      
+      // Build query params for legacy test compatibility
       $qp = http_build_query([
         'legacy_msg' => $errorMessage,
         'legacy_status' => 'warning',
         'legacy_title' => 'User: ' . $request->name,
+        'direct_legacy_message' => $errorMessage
       ]);
-      $qp .= '&' . http_build_query(['direct_legacy_message' => $errorMessage]);
       
       return redirect('/admin/users/' . $user->id . '/edit?' . $qp);
     }
-
-    if ($request->password != '' && $request->password_confirmation != '') {
-      if ($request->password === $request->password_confirmation) {
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = bcrypt($request->password);
-        $user->save();
-      }
-    } else {
-  $user->name = $request->name;
-  $user->email = $request->email;
-  $user->save();
-    }
-
-    // If only one user is a super-admin, don't allow the super-admin to change role
-    $usersRole = DB::table('model_has_roles')
-                          ->where('model_id', $user->id)
-                          ->where('model_type', User::class)
-                          ->first();
-    $superAdminRole = Role::where('name', '=', 'super-admin')->first();
-    $superAdminCount = DB::table('model_has_roles')
-                                ->where('role_id', $superAdminRole->id)
-                                ->count();
-
-    // Check if the user being edited is the last super-admin
-    if ($usersRole && $superAdminRole && $usersRole->role_id == $superAdminRole->id && $usersRole->role_id != $request->role_id) {
-      if ($superAdminCount == 1) {
-        // Use query-param fallback so tests will reliably see the message
-        $qp = http_build_query([
-          'legacy_msg' => 'Cannot change role as there must be one (1) or more users with the role of ' . $superAdminRole->display_name . '.',
-          'legacy_status' => 'warning',
-          'legacy_title' => 'User: ' . $request->name,
-        ]);
-        // ensure direct_legacy_message is present as well
-        $qp .= '&' . http_build_query(['direct_legacy_message' => 'Cannot change role as there must be one (1) or more users with the role of ' . $superAdminRole->display_name . '.']);
-        return redirect('/admin/users/' . $user->id . '/edit?' . $qp);
-      } else {
-        // Update the user's role via Spatie API
-        $newRole = Role::find($request->role_id);
-        if ($newRole) {
-          // Use role name to avoid any numeric id mapping surprises in tests
-          $user->syncRoles($newRole->name);
-          // Debug: log role assignment outcome for test triage
-          try {
-            $dbg = [
-              'time' => date('c'),
-              'action' => 'syncRoles',
-              'user_id' => $user->id,
-              'requested_role_id' => $request->role_id,
-              'resolved_role_id' => $newRole->id,
-              'model_has_roles' => \Illuminate\Support\Facades\DB::table('model_has_roles')->where('model_id', $user->id)->get()->toArray()
-            ];
-            @file_put_contents(storage_path('logs/test_shim_debug.log'), json_encode($dbg) . PHP_EOL, FILE_APPEND);
-          } catch (\Exception $e) {
-            // ignore
-          }
-            // In testing, ensure the model_has_roles entry is exactly the expected one
-            if (app()->environment('testing')) {
-              try {
-                \Illuminate\Support\Facades\DB::table('model_has_roles')->where('model_id', $user->id)->delete();
-                \Illuminate\Support\Facades\DB::table('model_has_roles')->insert([
-                  'role_id' => $newRole->id,
-                  'model_type' => \App\User::class,
-                  'model_id' => $user->id
-                ]);
-                  // Also ensure the user matching the submitted email has the expected role
-                  if (!empty($request->email)) {
-                    $target = \App\User::where('email', $request->email)->first();
-                    if ($target) {
-                      \Illuminate\Support\Facades\DB::table('model_has_roles')->where('model_id', $target->id)->delete();
-                      \Illuminate\Support\Facades\DB::table('model_has_roles')->insert([
-                        'role_id' => $newRole->id,
-                        'model_type' => \App\User::class,
-                        'model_id' => $target->id
-                      ]);
-                    }
-                  }
-              } catch (\Exception $e) {
-                // ignore
-              }
-            }
-        }
-
-        // Toastr popup upon successful user update
-        Session::flash('status', 'success');
-        Session::flash('title', 'User: ' . $request->name);
-        Session::flash('message', 'Successfully updated');
-      }
-    } else {
-      // Update the user's role via Spatie API
-      $newRole = Role::find($request->role_id);
-      if ($newRole) {
-        // Use role name to avoid any numeric id mapping surprises in tests
-        $user->syncRoles($newRole->name);
-        // Debug: log role assignment outcome for test triage (general path)
-        try {
-          $dbg = [
-            'time' => date('c'),
-            'action' => 'syncRoles-general',
-            'user_id' => $user->id,
-            'requested_role_id' => $request->role_id,
-            'resolved_role_id' => $newRole->id,
-            'resolved_role_name' => $newRole->name,
-            'model_has_roles' => \Illuminate\Support\Facades\DB::table('model_has_roles')->where('model_id', $user->id)->get()->toArray()
-          ];
-          @file_put_contents(storage_path('logs/test_shim_debug.log'), json_encode($dbg) . PHP_EOL, FILE_APPEND);
-        } catch (\Exception $e) {
-          // ignore
-        }
-          // In testing, ensure the model_has_roles entry is exactly the expected one
-          if (app()->environment('testing')) {
-            try {
-              \Illuminate\Support\Facades\DB::table('model_has_roles')->where('model_id', $user->id)->delete();
-              \Illuminate\Support\Facades\DB::table('model_has_roles')->insert([
-                'role_id' => $newRole->id,
-                'model_type' => \App\User::class,
-                'model_id' => $user->id
-              ]);
-            } catch (\Exception $e) {
-              // ignore
-            }
-          }
-      }
-
-      // Toastr popup upon successful user update
-      Session::flash('status', 'success');
-      Session::flash('title', 'User: ' . $request->name);
-      Session::flash('message', 'Successfully updated');
-    }
-
-    // Some test environments don't load named routes; use a literal redirect
-    // to the users index path to remain compatible with the legacy tests.
-    // Include a query-param fallback so the legacy test shim can always
-    // observe the exact success message in the response body.
-    $qp = http_build_query([
-      'legacy_msg' => 'Successfully updated',
-      'legacy_status' => 'success',
-      'legacy_title' => 'User: ' . $request->name,
-    ]);
-    $qp .= '&' . http_build_query(['direct_legacy_message' => 'Successfully updated']);
-    // Temporary: dump model_has_roles for this user to a dedicated log for debugging
-    try {
-        $rows = \Illuminate\Support\Facades\DB::table('model_has_roles')->where('model_id', $user->id)->get()->toArray();
-        @file_put_contents(storage_path('logs/roles_after_update.log'), date('c') . ' ' . json_encode(['user_id' => $user->id, 'model_has_roles' => $rows]) . PHP_EOL, FILE_APPEND);
-    } catch (\Exception $e) {
-        // ignore
-    }
-  try {
-    $all = \Illuminate\Support\Facades\DB::table('model_has_roles')->get()->toArray();
-    @file_put_contents(storage_path('logs/roles_after_update.log'), date('c') . ' ' . json_encode(['all_model_has_roles' => $all]) . PHP_EOL, FILE_APPEND);
-  } catch (\Exception $e) {
-    // ignore
-  }
-    return redirect('/admin/users?' . $qp);
   }
 
   /**

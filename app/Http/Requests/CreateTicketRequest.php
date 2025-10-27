@@ -39,26 +39,9 @@ class CreateTicketRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        // Auto-generate ticket code and set initial status
+        // Set the authenticated user's ID if not provided
         $this->merge([
-            'ticket_code' => $this->generateTicketCode(),
-            'ticket_status_id' => 1, // Assuming 1 = Open
             'user_id' => auth()->id() ?? $this->user_id
         ]);
-    }
-
-    private function generateTicketCode()
-    {
-        $prefix = 'TKT';
-        $date = now()->format('Ymd');
-        
-        $lastTicket = \App\Ticket::whereDate('created_at', today())
-                                ->orderBy('id', 'desc')
-                                ->first();
-        
-        $sequence = $lastTicket ? 
-                    (int)substr($lastTicket->ticket_code, -3) + 1 : 1;
-        
-        return $prefix . '-' . $date . '-' . str_pad($sequence, 3, '0', STR_PAD_LEFT);
     }
 }
