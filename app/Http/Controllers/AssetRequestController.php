@@ -106,6 +106,61 @@ class AssetRequestController extends Controller
     }
 
     /**
+     * Show edit form for asset request
+     */
+    public function edit(AssetRequest $assetRequest)
+    {
+        // Check if user can edit this request
+        if (!$this->user()->hasRole(['admin', 'super-admin']) && $assetRequest->requested_by !== Auth::id()) {
+            abort(403, 'Tidak memiliki akses untuk mengubah permintaan ini');
+        }
+
+        // Can only edit pending requests
+        if ($assetRequest->status !== 'pending') {
+            return back()->with('error', 'Hanya dapat mengubah permintaan yang masih pending');
+        }
+
+        $assetRequest->load(['requestedBy', 'assetType']);
+        $assetTypes = AssetType::orderBy('type_name')->get();
+        $statuses = ['pending', 'approved', 'rejected', 'fulfilled'];
+
+        return view('asset-requests.edit', compact('assetRequest', 'assetTypes', 'statuses'));
+    }
+
+    /**
+     * Update asset request
+     */
+    public function update(Request $request, AssetRequest $assetRequest)
+    {
+        // Check if user can update this request
+        if (!$this->user()->hasRole(['admin', 'super-admin']) && $assetRequest->requested_by !== Auth::id()) {
+            abort(403, 'Tidak memiliki akses untuk mengubah permintaan ini');
+        }
+
+        // Can only edit pending requests
+        if ($assetRequest->status !== 'pending') {
+            return back()->with('error', 'Hanya dapat mengubah permintaan yang masih pending');
+        }
+
+        $request->validate([
+            'asset_type_id' => 'required|exists:asset_types,id',
+            'justification' => 'required|string|max:1000',
+        ]);
+
+        try {
+            $assetRequest->update([
+                'asset_type_id' => $request->asset_type_id,
+                'justification' => $request->justification,
+            ]);
+
+            return redirect()->route('asset-requests.show', $assetRequest->id)
+                           ->with('success', 'Permintaan asset berhasil diperbarui');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui permintaan: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Approve asset request
      */
     public function approve(Request $request, AssetRequest $assetRequest)

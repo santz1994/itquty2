@@ -1,14 +1,14 @@
-@extends('layouts.app')
 
-@section('main-content')
+
+<?php $__env->startSection('main-content'); ?>
     <section class="content-header">
         <h1>
             User Roles Management
             <small>Manage user roles and permissions</small>
         </h1>
         <ol class="breadcrumb">
-            <li><a href="{{ url('/home') }}"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li><a href="{{ route('users.index') }}">Users</a></li>
+            <li><a href="<?php echo e(url('/home')); ?>"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="<?php echo e(route('users.index')); ?>">Users</a></li>
             <li class="active">Roles</li>
         </ol>
     </section>
@@ -22,15 +22,15 @@
                             <i class="fa fa-shield"></i> System Roles Overview
                         </h3>
                         <div class="box-tools pull-right">
-                            @if(auth()->user()->hasRole('super-admin'))
-                                <a href="{{ route('system.roles') }}" class="btn btn-primary btn-sm">
+                            <?php if(auth()->user()->hasRole('super-admin')): ?>
+                                <a href="<?php echo e(route('system.roles')); ?>" class="btn btn-primary btn-sm">
                                     <i class="fa fa-cog"></i> Manage Roles & Permissions
                                 </a>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="box-body">
-                        @if(isset($roles) && count($roles) > 0)
+                        <?php if(isset($roles) && count($roles) > 0): ?>
                             <div class="table-responsive">
                                 <table class="table table-striped table-hover" id="rolesTable">
                                     <thead>
@@ -44,33 +44,36 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($roles as $role)
+                                        <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <tr>
                                             <td>
-                                                <span class="label label-{{ $role->name == 'super-admin' ? 'danger' : ($role->name == 'admin' ? 'warning' : 'info') }}">
-                                                    {{ $role->name }}
+                                                <span class="label label-<?php echo e($role->name == 'super-admin' ? 'danger' : ($role->name == 'admin' ? 'warning' : 'info')); ?>">
+                                                    <?php echo e($role->name); ?>
+
                                                 </span>
                                             </td>
                                             <td>
-                                                <strong>{{ ucwords(str_replace('-', ' ', $role->name)) }}</strong>
+                                                <strong><?php echo e(ucwords(str_replace('-', ' ', $role->name))); ?></strong>
                                             </td>
                                             <td>
-                                                <span class="badge bg-blue" title="{{ $role->users->count() }} users assigned">
-                                                    {{ $role->users->count() }}
+                                                <span class="badge bg-blue" title="<?php echo e($role->users->count()); ?> users assigned">
+                                                    <?php echo e($role->users->count()); ?>
+
                                                 </span>
                                             </td>
                                             <td>
-                                                @if($role->permissions && $role->permissions->count() > 0)
-                                                    <span class="badge bg-green" title="{{ $role->permissions->count() }} permissions">
-                                                        {{ $role->permissions->count() }} permissions
+                                                <?php if($role->permissions && $role->permissions->count() > 0): ?>
+                                                    <span class="badge bg-green" title="<?php echo e($role->permissions->count()); ?> permissions">
+                                                        <?php echo e($role->permissions->count()); ?> permissions
                                                     </span>
-                                                @else
+                                                <?php else: ?>
                                                     <span class="text-muted"><em>No permissions</em></span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                             <td>
                                                 <small class="text-muted">
-                                                    {{ $role->created_at ? $role->created_at->format('M d, Y') : 'N/A' }}
+                                                    <?php echo e($role->created_at ? $role->created_at->format('M d, Y') : 'N/A'); ?>
+
                                                 </small>
                                             </td>
                                             <td>
@@ -79,43 +82,43 @@
                                                     <button type="button" class="btn btn-info" 
                                                             data-toggle="modal" 
                                                             data-target="#roleDetailsModal"
-                                                            data-role-id="{{ $role->id }}"
-                                                            data-role-name="{{ $role->name }}"
-                                                            data-role-users="{{ $role->users->count() }}"
-                                                            data-role-permissions="{{ $role->permissions->count() }}"
+                                                            data-role-id="<?php echo e($role->id); ?>"
+                                                            data-role-name="<?php echo e($role->name); ?>"
+                                                            data-role-users="<?php echo e($role->users->count()); ?>"
+                                                            data-role-permissions="<?php echo e($role->permissions->count()); ?>"
                                                             onclick="showRoleDetails(this)"
                                                             title="View role details">
                                                         <i class="fa fa-eye"></i> Details
                                                     </button>
 
                                                     <!-- View Users Button -->
-                                                    <a href="{{ route('users.index') }}?role={{ $role->name }}" 
+                                                    <a href="<?php echo e(route('users.index')); ?>?role=<?php echo e($role->name); ?>" 
                                                        class="btn btn-primary"
                                                        title="View users with this role">
                                                         <i class="fa fa-users"></i> Users
                                                     </a>
 
-                                                    @if(auth()->user()->hasRole('super-admin'))
+                                                    <?php if(auth()->user()->hasRole('super-admin')): ?>
                                                         <!-- Edit/Manage Button -->
-                                                        <a href="{{ route('system.roles') }}" 
+                                                        <a href="<?php echo e(route('system.roles')); ?>" 
                                                            class="btn btn-warning"
                                                            title="Edit this role">
                                                             <i class="fa fa-edit"></i> Manage
                                                         </a>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </tbody>
                                 </table>
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="callout callout-info">
                                 <h4><i class="fa fa-info-circle"></i> No Roles Found</h4>
                                 <p>No user roles are currently defined in the system.</p>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -123,14 +126,15 @@
 
         <!-- Role Statistics Cards -->
         <div class="row">
-            @if(isset($roles) && count($roles) > 0)
-                @foreach($roles as $role)
+            <?php if(isset($roles) && count($roles) > 0): ?>
+                <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="col-md-6 col-lg-3">
                     <div class="box box-widget">
                         <div class="box-header with-border">
                             <h3 class="box-title">
-                                <span class="label label-{{ $role->name == 'super-admin' ? 'danger' : ($role->name == 'admin' ? 'warning' : 'info') }}">
-                                    {{ ucwords(str_replace('-', ' ', $role->name)) }}
+                                <span class="label label-<?php echo e($role->name == 'super-admin' ? 'danger' : ($role->name == 'admin' ? 'warning' : 'info')); ?>">
+                                    <?php echo e(ucwords(str_replace('-', ' ', $role->name))); ?>
+
                                 </span>
                             </h3>
                         </div>
@@ -138,17 +142,17 @@
                             <dl class="row">
                                 <dt class="col-sm-6">Assigned Users:</dt>
                                 <dd class="col-sm-6">
-                                    <strong>{{ $role->users->count() }}</strong>
+                                    <strong><?php echo e($role->users->count()); ?></strong>
                                 </dd>
 
                                 <dt class="col-sm-6">Permissions:</dt>
                                 <dd class="col-sm-6">
-                                    <strong>{{ $role->permissions ? $role->permissions->count() : 0 }}</strong>
+                                    <strong><?php echo e($role->permissions ? $role->permissions->count() : 0); ?></strong>
                                 </dd>
 
                                 <dt class="col-sm-6">Created:</dt>
                                 <dd class="col-sm-6">
-                                    <small>{{ $role->created_at ? $role->created_at->format('M d, Y') : 'N/A' }}</small>
+                                    <small><?php echo e($role->created_at ? $role->created_at->format('M d, Y') : 'N/A'); ?></small>
                                 </dd>
                             </dl>
                         </div>
@@ -157,27 +161,27 @@
                                 <button type="button" class="btn btn-info" 
                                         data-toggle="modal" 
                                         data-target="#roleDetailsModal"
-                                        data-role-id="{{ $role->id }}"
-                                        data-role-name="{{ $role->name }}"
-                                        data-role-users="{{ $role->users->count() }}"
-                                        data-role-permissions="{{ $role->permissions->count() }}"
+                                        data-role-id="<?php echo e($role->id); ?>"
+                                        data-role-name="<?php echo e($role->name); ?>"
+                                        data-role-users="<?php echo e($role->users->count()); ?>"
+                                        data-role-permissions="<?php echo e($role->permissions->count()); ?>"
                                         onclick="showRoleDetails(this)"
                                         style="flex: 1;">
                                     <i class="fa fa-eye"></i> Details
                                 </button>
-                                @if(auth()->user()->hasRole('super-admin'))
-                                    <a href="{{ route('system.roles') }}" 
+                                <?php if(auth()->user()->hasRole('super-admin')): ?>
+                                    <a href="<?php echo e(route('system.roles')); ?>" 
                                        class="btn btn-warning"
                                        style="flex: 1;">
                                         <i class="fa fa-cog"></i> Manage
                                     </a>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
                 </div>
-                @endforeach
-            @endif
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <?php endif; ?>
         </div>
     </section>
 </div>
@@ -228,11 +232,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                @if(auth()->user()->hasRole('super-admin'))
-                    <a href="{{ route('system.roles') }}" class="btn btn-warning">
+                <?php if(auth()->user()->hasRole('super-admin')): ?>
+                    <a href="<?php echo e(route('system.roles')); ?>" class="btn btn-warning">
                         <i class="fa fa-cog"></i> Edit Role
                     </a>
-                @endif
+                <?php endif; ?>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -263,7 +267,7 @@ function loadRoleUsers(roleName) {
     // Fetch users with this role from PHP data if available
     // For now, show a simple message
     $.ajax({
-        url: '{{ route("users.index") }}',
+        url: '<?php echo e(route("users.index")); ?>',
         method: 'GET',
         data: { role: roleName },
         success: function(data) {
@@ -336,4 +340,5 @@ $(document).ready(function() {
         gap: 5px;
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/users/roles.blade.php ENDPATH**/ ?>

@@ -176,7 +176,13 @@
                                                    class="btn btn-sm btn-info" title="View">
                                                     <i class="fa fa-eye"></i>
                                                 </a>
-                                                                                                @if(Auth::user()->hasRole(['admin', 'super-admin']) && $request->status === 'pending')
+                                                @if($request->status === 'pending')
+                                                    <a href="{{ route('asset-requests.edit', $request->id) }}" 
+                                                       class="btn btn-sm btn-warning" title="Edit">
+                                                        <i class="fa fa-edit"></i>
+                                                    </a>
+                                                @endif
+                                                @if(Auth::user()->hasRole(['admin', 'super-admin']) && $request->status === 'pending')
                                                     <form action="{{ route('asset-requests.approve', $request->id) }}" 
                                                           method="POST" style="display: inline;">
                                                         @csrf

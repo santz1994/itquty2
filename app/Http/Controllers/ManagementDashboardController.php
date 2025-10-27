@@ -76,8 +76,20 @@ class ManagementDashboardController extends Controller
                 return $admin;
             });
             
+            // Calculate summary metrics for cards
+            $totalAdmins = $adminPerformance->count();
+            $activeAdmins = $adminPerformance->filter(fn($admin) => $admin->is_online)->count();
+            $resolvedTickets = $adminPerformance->sum('resolved_tickets');
+            $totalTickets = $adminPerformance->sum('assigned_tickets');
+            $avgResponseTime = $totalAdmins > 0 ? 
+                             $adminPerformance->avg('avg_response_time') : 0;
+            
             $data = [
                 'adminPerformance' => $adminPerformance,
+                'totalAdmins' => $totalAdmins,
+                'activeAdmins' => $activeAdmins,
+                'resolvedTickets' => $resolvedTickets,
+                'avgResponseTime' => $avgResponseTime,
                 'period' => $period
             ];
         }

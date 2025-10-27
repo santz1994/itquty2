@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+// Current user debug
+Route::get('/debug/user', function() {
+    return view('debug.current-user');
+})->middleware(['web', 'auth']);
+
 // Debug route for assets issue
 Route::get('/test-inventory-debug', function() {
     try {
