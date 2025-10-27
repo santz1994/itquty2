@@ -406,7 +406,7 @@ class BulkOperationController extends Controller
     {
         try {
             $users = User::select('id', 'name', 'email')
-                        ->where('active', 1)
+                        ->where('is_active', 1)
                         ->orderBy('name')
                         ->get();
 

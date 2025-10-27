@@ -63,7 +63,7 @@ class TicketsCannedFieldsController extends Controller
 
     $ticketsCannedField = TicketsCannedField::where('id', $request->subject)->first();
 
-    return view('tickets.create-with-canned-fields', compact('ticketsPriorities', 'ticketsStatuses', 'ticketsTypes', 'locations', 'users', 'ticketsCannedFields', 'ticketsCannedField', 'pageTitle'));
+    return view('tickets.create-with-canned-fields', compact('ticketsPriorities', 'ticketsStatuses', 'ticketsTypes', 'locations', 'users', 'ticketsCannedField', 'pageTitle'));
   }
 
   public function edit(TicketsCannedField $ticketsCannedField)

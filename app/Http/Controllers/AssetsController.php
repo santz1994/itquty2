@@ -89,13 +89,16 @@ class AssetsController extends Controller
     $repairs = $stats['in_repair'] ?? 0;
     $writtenOff = $stats['disposed'] ?? 0;
 
-    // Filter options are now provided by AssetFormComposer (no need to fetch here)
+    // Filter options are now provided by AssetFormComposer
+    // Get users for assigned_to filter
+    $users = \App\User::select('id', 'name')->where('is_active', 1)->orderBy('name')->get();
+    
     // Assets by location for KPI widget
     $assetsByLocation = $this->assetService->getAssetsByLocation();
     $assetsByStatus = $this->assetService->assetsByStatusBreakdown();
     $monthlyNewAssets = $this->assetService->monthlyNewAssets(6);
 
-    return view('assets.index', compact('assets', 'types', 'locations', 'statuses', 'users', 
+    return view('assets.index', compact('assets', 'users', 
                       'totalAssets', 'deployed', 'readyToDeploy', 'repairs', 'writtenOff', 'assetsByLocation', 'assetsByStatus', 'monthlyNewAssets'));
     }
 

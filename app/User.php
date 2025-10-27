@@ -118,7 +118,7 @@ class User extends Authenticatable
 
   public function scopeActiveUsers($query)
   {
-    return $query->where('active', true);
+    return $query->where('is_active', true);
   }
 
   public function scopeActive($query)
