@@ -84,7 +84,7 @@
             </div>
             <div class="form-group">
               <label for="purchase_date">Purchase Date</label>
-              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{ old('purchase_date', optional($asset->purchase_date)->format('Y-m-d')) }}">
+1              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{ old('purchase_date', optional($asset->purchase_date)->format('Y-m-d')) }}">
             </div>
             <div class="form-group">
               <label for="warranty_months">Warranty Months</label>
