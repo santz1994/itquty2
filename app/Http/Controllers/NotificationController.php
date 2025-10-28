@@ -23,6 +23,7 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
+        /** @var \App\User $user */
         $user = Auth::user();
         
         $query = Notification::forUser($user->id)

@@ -55,28 +55,28 @@ class TicketController extends BaseController
         // Role-based filtering using trait method
         $query = $this->applyRoleBasedFilters($query, $user);
 
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
+        // Filter by status (only when a non-empty value is provided)
+        if ($request->filled('status')) {
             $query->where('ticket_status_id', $request->status);
         }
 
-        // Filter by priority
-        if ($request->has('priority') && $request->priority !== '') {
+        // Filter by priority (only when a non-empty value is provided)
+        if ($request->filled('priority')) {
             $query->where('ticket_priority_id', $request->priority);
         }
 
         // Filter by assigned admin (only for management, admin, super-admin)  
-        if ($request->has('assigned_to') && $request->assigned_to !== '' && !$this->hasRole('user')) {
+        if ($request->filled('assigned_to') && !$this->hasRole('user')) {
             $query->where('assigned_to', $request->assigned_to);
         }
 
         // Filter by asset
-        if ($request->has('asset_id') && $request->asset_id !== '') {
+        if ($request->filled('asset_id')) {
             $query->where('asset_id', $request->asset_id);
         }
 
         // Search by ticket code or subject
-        if ($request->has('search') && $request->search !== '') {
+        if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('ticket_code', 'like', '%' . $request->search . '%')
                   ->orWhere('subject', 'like', '%' . $request->search . '%');
@@ -170,10 +170,18 @@ class TicketController extends BaseController
     {
         $ticket->load(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'ticket_type', 'location', 'asset', 'ticket_entries']);
         $pageTitle = 'Ticket Details - ' . $ticket->ticket_code;
-        
+
+        // Authorization: allow admins or the ticket creator or the assigned user
+        $user = auth()->user();
+        /** @var \App\User $user */
+        if (! $this->hasAnyRole(['super-admin', 'admin']) && $ticket->user_id !== $user->id && $ticket->assigned_to !== $user->id) {
+            return redirect()->route('tickets.index')
+                             ->with('error', 'You do not have permission to view this ticket.');
+        }
+
         // Get ticket entries for the view (the view expects this variable)
         $ticketEntries = $ticket->ticket_entries;
-        
+
         // Dropdown data is provided by TicketFormComposer
         return view('tickets.show', compact('ticket', 'pageTitle', 'ticketEntries'));
     }
@@ -322,9 +330,17 @@ class TicketController extends BaseController
     {
         $ticket = Ticket::with(['user', 'assignedTo', 'location', 'asset', 'ticket_status', 'ticket_priority', 'ticket_type', 'ticket_entries'])
                        ->findOrFail($id);
-        
+
+        // Authorization: allow admins or the ticket creator or the assigned user
+        $user = auth()->user();
+        /** @var \App\User $user */
+        if (! $this->hasAnyRole(['super-admin', 'admin']) && $ticket->user_id !== $user->id && $ticket->assigned_to !== $user->id) {
+            return redirect()->route('tickets.index')
+                             ->with('error', 'You do not have permission to print this ticket.');
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('tickets.print', compact('ticket'));
-        
+
         return $pdf->stream('ticket_' . $ticket->ticket_code . '.pdf');
     }
 }

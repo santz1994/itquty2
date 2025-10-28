@@ -33,6 +33,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     // ========================================
     // ADMIN & SUPER-ADMIN SHARED ROUTES
     // ========================================
+    // KPI routes: allow management, admin, or super-admin
+    Route::middleware(['role:management|admin|super-admin'])->group(function () {
+        Route::get('/kpi-dashboard', [\App\Http\Controllers\KPIDashboardController::class, 'index'])->name('kpi.dashboard');
+        Route::get('/kpi-data', [\App\Http\Controllers\KPIDashboardController::class, 'getKPIData'])->name('kpi.data');
+    });
+
     Route::middleware(['role:admin|super-admin'])->group(function () {
         
         // Audit Logs
@@ -50,9 +56,9 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/daily-activities/export-pdf', [\App\Http\Controllers\DailyActivityController::class, 'export'])->name('daily-activities.export-pdf');
         Route::resource('daily-activities', \App\Http\Controllers\DailyActivityController::class);
         
-        // KPI Dashboard
-        Route::get('/kpi-dashboard', [\App\Http\Controllers\KPIDashboardController::class, 'index'])->name('kpi.dashboard');
-        Route::get('/kpi-data', [\App\Http\Controllers\KPIDashboardController::class, 'getKPIData'])->name('kpi.data');
+    // KPI Dashboard
+    // NOTE: moved to a dedicated middleware group below that allows 'management' role
+    // Route placeholders left intentionally for reference.
         
         // Notifications
         Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');

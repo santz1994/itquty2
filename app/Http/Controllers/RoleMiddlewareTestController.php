@@ -9,7 +9,8 @@ class RoleMiddlewareTestController extends Controller
 {
     public function testMiddleware()
     {
-        $user = Auth::user();
+    /** @var \App\User $user */
+    $user = Auth::user();
         $info = [
             'user' => [
                 'id' => $user ? $user->id : null,

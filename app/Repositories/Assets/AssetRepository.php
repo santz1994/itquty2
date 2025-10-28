@@ -23,8 +23,9 @@ class AssetRepository implements AssetRepositoryInterface {
   {
     $pageTitle = 'View Assets';
     
-    // Use scopes and eager loading for better performance
-    $user = Auth::user();
+  // Use scopes and eager loading for better performance
+  /** @var \App\User $user */
+  $user = Auth::user();
     if ($user && $user->hasRole('user')) {
       // Users only see assets assigned to them or from their division
       $assets = Asset::withRelations()

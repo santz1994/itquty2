@@ -10,7 +10,7 @@ class AssetRequest extends Model
     use HasFactory;
     
     protected $fillable = [
-        'requested_by', 'user_id', 'asset_type_id', 'justification', 'status',
+        'requested_by', 'user_id', 'asset_type_id', 'justification', 'priority', 'status',
         'approved_by', 'approved_at', 'approval_notes', 
         'fulfilled_asset_id', 'fulfilled_at'
     ];

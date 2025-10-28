@@ -114,8 +114,13 @@ class UsersController extends Controller
     return view('admin.users.create', compact('pageTitle', 'roles', 'divisions'));
   }
 
-  public function edit(User $user)
+  public function edit($user)
   {
+    // Handle both bound User model and string ID for backward compatibility
+    if (is_string($user) || is_numeric($user)) {
+      $user = User::findOrFail($user);
+    }
+    
     $pageTitle = 'Edit User - ' . $user->name;
     // Provide the same compatibility mapping as in index(): legacy views expect `user_id`.
     $usersRoles = DB::table('model_has_roles')->where('model_type', User::class)->get()
@@ -228,7 +233,7 @@ class UsersController extends Controller
 
   public function roles()
   {
-    $roles = \Spatie\Permission\Models\Role::with('users')->get();
+    $roles = \Spatie\Permission\Models\Role::with(['users', 'permissions'])->get();
     return view('users.roles', compact('roles'));
   }
 

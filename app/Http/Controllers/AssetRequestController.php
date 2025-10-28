@@ -8,6 +8,8 @@ use App\AssetRequest;
 use App\AssetType;
 use App\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AssetRequestController extends Controller
 {
@@ -27,6 +29,21 @@ class AssetRequestController extends Controller
      */
     public function index(Request $request)
     {
+        // Defensive: ensure user object is available and log access for debugging
+        $user = null;
+        try {
+            $user = $this->user();
+        } catch (\Throwable $e) {
+            // If Auth::user() can't be resolved, log and continue as guest (shouldn't happen under 'auth' middleware)
+            Log::warning('AssetRequestController@index: failed to get auth user', ['error' => $e->getMessage()]);
+        }
+
+        Log::info('AssetRequestController@index accessed', [
+            'user_id' => $user ? $user->id : null,
+            'roles' => $user && method_exists($user, 'getRoleNames') ? $user->getRoleNames()->toArray() : [],
+            'query_params' => $request->query()
+        ]);
+
         $query = AssetRequest::with(['requestedBy', 'assetType', 'approvedBy']);
 
         // Filter by status
@@ -44,8 +61,8 @@ class AssetRequestController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        // If regular user, only show their requests
-        if (!$this->user()->hasRole(['admin', 'super-admin'])) {
+        // If regular user, only show their requests. Be defensive if user object not available.
+        if (! $user || ! (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super-admin']))) {
             $query->where('requested_by', Auth::id());
         }
 
@@ -340,15 +357,19 @@ class AssetRequestController extends Controller
             fputcsv($file, ['Tanggal Request', 'User', 'Tipe Asset', 'Deskripsi', 'Prioritas', 'Status', 'Disetujui Oleh', 'Tanggal Disetujui']);
             
             foreach ($requests as $req) {
+                // Use justification (stored field) and guard date formatting in case values are strings
+                $created = $req->created_at ? Carbon::parse($req->created_at)->format('Y-m-d H:i:s') : '';
+                $approved = $req->approved_at ? Carbon::parse($req->approved_at)->format('Y-m-d H:i:s') : '';
+
                 fputcsv($file, [
-                    $req->created_at->format('Y-m-d H:i:s'),
-                    $req->requestedBy->name,
-                    $req->assetType->name,
-                    $req->description,
-                    $req->priority,
-                    $req->status,
+                    $created,
+                    optional($req->requestedBy)->name ?: '',
+                    optional($req->assetType)->name ?: '',
+                    $req->justification ?? '',
+                    $req->priority ?? '',
+                    $req->status ?? '',
                     $req->approvedBy ? $req->approvedBy->name : '',
-                    $req->approved_at ? $req->approved_at->format('Y-m-d H:i:s') : ''
+                    $approved
                 ]);
             }
             

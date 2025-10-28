@@ -13,10 +13,10 @@
             // unexpectedly empty (best-effort DB lookup).
             $resolvedName = old('name');
             $resolvedEmail = old('email');
-            if (empty($resolvedName) && isset($user) && isset($user->name) && $user->name) {
+            if (empty($resolvedName) && isset($user->name) && $user->name) {
               $resolvedName = $user->name;
             }
-            if (empty($resolvedEmail) && isset($user) && isset($user->email) && $user->email) {
+            if (empty($resolvedEmail) && isset($user->email) && $user->email) {
               $resolvedEmail = $user->email;
             }
             if ((empty($resolvedName) || empty($resolvedEmail))) {
@@ -69,22 +69,26 @@
           @if(isset($qpDirect) && $qpDirect)
             <div id="__direct_legacy_message_qp" style="color:red;font-weight:bold;">{{ $qpDirect }}</div>
           @endif
-          <form method="POST" action="/admin/users/{{$user->id}}">
+          @php
+            // Safely get user ID - controller guarantees $user is an object
+            $userId = $user->id ?? null;
+          @endphp
+          <form method="POST" action="/admin/users/{{ $userId }}">
             {{method_field('PATCH')}}
             {{csrf_field()}}
               <div class="form-group ">
                 <label for="name">Name</label>
                 {{-- Prefer old() so failed validation preserves input, fall back to model value --}} 
-                <input type="text" name="name" class="form-control" value="{{ old('name', isset($user) ? $user->name : '') }}">
+                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name ?? '') }}">
               </div>
               <div class="form-group ">
                 <label for="email">Email</label>
-                <input type="text" name="email" class="form-control" value="{{ old('email', isset($user) ? $user->email : '') }}">
+                <input type="text" name="email" class="form-control" value="{{ old('email', $user->email ?? '') }}">
               </div>
               
               <div class="form-group">
                 <label for="phone">Phone Number</label>
-                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="{{ old('phone', isset($user) ? $user->phone : '') }}">
+                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="{{ old('phone', $user->phone ?? '') }}">
                 <small class="help-block text-muted">Optional - User's contact phone number</small>
               </div>
               
@@ -95,7 +99,7 @@
                   @if(isset($divisions))
                     @foreach($divisions as $division)
                       <option value="{{ $division->id }}" 
-                        {{ old('division_id', isset($user) && $user->division_id == $division->id ? $user->division_id : '') == $division->id ? 'selected' : '' }}>
+                        {{ old('division_id', $user->division_id ?? '') == $division->id ? 'selected' : '' }}>
                         {{ $division->name }}
                       </option>
                     @endforeach
@@ -121,7 +125,9 @@
                 <label for="role_id">User's Role</label>
                 <select class="form-control role_id" name="role_id">
                   @foreach($usersRoles as $usersRole)
-                    @php $roleUserId = isset($usersRole->user_id) ? $usersRole->user_id : (isset($usersRole->model_id) ? $usersRole->model_id : null); @endphp
+                    @php 
+                      $roleUserId = isset($usersRole->user_id) ? $usersRole->user_id : (isset($usersRole->model_id) ? $usersRole->model_id : null);
+                    @endphp
                     @if($user->id == $roleUserId)
                       @foreach($roles as $role)
                         @if($role && is_object($role) && isset($role->id) && (isset($role->name) || isset($role->display_name)))

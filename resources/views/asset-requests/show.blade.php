@@ -75,17 +75,17 @@
                                 </dd>
 
                                 <dt class="col-sm-3">Created</dt>
-                                <dd class="col-sm-9">{{ $assetRequest->created_at->format('d M Y H:i') }}</dd>
+                                <dd class="col-sm-9">{{ \Illuminate\Support\Carbon::parse($assetRequest->created_at)->format('d M Y H:i') }}</dd>
 
                                 <dt class="col-sm-3">Last Updated</dt>
-                                <dd class="col-sm-9">{{ $assetRequest->updated_at->format('d M Y H:i') }}</dd>
+                                <dd class="col-sm-9">{{ \Illuminate\Support\Carbon::parse($assetRequest->updated_at)->format('d M Y H:i') }}</dd>
 
                                 @if($assetRequest->approved_by)
                                     <dt class="col-sm-3">Approved By</dt>
                                     <dd class="col-sm-9">
                                         <strong>{{ $assetRequest->approvedBy->name }}</strong>
                                         <br>
-                                        <small class="text-muted">{{ $assetRequest->approved_at->format('d M Y H:i') }}</small>
+                                        <small class="text-muted">{{ \Illuminate\Support\Carbon::parse($assetRequest->approved_at)->format('d M Y H:i') }}</small>
                                     </dd>
 
                                     @if($assetRequest->approval_notes)
@@ -105,7 +105,7 @@
                                             {{ $assetRequest->fulfilledAsset->asset_tag ?? 'Asset #' . $assetRequest->fulfilledAsset->id }}
                                         </a>
                                         <br>
-                                        <small class="text-muted">{{ $assetRequest->fulfilled_at->format('d M Y H:i') }}</small>
+                                        <small class="text-muted">{{ \Illuminate\Support\Carbon::parse($assetRequest->fulfilled_at)->format('d M Y H:i') }}</small>
                                     </dd>
                                 @endif
                             </dl>

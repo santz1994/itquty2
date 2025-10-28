@@ -54,7 +54,7 @@ class SystemController extends Controller
      */
     public function roles()
     {
-        $this->authorize('edit-system-settings');
+        $this->authorize('edit-settings');
         
         $roles = Role::withCount(['users', 'permissions'])->get();
         $permissions = Permission::all();
@@ -68,7 +68,7 @@ class SystemController extends Controller
      */
     public function maintenance()
     {
-        $this->authorize('edit-system-settings');
+        $this->authorize('edit-settings');
         
         $diskUsage = $this->getDiskUsage();
         $cacheInfo = $this->getCacheInfo();
@@ -231,7 +231,7 @@ class SystemController extends Controller
      */
     public function clearCache(Request $request)
     {
-        $this->authorize('edit-system-settings');
+        $this->authorize('edit-settings');
         
         try {
             Artisan::call('cache:clear');
@@ -256,7 +256,7 @@ class SystemController extends Controller
      */
     public function assignPermission(Request $request)
     {
-        $this->authorize('edit-system-settings');
+        $this->authorize('edit-settings');
         
         $request->validate([
             'role_id' => 'required|exists:roles,id',
@@ -279,7 +279,7 @@ class SystemController extends Controller
      */
     public function removePermission(Request $request)
     {
-        $this->authorize('edit-system-settings');
+        $this->authorize('edit-settings');
         
         $request->validate([
             'role_id' => 'required|exists:roles,id',

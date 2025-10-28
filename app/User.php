@@ -14,6 +14,7 @@ use Carbon\Carbon;
 /**
  * App\User
  * 
+ * @mixin \Spatie\Permission\Traits\HasRoles
  * @method bool hasRole($roles)
  * @method bool hasAnyRole($roles)
  * @method bool hasAllRoles($roles)

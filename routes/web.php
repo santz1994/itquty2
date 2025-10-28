@@ -30,6 +30,7 @@ if (file_exists($legacy)) {
     Route::get('/', function () {
         if (Auth::check()) {
             // Redirect users based on their role
+            /** @var \App\User $user */
             $user = Auth::user();
             if (user_has_role($user, 'user')) {
                 return redirect('/tickets');

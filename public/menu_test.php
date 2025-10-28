@@ -19,6 +19,7 @@ if (!$isLoggedIn) {
 }
 
 $user = Auth::user();
+/** @var \App\User $user */
 $userName = $user->name;
 $userId = $user->id;
 

@@ -28,9 +28,16 @@ class HomeController extends Controller
     public function index()
     {
       $pageTitle = 'Dashboard';
-      
-      // Get Authenticated User
-      $user = Auth::user();
+
+  // Get Authenticated User
+  /** @var \App\User $user */
+  $user = Auth::user();
+
+      // If the user is in the management role, show KPI Dashboard as their home
+      if ($this->hasRole('management')) {
+          return redirect()->route('kpi.dashboard');
+      }
+
       if ($this->hasRole('user')) {
         return redirect()->route('tickets.index');
       } else {

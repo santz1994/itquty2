@@ -75,20 +75,20 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <!-- View Details Button -->
-                                                    <button type="button" class="btn btn-info" 
-                                                            data-toggle="modal" 
-                                                            data-target="#roleDetailsModal"
-                                                            data-role-id="{{ $role->id }}"
-                                                            data-role-name="{{ $role->name }}"
-                                                            data-role-users="{{ $role->users->count() }}"
-                                                            data-role-permissions="{{ $role->permissions->count() }}"
-                                                            onclick="showRoleDetails(this)"
-                                                            title="View role details">
-                                                        <i class="fa fa-eye"></i> Details
-                                                    </button>
-
-                                                    <!-- View Users Button -->
+                                    <!-- View Details Button -->
+                                    <button type="button" class="btn btn-info" 
+                                            data-toggle="modal" 
+                                            data-target="#roleDetailsModal"
+                                            data-role-id="{{ $role->id }}"
+                                            data-role-name="{{ $role->name }}"
+                                            data-role-users="{{ $role->users->count() }}"
+                                            data-role-permissions="{{ $role->permissions->count() }}"
+                                            data-role-users-json="{{ $role->users->map(function($u) { return json_encode(['id' => $u->id, 'name' => $u->name, 'email' => $u->email]); })->implode(',') }}"
+                                            data-role-permissions-json="{{ $role->permissions->map(function($p) { return json_encode(['id' => $p->id, 'name' => $p->name]); })->implode(',') }}"
+                                            onclick="showRoleDetails(this)"
+                                            title="View role details">
+                                        <i class="fa fa-eye"></i> Details
+                                    </button>                                                    <!-- View Users Button -->
                                                     <a href="{{ route('users.index') }}?role={{ $role->name }}" 
                                                        class="btn btn-primary"
                                                        title="View users with this role">
@@ -161,6 +161,8 @@
                                         data-role-name="{{ $role->name }}"
                                         data-role-users="{{ $role->users->count() }}"
                                         data-role-permissions="{{ $role->permissions->count() }}"
+                                        data-role-users-json="{{ $role->users->map(function($u) { return json_encode(['id' => $u->id, 'name' => $u->name, 'email' => $u->email]); })->implode(',') }}"
+                                        data-role-permissions-json="{{ $role->permissions->map(function($p) { return json_encode(['id' => $p->id, 'name' => $p->name]); })->implode(',') }}"
                                         onclick="showRoleDetails(this)"
                                         style="flex: 1;">
                                     <i class="fa fa-eye"></i> Details
@@ -245,6 +247,8 @@ function showRoleDetails(button) {
     const roleName = $(button).data('role-name');
     const roleUsers = $(button).data('role-users');
     const rolePermissions = $(button).data('role-permissions');
+    const usersJson = $(button).data('role-users-json');
+    const permissionsJson = $(button).data('role-permissions-json');
 
     // Update modal title and content
     $('#detailRoleName').text(roleName);
@@ -252,39 +256,69 @@ function showRoleDetails(button) {
     $('#detailRoleUsers').text(roleUsers);
     $('#detailRolePermissions').text(rolePermissions);
 
-    // Load users for this role
-    loadRoleUsers(roleName);
+    // Display users list
+    displayRoleUsers(usersJson);
 
-    // Load permissions for this role
-    loadRolePermissions(roleId);
+    // Display permissions list
+    displayRolePermissions(permissionsJson);
 }
 
-function loadRoleUsers(roleName) {
-    // Fetch users with this role from PHP data if available
-    // For now, show a simple message
-    $.ajax({
-        url: '{{ route("users.index") }}',
-        method: 'GET',
-        data: { role: roleName },
-        success: function(data) {
-            // Parse users from the response
-            const usersList = $('<ul class="list-unstyled"></ul>');
-            // This would need to be customized based on your API response
-            $('#roleUsersList').html(usersList);
-        },
-        error: function() {
-            $('#roleUsersList').html(
-                '<p class="text-muted"><em>Click "Users" button to see all users with this role</em></p>'
-            );
-        }
-    });
+function displayRoleUsers(usersJson) {
+    if (!usersJson || usersJson.trim() === '') {
+        $('#roleUsersList').html(
+            '<p class="text-muted"><em>No users assigned to this role</em></p>'
+        );
+        return;
+    }
+
+    try {
+        const usersArray = usersJson.split(',').map(str => JSON.parse(str.trim()));
+        const usersList = $('<ul class="list-unstyled"></ul>');
+        
+        usersArray.forEach(user => {
+            const userItem = $('<li>')
+                .css('padding', '8px 0')
+                .css('border-bottom', '1px solid #eee')
+                .html(`
+                    <strong>${user.name}</strong><br>
+                    <small class="text-muted">${user.email}</small>
+                `);
+            usersList.append(userItem);
+        });
+
+        $('#roleUsersList').html(usersList);
+    } catch (e) {
+        $('#roleUsersList').html(
+            '<p class="text-muted"><em>Click "Users" button to see all users with this role</em></p>'
+        );
+    }
 }
 
-function loadRolePermissions(roleId) {
-    // For now, show a simple message
-    $('#rolePermissionsList').html(
-        '<p class="text-muted"><em>Click "Manage" button to view/edit permissions for this role</em></p>'
-    );
+function displayRolePermissions(permissionsJson) {
+    if (!permissionsJson || permissionsJson.trim() === '') {
+        $('#rolePermissionsList').html(
+            '<p class="text-muted"><em>No permissions assigned to this role</em></p>'
+        );
+        return;
+    }
+
+    try {
+        const permissionsArray = permissionsJson.split(',').map(str => JSON.parse(str.trim()));
+        const permissionsList = $('<ul class="list-unstyled"></ul>');
+        
+        permissionsArray.forEach(permission => {
+            const permItem = $('<li>')
+                .css('padding', '5px 0')
+                .html(`<span class="label label-success">${permission.name}</span>`);
+            permissionsList.append(permItem);
+        });
+
+        $('#rolePermissionsList').html(permissionsList);
+    } catch (e) {
+        $('#rolePermissionsList').html(
+            '<p class="text-muted"><em>Click "Manage" button to view/edit permissions for this role</em></p>'
+        );
+    }
 }
 
 function capitalizeWords(str) {

@@ -7,6 +7,7 @@
     <div id="__flash_message">{{ Session::get('message') }}</div>
     <div id="__flash_generic">
       @php
+        /** @var \App\User $user */
         $user = Auth::user();
         $isSuperAdmin = $user && ($user->hasRole('super-admin') || $user->hasAnyRole(['super-admin', 'admin']));
         $onModelsPage = request()->is('models');

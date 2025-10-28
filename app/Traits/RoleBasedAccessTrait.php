@@ -12,6 +12,7 @@ trait RoleBasedAccessTrait
      */
     protected function hasAnyRole(array $roles): bool
     {
+        /** @var \App\User $user */
         $user = Auth::user();
         return $user && \user_has_any_role($user, $roles);
     }
@@ -21,6 +22,7 @@ trait RoleBasedAccessTrait
      */
     protected function hasRole(string $role): bool
     {
+        /** @var \App\User $user */
         $user = Auth::user();
         return $user && \user_has_role($user, $role);
     }
@@ -30,7 +32,10 @@ trait RoleBasedAccessTrait
      */
     protected function applyRoleBasedFilters($query, $user = null)
     {
-        $user = $user ?? Auth::user();
+        if (!$user) {
+            /** @var \App\User $user */
+            $user = Auth::user();
+        }
         
         if (!$user) {
             return $query->whereRaw('1 = 0'); // Return empty result

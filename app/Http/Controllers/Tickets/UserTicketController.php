@@ -36,13 +36,13 @@ class UserTicketController extends Controller
         $user = auth()->user();
         $query = Ticket::withRelations()->where('user_id', $user->id);
 
-        // Filter by status if provided
-        if ($request->has('status') && $request->status !== '') {
+        // Filter by status if provided (only when non-empty)
+        if ($request->filled('status')) {
             $query->where('ticket_status_id', $request->status);
         }
 
         // Search by ticket code or subject
-        if ($request->has('search') && $request->search !== '') {
+        if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('ticket_code', 'like', '%' . $request->search . '%')
                   ->orWhere('subject', 'like', '%' . $request->search . '%');

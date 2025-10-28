@@ -77,17 +77,17 @@
                                 </dd>
 
                                 <dt class="col-sm-3">Created</dt>
-                                <dd class="col-sm-9"><?php echo e($assetRequest->created_at->format('d M Y H:i')); ?></dd>
+                                <dd class="col-sm-9"><?php echo e(\Illuminate\Support\Carbon::parse($assetRequest->created_at)->format('d M Y H:i')); ?></dd>
 
                                 <dt class="col-sm-3">Last Updated</dt>
-                                <dd class="col-sm-9"><?php echo e($assetRequest->updated_at->format('d M Y H:i')); ?></dd>
+                                <dd class="col-sm-9"><?php echo e(\Illuminate\Support\Carbon::parse($assetRequest->updated_at)->format('d M Y H:i')); ?></dd>
 
                                 <?php if($assetRequest->approved_by): ?>
                                     <dt class="col-sm-3">Approved By</dt>
                                     <dd class="col-sm-9">
                                         <strong><?php echo e($assetRequest->approvedBy->name); ?></strong>
                                         <br>
-                                        <small class="text-muted"><?php echo e($assetRequest->approved_at->format('d M Y H:i')); ?></small>
+                                        <small class="text-muted"><?php echo e(\Illuminate\Support\Carbon::parse($assetRequest->approved_at)->format('d M Y H:i')); ?></small>
                                     </dd>
 
                                     <?php if($assetRequest->approval_notes): ?>
@@ -109,7 +109,7 @@
 
                                         </a>
                                         <br>
-                                        <small class="text-muted"><?php echo e($assetRequest->fulfilled_at->format('d M Y H:i')); ?></small>
+                                        <small class="text-muted"><?php echo e(\Illuminate\Support\Carbon::parse($assetRequest->fulfilled_at)->format('d M Y H:i')); ?></small>
                                     </dd>
                                 <?php endif; ?>
                             </dl>

@@ -14,17 +14,23 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Allow authenticated users to create tickets and view ticket details (controller enforces ownership)
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
+    Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+    Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+    // Allow authenticated users to view their tickets list. Controller filters by role.
+    Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+});
+
+// Admin / management routes (admin and super-admin only)
 Route::middleware(['web', 'auth', 'role:admin|super-admin'])->group(function () {
     
     // ========================================
-    // MAIN CRUD ROUTES (TicketController)
+    // MAIN CRUD ROUTES (TicketController) - admin-only actions
     // ========================================
-    Route::get('/tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
     Route::get('/tickets/unassigned', [\App\Http\Controllers\TicketController::class, 'unassigned'])->name('tickets.unassigned');
     Route::get('/tickets/overdue', [\App\Http\Controllers\TicketController::class, 'overdue'])->name('tickets.overdue');
-    Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
-    Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
-    Route::get('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
     Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
     Route::put('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
     Route::patch('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update']);

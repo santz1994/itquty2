@@ -41,6 +41,7 @@ class BulkOperationController extends Controller
 
             $ticketIds = $request->ticket_ids;
             $assignedTo = $request->assigned_to;
+            /** @var \App\User $user */
             $user = Auth::user();
 
             // Check authorization for each ticket
@@ -121,6 +122,7 @@ class BulkOperationController extends Controller
 
             $ticketIds = $request->ticket_ids;
             $statusId = $request->status_id;
+            /** @var \App\User $user */
             $user = Auth::user();
 
             // Check authorization
@@ -206,6 +208,7 @@ class BulkOperationController extends Controller
 
             $ticketIds = $request->ticket_ids;
             $priorityId = $request->priority_id;
+            /** @var \App\User $user */
             $user = Auth::user();
 
             // Check authorization
@@ -284,6 +287,7 @@ class BulkOperationController extends Controller
 
             $ticketIds = $request->ticket_ids;
             $typeId = $request->type_id;
+            /** @var \App\User $user */
             $user = Auth::user();
 
             // Check authorization
@@ -360,6 +364,7 @@ class BulkOperationController extends Controller
             DB::beginTransaction();
 
             $ticketIds = $request->ticket_ids;
+            /** @var \App\User $user */
             $user = Auth::user();
 
             // Only super-admin and admin can bulk delete

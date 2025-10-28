@@ -40,24 +40,22 @@
                 </ul>
             </li>
             <?php endif; ?>            
-            <!-- 🎫 Tickets (All roles: User=1, Admin=2, SuperAdmin=3, Management=4) -->
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-tickets')): ?>
-            <li class="treeview">
-                <a href="javascript:void(0)"><i class='fa fa-ticket'></i> <span>Tickets</span> <i class="fa fa-angle-left pull-right"></i></a>
-                <ul class="treeview-menu">
-                    <li><a href="<?php echo e(url('/tickets')); ?>">All Tickets</a></li>
-                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('assign-tickets')): ?>
-                    <li><a href="<?php echo e(url('/tickets/unassigned')); ?>">Unassigned Tickets</a></li>
-                    <?php endif; ?>
-                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create-tickets')): ?>
-                    <li><a href="<?php echo e(url('/tickets/create')); ?>">Create Ticket</a></li>
-                    <?php endif; ?>
-                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-tickets')): ?>
-                    <li><a href="<?php echo e(route('tickets.export')); ?>">Export Tickets</a></li>
-                    <?php endif; ?>
-                </ul>
-            </li>
-            <?php endif; ?>            
+      <!-- 🎫 Tickets (visible to any authenticated user; admin subitems still guarded) -->
+      <?php if(auth()->guard()->check()): ?>
+      <li class="treeview">
+        <a href="javascript:void(0)"><i class='fa fa-ticket'></i> <span>Tickets</span> <i class="fa fa-angle-left pull-right"></i></a>
+        <ul class="treeview-menu">
+          <li><a href="<?php echo e(url('/tickets')); ?>">All Tickets</a></li>
+          <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('assign-tickets')): ?>
+          <li><a href="<?php echo e(url('/tickets/unassigned')); ?>">Unassigned Tickets</a></li>
+          <?php endif; ?>
+          <li><a href="<?php echo e(url('/tickets/create')); ?>">Create Ticket</a></li>
+          <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export-tickets')): ?>
+          <li><a href="<?php echo e(route('tickets.export')); ?>">Export Tickets</a></li>
+          <?php endif; ?>
+        </ul>
+      </li>
+      <?php endif; ?>
       <!-- 📅 Daily Activity (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
       <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view-daily-activities')): ?>
       <li class="treeview">

@@ -81,6 +81,7 @@ Route::get('/test-inventory-debug', function() {
 
 // Debug authentication route (outside middleware)
 Route::get('/debug-auth', function() {
+    /** @var \App\User $user */
     $user = auth()->user();
     if (!$user) {
         return '<h1>NOT LOGGED IN</h1><p>You need to log in first</p><a href="/login">Go to Login</a>';
@@ -148,7 +149,8 @@ Route::prefix('test')->group(function () {
     
     // Debug current user roles
     Route::get('/debug-my-roles', function() {
-        $user = auth()->user();
+    /** @var \App\User $user */
+    $user = auth()->user();
         if (!$user) {
             return 'Not logged in';
         }
@@ -183,7 +185,8 @@ Route::prefix('test')->group(function () {
 // Test routes for role middleware verification
 Route::group(['middleware' => ['web', 'auth']], function () {
     Route::get('/test-role', function() {
-        $user = Auth::user();
+    /** @var \App\User $user */
+    $user = Auth::user();
         echo "<h1>User Role Test</h1>";
         echo "Logged in as: " . $user->name . "<br>";
         echo "Email: " . $user->email . "<br>";
@@ -257,6 +260,7 @@ Route::group(['middleware' => ['web', 'auth']], function () {
 
 // Debug routes for role middleware issues
 Route::get('/debug-roles', function () {
+    /** @var \App\User $user */
     $user = auth()->user();
     if (!$user) {
         return '<h1>❌ NOT LOGGED IN</h1><p>Please login first at: <a href="/login">/login</a></p>';

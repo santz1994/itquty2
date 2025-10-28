@@ -40,24 +40,22 @@
                 </ul>
             </li>
             @endauth            
-            <!-- 🎫 Tickets (All roles: User=1, Admin=2, SuperAdmin=3, Management=4) -->
-            @can('view-tickets')
-            <li class="treeview">
-                <a href="javascript:void(0)"><i class='fa fa-ticket'></i> <span>Tickets</span> <i class="fa fa-angle-left pull-right"></i></a>
-                <ul class="treeview-menu">
-                    <li><a href="{{ url('/tickets')}}">All Tickets</a></li>
-                    @can('assign-tickets')
-                    <li><a href="{{ url('/tickets/unassigned')}}">Unassigned Tickets</a></li>
-                    @endcan
-                    @can('create-tickets')
-                    <li><a href="{{ url('/tickets/create')}}">Create Ticket</a></li>
-                    @endcan
-                    @can('export-tickets')
-                    <li><a href="{{ route('tickets.export') }}">Export Tickets</a></li>
-                    @endcan
-                </ul>
-            </li>
-            @endcan            
+      <!-- 🎫 Tickets (visible to any authenticated user; admin subitems still guarded) -->
+      @auth
+      <li class="treeview">
+        <a href="javascript:void(0)"><i class='fa fa-ticket'></i> <span>Tickets</span> <i class="fa fa-angle-left pull-right"></i></a>
+        <ul class="treeview-menu">
+          <li><a href="{{ url('/tickets')}}">All Tickets</a></li>
+          @can('assign-tickets')
+          <li><a href="{{ url('/tickets/unassigned')}}">Unassigned Tickets</a></li>
+          @endcan
+          <li><a href="{{ url('/tickets/create')}}">Create Ticket</a></li>
+          @can('export-tickets')
+          <li><a href="{{ route('tickets.export') }}">Export Tickets</a></li>
+          @endcan
+        </ul>
+      </li>
+      @endauth
       <!-- 📅 Daily Activity (Admin=2/SuperAdmin=3 full, Management=4 view-only) -->
       @can('view-daily-activities')
       <li class="treeview">

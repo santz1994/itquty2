@@ -16,7 +16,8 @@ class CreateAssetRequestRequest extends FormRequest
         return [
             'asset_type_id' => 'required|exists:asset_types,id',
             'justification' => 'required|string|min:10|max:1000',
-            'requested_by' => 'required|exists:users,id'
+            'requested_by' => 'required|exists:users,id',
+            'priority' => 'nullable|in:low,medium,high,urgent'
         ];
     }
 
