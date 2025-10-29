@@ -174,7 +174,14 @@
                                             ?>
                                             <span class="badge badge-<?php echo e($statusColor); ?>"><?php echo e(ucfirst($request->status)); ?></span>
                                         </td>
-                                        <td><?php echo e(\Carbon\Carbon::parse($request->needed_date)->format('d M Y')); ?></td>
+                                        <td>
+                                            <?php if($request->needed_date): ?>
+                                                <?php echo e(\Carbon\Carbon::parse($request->needed_date)->format('d M Y')); ?>
+
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?php echo e($request->created_at->format('d M Y')); ?></td>
                                         <td>
                                             <div class="btn-group" role="group">

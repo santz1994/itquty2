@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -29,8 +31,17 @@ class NotificationController extends Controller
             $query->where('type', $request->type);
         }
 
-        if ($request->has('priority')) {
-            $query->where('priority', $request->priority);
+        if ($request->filled('priority')) {
+            try {
+                if (Schema::hasColumn('notifications', 'priority')) {
+                    $query->where('priority', $request->priority);
+                } else {
+                    // If column missing, skip filtering but log for diagnostics
+                        Log::warning('NotificationController::index attempted to filter by priority but column missing');
+                }
+            } catch (\Exception $e) {
+                    Log::warning('Schema check failed in NotificationController::index: ' . $e->getMessage());
+            }
         }
 
         // Date filters

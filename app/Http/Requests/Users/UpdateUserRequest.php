@@ -45,7 +45,8 @@ class UpdateUserRequest extends Request
         'password' => 'nullable|confirmed|min:6',
         'password_confirmation' => 'nullable|min:6',
         'phone' => 'nullable|string|max:20',
-        'division_id' => 'nullable|exists:divisions,id'
+        'division_id' => 'required|exists:divisions,id',
+        'role_id' => 'required|exists:roles,id'
       ];
     }
 

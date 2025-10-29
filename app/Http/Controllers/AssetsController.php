@@ -107,7 +107,8 @@ class AssetsController extends Controller
      */
     public function create()
     {
-        $models = AssetModel::all(); // Fetch all asset models
+    $asset_models = AssetModel::all(); // Fetch all asset models
+    $asset_types = AssetType::orderBy('type_name')->get(); // Fetch asset types
         $divisions = Division::all(); // Fetch all divisions
         $suppliers = Supplier::all(); // Fetch all suppliers
         $invoices = Invoice::all(); // Fetch all invoices
@@ -116,7 +117,7 @@ class AssetsController extends Controller
         $locations = Location::all(); // Fetch all locations
 
     $pageTitle = 'Create Asset';
-    return view('assets.create', compact('models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations', 'pageTitle'));
+    return view('assets.create', compact('asset_types','asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations', 'pageTitle'));
     }
 
     /**
@@ -172,7 +173,8 @@ class AssetsController extends Controller
     public function edit(Asset $asset)
     {
         // Provide dropdown data explicitly so the view does not rely on a ViewComposer
-        $asset_models = AssetModel::orderBy('asset_model')->get();
+    $asset_models = AssetModel::orderBy('asset_model')->get();
+    $asset_types = AssetType::orderBy('type_name')->get();
         $divisions = Division::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
         $invoices = Invoice::orderBy('invoiced_date', 'desc')->get();
@@ -180,7 +182,7 @@ class AssetsController extends Controller
         $statuses = Status::orderBy('name')->get();
         $locations = Location::orderBy('location_name')->get();
 
-        return view('assets.edit', compact('asset', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations'));
+        return view('assets.edit', compact('asset', 'asset_types', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations'));
     }
 
     /**

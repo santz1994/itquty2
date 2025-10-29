@@ -33,6 +33,7 @@ class StoreAssetRequest extends Request
           // Accept both `asset_model_id` and legacy `model_id` coming from tests or other callers
           'asset_model_id' => 'sometimes|required|exists:asset_models,id',
           'model_id' => 'sometimes|required|exists:asset_models,id',
+          'asset_type_id' => 'required|exists:asset_types,id',
           'division_id' => 'required|exists:divisions,id',
           'supplier_id' => 'required|exists:suppliers,id',
           'warranty_type_id' => 'required|exists:warranty_types,id',
@@ -61,6 +62,7 @@ class StoreAssetRequest extends Request
       return [
         'asset_model_id.required' => 'Model asset harus dipilih.',
         'model_id.required' => 'Model asset harus dipilih.',
+  'asset_type_id.required' => 'Kategori (Tipe Asset) harus dipilih.',
         'asset_model_id.exists' => 'Model asset yang dipilih tidak valid.',
         'model_id.exists' => 'Model asset yang dipilih tidak valid.',
         'division_id.required' => 'Divisi harus dipilih.',

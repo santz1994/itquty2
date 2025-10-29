@@ -9,6 +9,7 @@ use App\AssetType;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class AssetRequestController extends Controller
@@ -46,19 +47,41 @@ class AssetRequestController extends Controller
 
         $query = AssetRequest::with(['requestedBy', 'assetType', 'approvedBy']);
 
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
+        // Filter by status (only when filled)
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by asset type
-        if ($request->has('asset_type') && $request->asset_type !== '') {
+        // Filter by asset type (only when filled)
+        if ($request->filled('asset_type')) {
             $query->where('asset_type_id', $request->asset_type);
         }
 
-        // Filter by priority
-        if ($request->has('priority') && $request->priority !== '') {
-            $query->where('priority', $request->priority);
+        // Priority filter for export (only when filled AND DB column exists)
+        if ($request->filled('priority')) {
+            try {
+                if (Schema::hasColumn('asset_requests', 'priority')) {
+                    $query->where('priority', $request->priority);
+                } else {
+                    Log::warning('Attempted to export filtered by priority but column is missing', ['user_id' => Auth::id()]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Schema check failed for export asset_requests.priority: ' . $e->getMessage());
+            }
+        }
+
+        // Filter by priority (only when filled AND column exists in DB)
+        if ($request->filled('priority')) {
+            try {
+                if (Schema::hasColumn('asset_requests', 'priority')) {
+                    $query->where('priority', $request->priority);
+                } else {
+                    Log::warning('Attempted to filter by priority but column is missing', ['user_id' => $user ? $user->id : null]);
+                }
+            } catch (\Exception $e) {
+                // In some environments Schema facade may not be available; log and skip the filter
+                Log::warning('Schema check failed for asset_requests.priority: ' . $e->getMessage());
+            }
         }
 
         // If regular user, only show their requests. Be defensive if user object not available.
@@ -94,10 +117,35 @@ class AssetRequestController extends Controller
     {
         try {
             $data = $request->validated();
-            $data['requested_by'] = Auth::id();
-            $data['status'] = 'pending';
 
-            AssetRequest::create($data);
+            // Prepare data to save: only include columns that actually exist in DB to avoid silent mismatches
+            $saveData = [];
+            $candidateFields = ['asset_type_id', 'justification', 'priority', 'title', 'requested_quantity', 'unit', 'division'];
+            foreach ($candidateFields as $field) {
+                if (array_key_exists($field, $data)) {
+                    try {
+                        if (Schema::hasColumn('asset_requests', $field)) {
+                            $saveData[$field] = $data[$field];
+                        } else {
+                            // column not present; skip but continue
+                            Log::debug("AssetRequest store: skipping field because column missing: {$field}");
+                        }
+                    } catch (\Exception $e) {
+                        // If Schema isn't available, fall back to only fill known fillable attributes
+                        Log::warning('Schema check failed in AssetRequestController@store: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            $saveData['requested_by'] = Auth::id();
+            $saveData['status'] = 'pending';
+
+            // Fallback: if none of the candidate fields exists in DB, still create with minimal data
+            if (empty($saveData['asset_type_id']) && isset($data['asset_type_id'])) {
+                $saveData['asset_type_id'] = $data['asset_type_id'];
+            }
+
+            AssetRequest::create($saveData);
             
             return redirect()->route('asset-requests.index')
                            ->with('success', 'Permintaan asset berhasil diajukan');
@@ -159,16 +207,37 @@ class AssetRequestController extends Controller
             return back()->with('error', 'Hanya dapat mengubah permintaan yang masih pending');
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'asset_type_id' => 'required|exists:asset_types,id',
             'justification' => 'required|string|max:1000',
+            'title' => 'nullable|string|max:255',
+            'requested_quantity' => 'nullable|integer|min:1',
+            'unit' => 'nullable|string|max:50',
+            'priority' => 'nullable|in:low,medium,high,urgent'
         ]);
 
         try {
-            $assetRequest->update([
+            $updateData = [
                 'asset_type_id' => $request->asset_type_id,
                 'justification' => $request->justification,
-            ]);
+            ];
+
+            $optionalFields = ['title', 'requested_quantity', 'unit', 'priority'];
+            foreach ($optionalFields as $f) {
+                if ($request->has($f)) {
+                    try {
+                        if (Schema::hasColumn('asset_requests', $f)) {
+                            $updateData[$f] = $request->input($f);
+                        } else {
+                            Log::debug("AssetRequest update: skipping field because column missing: {$f}");
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Schema check failed in AssetRequestController@update: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            $assetRequest->update($updateData);
 
             return redirect()->route('asset-requests.show', $assetRequest->id)
                            ->with('success', 'Permintaan asset berhasil diperbarui');
@@ -327,11 +396,11 @@ class AssetRequestController extends Controller
         $query = AssetRequest::with(['requestedBy', 'assetType', 'approvedBy']);
 
         // Apply filters
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('asset_type') && $request->asset_type !== '') {
+        if ($request->filled('asset_type')) {
             $query->where('asset_type_id', $request->asset_type);
         }
 

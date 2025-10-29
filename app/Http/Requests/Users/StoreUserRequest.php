@@ -28,7 +28,8 @@ class StoreUserRequest extends Request
         'email' => 'required|unique:users,email|email',
         'password' => 'required|min:6',
         'phone' => 'nullable|string|max:20',
-        'division_id' => 'nullable|exists:divisions,id'
+        'division_id' => 'required|exists:divisions,id',
+        'role_id' => 'required|exists:roles,id'
       ];
     }
 

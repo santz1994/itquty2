@@ -168,7 +168,13 @@
                                             @endphp
                                             <span class="badge badge-{{ $statusColor }}">{{ ucfirst($request->status) }}</span>
                                         </td>
-                                        <td>{{ \Carbon\Carbon::parse($request->needed_date)->format('d M Y') }}</td>
+                                        <td>
+                                            @if($request->needed_date)
+                                                {{ \Carbon\Carbon::parse($request->needed_date)->format('d M Y') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $request->created_at->format('d M Y') }}</td>
                                         <td>
                                             <div class="btn-group" role="group">

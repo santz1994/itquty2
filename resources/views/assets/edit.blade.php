@@ -29,87 +29,96 @@
           <form method="POST" action="/assets/{{$asset->id}}" id="asset-edit-form">
             {{method_field('PATCH')}}
             {{csrf_field()}}
+            {{-- Standardized fields per request: Kode Assets, Kategori, Lokasi, User/PIC, Tanggal Beli, Suplier, Spesifikasi, IP, MAC, S/N --}}
             <div class="form-group">
-              <label for="serial_number">Serial Number</label>
-              <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{$asset->serial_number}}">
+              <label for="asset_tag">Kode Assets <span class="text-red">*</span></label>
+              <input type="text" name="asset_tag" id="asset_tag" class="form-control" value="{{ old('asset_tag', $asset->asset_tag) }}" required maxlength="50">
             </div>
+
             <div class="form-group">
-              <label for="model_id">Model</label>
-              <select class="form-control model_id" name="model_id" id="model_id" required>
+              <label for="asset_type_id">Kategori (Tipe Asset) <span class="text-red">*</span></label>
+              <select name="asset_type_id" id="asset_type_id" class="form-control asset_type_id" required>
+                <option value="">-- Pilih Kategori (Tipe) --</option>
+                @foreach($asset_types as $atype)
+                  <option value="{{ $atype->id }}" {{ (old('asset_type_id', $asset->model->asset_type_id ?? '') == $atype->id) ? 'selected' : '' }}>{{ $atype->type_name }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="model_id">Model (optional)</label>
+              <select name="model_id" id="model_id" class="form-control model_id">
+                <option value="">-- Pilih Model (optional) --</option>
                 @foreach($asset_models as $asset_model)
-                  <option
-                    @if($asset->model_id == $asset_model->id)
-                      selected
-                    @endif
-                  value="{{$asset_model->id}}">{{$asset_model->manufacturer->name}} - {{$asset_model->asset_model}}</option>
+                  <option value="{{ $asset_model->id }}" data-asset-type="{{ $asset_model->asset_type_id }}" {{ (old('model_id', $asset->model_id) == $asset_model->id) ? 'selected' : '' }}>{{ $asset_model->manufacturer->name ?? '' }} - {{ $asset_model->asset_model }}</option>
                 @endforeach
               </select>
             </div>
+
             <div class="form-group">
-              <label for="division_id">Division</label>
-              <select class="form-control division_id" name="division_id" id="division_id">
-                @foreach($divisions as $division)
-                  <option
-                    @if($asset->division_id == $division->id)
-                      selected
-                    @endif
-                  value="{{$division->id}}">{{$division->name}}</option>
+              <label for="location_id">Lokasi <span class="text-red">*</span></label>
+              <select class="form-control location_id" name="location_id" id="location_id" required>
+                <option value="">-- Pilih Lokasi --</option>
+                @foreach($locations as $location)
+                  <option value="{{$location->id}}" {{ (old('location_id', $asset->location_id) == $location->id) ? 'selected' : '' }}>{{$location->location_name}} - {{$location->building}}, {{$location->office}}</option>
                 @endforeach
               </select>
             </div>
+
             <div class="form-group">
-              <label for="supplier_id">Supplier</label>
-              <select class="form-control supplier_id" name="supplier_id" id="supplier_id">
-                @foreach($suppliers as $supplier)
-                  <option
-                    @if($asset->supplier_id == $supplier->id)
-                      selected
-                    @endif
-                  value="{{$supplier->id}}">{{$supplier->name}}</option>
+              <label for="assigned_to">User / PIC <span class="text-red">*</span></label>
+              <select name="assigned_to" id="assigned_to" class="form-control assigned_to" required>
+                <option value="">-- Pilih User / PIC --</option>
+                @php $activeUsers = \App\User::where('is_active', 1)->orderBy('name')->get(); @endphp
+                @foreach($activeUsers as $u)
+                  <option value="{{ $u->id }}" {{ (old('assigned_to', $asset->assigned_to) == $u->id) ? 'selected' : '' }}>{{ $u->name }} ({{ $u->email }})</option>
                 @endforeach
               </select>
             </div>
+
             <div class="form-group">
-              <label for="invoice_id">Invoice</label>
-              <select class="form-control invoice_id" name="invoice_id" id="invoice_id">
-                <option value=""></option>
-                @foreach($invoices as $invoice)
-                  <option
-                    @if($asset->invoice_id == $invoice->id)
-                      selected
-                    @endif
-                  value="{{$invoice->id}}">{{$invoice->invoice_number}} - {{$invoice->invoiced_date}} - {{$invoice->supplier->name}} - R{{$invoice->total}}</option>
-                @endforeach
-              </select>
+              <label for="purchase_date">Tanggal Beli <span class="text-red">*</span></label>
+              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{ old('purchase_date', optional($asset->purchase_date)->format('Y-m-d')) }}" required>
             </div>
+
             <div class="form-group">
-              <label for="purchase_date">Purchase Date</label>
-1              <input type="date" name="purchase_date" class="form-control" id="purchase_date" value="{{ old('purchase_date', optional($asset->purchase_date)->format('Y-m-d')) }}">
-            </div>
-            <div class="form-group">
-              <label for="warranty_months">Warranty Months</label>
-              <input type="number" min="0" name="warranty_months" class="form-control" id="warranty_months" value="{{ old('warranty_months', $asset->warranty_months) }}">
-            </div>
-            <div class="form-group">
-              <label for="warranty_type_id">Warranty Type</label>
-              <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id">
-                <option value=""></option>
+              <label for="warranty_type_id">Jenis Garansi <span class="text-red">*</span></label>
+              <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id" required>
+                <option value="">-- Pilih Jenis Garansi --</option>
                 @foreach($warranty_types as $warranty_type)
-                  <option
-                    @if($asset->warranty_type_id == $warranty_type->id)
-                      selected
-                    @endif
-                  value="{{$warranty_type->id}}">{{$warranty_type->name}}</option>
+                  <option value="{{$warranty_type->id}}" {{ (old('warranty_type_id', $asset->warranty_type_id) == $warranty_type->id) ? 'selected' : '' }}>{{$warranty_type->name}}</option>
                 @endforeach
               </select>
             </div>
+
             <div class="form-group">
-              <label for="ip_address">IP Address (If PC/Laptop)</label>
-              <input type="text" name="ip_address" class="form-control" id="ip_address" value="{{ old('ip_address', $asset->ip_address) }}">
+              <label for="supplier_id">Suplier <span class="text-red">*</span></label>
+              <select class="form-control supplier_id" name="supplier_id" id="supplier_id" required>
+                <option value="">-- Pilih Supplier --</option>
+                @foreach($suppliers as $supplier)
+                  <option value="{{$supplier->id}}" {{ (old('supplier_id', $asset->supplier_id) == $supplier->id) ? 'selected' : '' }}>{{$supplier->name}}</option>
+                @endforeach
+              </select>
             </div>
+
             <div class="form-group">
-              <label for="mac_address">MAC Address (If PC/Laptop)</label>
-              <input type="text" name="mac_address" class="form-control" id="mac_address" value="{{ old('mac_address', $asset->mac_address) }}">
+              <label for="notes">Spesifikasi <span class="text-red">*</span></label>
+              <textarea name="notes" id="notes" class="form-control" rows="3" required>{{ old('notes', $asset->notes) }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="ip_address">IP Address</label>
+              <input type="text" name="ip_address" class="form-control" id="ip_address" value="{{ old('ip_address', $asset->ip_address) }}" placeholder="e.g., 192.168.1.100">
+            </div>
+
+            <div class="form-group">
+              <label for="mac_address">MAC Address</label>
+              <input type="text" name="mac_address" class="form-control" id="mac_address" value="{{ old('mac_address', $asset->mac_address) }}" placeholder="e.g., 00:1B:44:11:3A:B7">
+            </div>
+
+            <div class="form-group">
+              <label for="serial_number">S/N</label>
+              <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{ old('serial_number', $asset->serial_number) }}">
             </div>
 
             <div class="form-group">
@@ -189,6 +198,37 @@
       $(".warranty_type_id").select2();
       $(".status_id").select2();
       $(".location_id").select2();
+      $(".assigned_to").select2();
+      $(".asset_type_id").select2();
+  $(".asset_type_id").select2();
+    });
+  </script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      // When asset type changes in edit form, filter model options and toggle PC fields
+      $('#asset_type_id').on('change', function() {
+        var selectedText = $(this).find('option:selected').text();
+        var selectedId = $(this).val();
+        $('.pc-laptop-fields').hide();
+        if (selectedText && (selectedText.toLowerCase().includes('pc') || selectedText.toLowerCase().includes('laptop') || selectedText.toLowerCase().includes('computer'))) {
+          $('.pc-laptop-fields').show();
+        }
+        $('#model_id option').each(function() {
+          var mt = $(this).data('asset-type') ? String($(this).data('asset-type')) : '';
+          if (!selectedId || mt === '' || mt === selectedId) {
+            $(this).show();
+          } else {
+            $(this).hide();
+          }
+        });
+        if ($('#model_id option:selected').is(':hidden')) {
+          $('#model_id').val('').trigger('change');
+        }
+      });
+      // Trigger change on load to apply filtering if an asset type is already selected
+      if ($('#asset_type_id').val()) {
+        $('#asset_type_id').trigger('change');
+      }
     });
   </script>
   <script>

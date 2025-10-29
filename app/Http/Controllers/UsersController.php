@@ -54,7 +54,8 @@ class UsersController extends Controller
     try {
       // Use UserService to create user with default role
       $data = $request->validated();
-      $data['role_id'] = Role::where('name', 'user')->first()->id ?? null;
+      // Respect submitted role_id if provided, otherwise fallback to default 'user'
+      $data['role_id'] = $data['role_id'] ?? (Role::where('name', 'user')->first()->id ?? null);
       $data['api_token'] = Str::random(60);
       
       $user = $this->userService->createUser($data);

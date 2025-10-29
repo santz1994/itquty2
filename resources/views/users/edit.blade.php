@@ -45,6 +45,45 @@
                                 @enderror
                             </div>
 
+                            
+
+                            <div class="form-group">
+                                <label for="division_id">Divisi <span class="text-red">*</span></label>
+                                <select name="division_id" id="division_id" class="form-control @error('division_id') is-invalid @enderror" required>
+                                    <option value="">Pilih Divisi...</option>
+                                    @php
+                                        $divs = $divisions ?? (\App\Division::orderBy('name')->get() ?? collect([]));
+                                        $currentDivision = old('division_id', $user->division_id ?? null);
+                                    @endphp
+                                    @foreach($divs as $div)
+                                        <option value="{{ $div->id }}" {{ $currentDivision == $div->id ? 'selected' : '' }}>{{ $div->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('division_id')<span class="help-block text-red">{{ $message }}</span>@enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">No HP</label>
+                                <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone) }}">
+                                @error('phone')<span class="help-block text-red">{{ $message }}</span>@enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="role">User Role <span class="text-red">*</span></label>
+                                <select class="form-control @error('role_id') is-invalid @enderror" id="role_id" name="role_id" required>
+                                    <option value="">Select a role...</option>
+                                    @php $curRoleId = old('role_id', $user->roles->first()?->id ?? null); @endphp
+                                    @if(isset($roles) && $roles->count() > 0)
+                                        @foreach($roles as $role)
+                                        <option value="{{ $role->id }}" {{ $curRoleId == $role->id ? 'selected' : '' }}>{{ ucfirst(str_replace('-', ' ', $role->name)) }}</option>
+                                        @endforeach
+                                    @else
+                                        <option value="" disabled>No roles available</option>
+                                    @endif
+                                </select>
+                                @error('role_id')<span class="help-block text-red">{{ $message }}</span>@enderror
+                            </div>
+
                             <div class="form-group">
                                 <label for="email">Email Address <span class="text-red">*</span></label>
                                 <input type="email" 
@@ -54,29 +93,6 @@
                                        value="{{ old('email', $user->email) }}" 
                                        required>
                                 @error('email')
-                                <span class="help-block text-red">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div class="form-group">
-                                <label for="role">User Role <span class="text-red">*</span></label>
-                                <select class="form-control @error('role') is-invalid @enderror" 
-                                        id="role" 
-                                        name="role" 
-                                        required>
-                                    <option value="">Select a role...</option>
-                                    @if(isset($roles) && $roles->count() > 0)
-                                        @foreach($roles as $role)
-                                        <option value="{{ $role->name }}" 
-                                                {{ old('role', $currentRole ?? '') === $role->name ? 'selected' : '' }}>
-                                            {{ ucfirst(str_replace('-', ' ', $role->name)) }}
-                                        </option>
-                                        @endforeach
-                                    @else
-                                        <option value="" disabled>No roles available</option>
-                                    @endif
-                                </select>
-                                @error('role')
                                 <span class="help-block text-red">{{ $message }}</span>
                                 @enderror
                             </div>

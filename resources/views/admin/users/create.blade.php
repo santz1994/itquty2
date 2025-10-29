@@ -121,8 +121,8 @@
                                 
                                 <div class="col-md-6">
                                     <div class="form-group {{ $errors->has('division_id') ? 'has-error' : '' }}">
-                                        <label for="division_id">Division</label>
-                                        <select class="form-control" id="division_id" name="division_id">
+                                        <label for="division_id">Division <span class="text-red">*</span></label>
+                                        <select class="form-control" id="division_id" name="division_id" required>
                                             <option value="">Select Division</option>
                                             @if(isset($divisions))
                                                 @foreach($divisions as $division)
@@ -143,22 +143,22 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-group {{ $errors->has('role') ? 'has-error' : '' }}">
-                                        <label for="role">User Role <span class="text-red">*</span></label>
-                                        <select class="form-control" id="role" name="role" required>
+                                    <div class="form-group {{ $errors->has('role_id') ? 'has-error' : '' }}">
+                                        <label for="role_id">User Role <span class="text-red">*</span></label>
+                                        <select class="form-control" id="role_id" name="role_id" required>
                                             <option value="">Select Role</option>
                                             @if(isset($roles))
                                                 @foreach($roles as $role)
-                                                    @if($role && is_object($role) && isset($role->name))
-                                                        <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
-                                                            {{ ucfirst($role->name) }}
+                                                    @if($role && is_object($role) && isset($role->id) && isset($role->name))
+                                                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                                                            {{ $role->display_name ?? ucfirst($role->name) }}
                                                         </option>
                                                     @endif
                                                 @endforeach
                                             @endif
                                         </select>
-                                        @if($errors->has('role'))
-                                            <span class="help-block">{{ $errors->first('role') }}</span>
+                                        @if($errors->has('role_id'))
+                                            <span class="help-block">{{ $errors->first('role_id') }}</span>
                                         @endif
                                     </div>
                                 </div>

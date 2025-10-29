@@ -93,9 +93,9 @@
               </div>
               
               <div class="form-group">
-                <label for="division_id">Division</label>
-                <select name="division_id" class="form-control select2">
-                  <option value="">-- Select Division (Optional) --</option>
+                <label for="division_id">Division <span class="text-red">*</span></label>
+                <select name="division_id" class="form-control select2" required>
+                  <option value="">-- Select Division --</option>
                   @if(isset($divisions))
                     @foreach($divisions as $division)
                       <option value="{{ $division->id }}" 
@@ -105,7 +105,6 @@
                     @endforeach
                   @endif
                 </select>
-                <small class="help-block text-muted">Optional - Organizational division/department</small>
               </div>
               
             <div class="form-group {{ hasErrorForClass($errors, 'password') }}">

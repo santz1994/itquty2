@@ -25,40 +25,96 @@
         <div class="box-body">
           <form method="POST" action="{{ url('assets') }}" id="asset-create-form">
             {{csrf_field()}}
+            {{-- Standardized fields per request: Kode Assets, Kategori, Lokasi, User/PIC, Tanggal Beli, Suplier, Spesifikasi, IP, MAC, S/N --}}
             <div class="form-group">
-              <label for="serial_number">Serial Number</label>
-              <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{old('serial_number')}}" autofocus>
+              <label for="asset_tag">Kode Assets <span class="text-red">*</span></label>
+              <input type="text" name="asset_tag" id="asset_tag" class="form-control" value="{{ old('asset_tag') }}" required maxlength="50" placeholder="e.g., AST-001">
             </div>
+
             <div class="form-group">
-                <label for="model_id">Asset Model</label>
-                <select name="model_id" id="model_id" class="form-control" required>
-                    <option value="">-- Select Asset Model --</option>
-            @php
-              // Prefer composer-provided `asset_models` (cached) but fall back to controller's $models
-              $modelsList = isset($asset_models) ? $asset_models : (isset($models) ? $models : collect());
-            @endphp
-            @foreach ($modelsList as $model)
-              <option value="{{ $model->id }}">{{ $model->manufacturer->name ?? '' }} - {{ $model->name }}</option>
-            @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-              <label for="division_id">Division</label>
-              <select class="form-control division_id" name="division_id" id="division_id">
-                <option value = ""></option>
-                @foreach($divisions as $division)
-                    <option value="{{$division->id}}">{{$division->name}}</option>
+              <label for="asset_type_id">Kategori (Tipe Asset) <span class="text-red">*</span></label>
+              <select name="asset_type_id" id="asset_type_id" class="form-control asset_type_id" required>
+                <option value="">-- Pilih Kategori (Tipe) --</option>
+                @foreach($asset_types as $atype)
+                  <option value="{{ $atype->id }}" {{ old('asset_type_id') == $atype->id ? 'selected' : '' }}>{{ $atype->type_name }}</option>
                 @endforeach
               </select>
             </div>
+
             <div class="form-group">
-              <label for="supplier_id">Supplier</label>
-              <select class="form-control supplier_id" name="supplier_id" id="supplier_id">
-                <option value = ""></option>
+              <label for="model_id">Model (optional)</label>
+              <select name="model_id" id="model_id" class="form-control model_id">
+                <option value="">-- Pilih Model (optional) --</option>
+                @foreach($asset_models as $model)
+                  <option value="{{ $model->id }}" data-asset-type="{{ $model->asset_type_id }}" {{ old('model_id') == $model->id ? 'selected' : '' }}>{{ $model->manufacturer->name ?? '' }} - {{ $model->asset_model }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="location_id">Lokasi <span class="text-red">*</span></label>
+              <select class="form-control location_id" name="location_id" id="location_id" required>
+                <option value="">-- Pilih Lokasi --</option>
+                @foreach($locations as $location)
+                    <option value="{{$location->id}}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{$location->location_name}} - {{$location->building}}, {{$location->office}}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="assigned_to">User / PIC <span class="text-red">*</span></label>
+              <select name="assigned_to" id="assigned_to" class="form-control assigned_to" required>
+                <option value="">-- Pilih User / PIC --</option>
+                @php $activeUsers = \App\User::where('is_active', 1)->orderBy('name')->get(); @endphp
+                @foreach($activeUsers as $u)
+                  <option value="{{ $u->id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->email }})</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="purchase_date">Tanggal Beli <span class="text-red">*</span></label>
+              <input type="date" name="purchase_date" id="purchase_date" class="form-control" value="{{ old('purchase_date') }}" required>
+            </div>
+
+            <div class="form-group">
+              <label for="supplier_id">Suplier <span class="text-red">*</span></label>
+              <select class="form-control supplier_id" name="supplier_id" id="supplier_id" required>
+                <option value="">-- Pilih Supplier --</option>
                 @foreach($suppliers as $supplier)
-                    <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                    <option value="{{$supplier->id}}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{$supplier->name}}</option>
                 @endforeach
               </select>
+            </div>
+
+            <div class="form-group">
+              <label for="warranty_type_id">Jenis Garansi <span class="text-red">*</span></label>
+              <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id" required>
+                <option value="">-- Pilih Jenis Garansi --</option>
+                @foreach($warranty_types as $warranty_type)
+                    <option value="{{$warranty_type->id}}" {{ old('warranty_type_id') == $warranty_type->id ? 'selected' : '' }}>{{$warranty_type->name}}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="notes">Spesifikasi <span class="text-red">*</span></label>
+              <textarea name="notes" id="notes" class="form-control" rows="3" required>{{ old('notes') }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="ip_address">IP Address</label>
+              <input type="text" name="ip_address" id="ip_address" class="form-control" value="{{ old('ip_address') }}" placeholder="e.g., 192.168.1.100">
+            </div>
+
+            <div class="form-group">
+              <label for="mac_address">MAC Address</label>
+              <input type="text" name="mac_address" id="mac_address" class="form-control" value="{{ old('mac_address') }}" placeholder="e.g., 00:1B:44:11:3A:B7">
+            </div>
+
+            <div class="form-group">
+              <label for="serial_number">S/N</label>
+              <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{ old('serial_number') }}">
             </div>
             <div class="form-group">
               <label for="invoice_id">Invoice (Optional)</label>
@@ -106,37 +162,10 @@
               <small class="text-muted">Maximum 10 characters, must be unique</small>
             </div>
             
-            <div class="form-group">
-              <label for="status_id">Status <span class="text-red">*</span></label>
-              <select class="form-control status_id" name="status_id" id="status_id" required>
-                <option value="">Select Status</option>
-                @if(isset($statuses))
-                  @foreach($statuses as $status)
-                      <option value="{{$status->id}}" {{ old('status_id') == $status->id ? 'selected' : '' }}>{{$status->name}}</option>
-                  @endforeach
-                @else
-                  <option value="1">In Stock</option>
-                  <option value="2">In Use</option>
-                  <option value="3">In Repair</option>
-                  <option value="4">Disposed</option>
-                @endif
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="location">Deploy to a Location</label>
-              <select class="form-control location" name="location" id="location">
-                <option value = "">No</option>
-                @foreach($locations as $location)
-                    <option value="{{$location->id}}">{{$location->location_name}} - {{$location->building}}, {{$location->office}}</option>
-                @endforeach
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="notes">Notes</label>
-              <textarea name="notes" id="notes" class="form-control" rows="3" maxlength="1000" placeholder="Additional notes about this asset...">{{old('notes')}}</textarea>
-            </div>
+            {{-- Keep status and warranty fields hidden but preserve existing inputs so other logic continues to work (set defaults) --}}
+            <input type="hidden" name="status_id" value="{{ old('status_id', 1) }}">
+            <input type="hidden" name="warranty_type_id" value="{{ old('warranty_type_id') }}">
+            <input type="hidden" name="warranty_months" value="{{ old('warranty_months', 0) }}">
 
             <div class="form-group">
               <button type="submit" class="btn btn-primary btn-lg">
@@ -189,35 +218,42 @@
 
 @section('footer')
   <script type="text/javascript">
-    $(document).ready(function() {
-      $(".model_id").select2();
-      $(".division_id").select2();
-      $(".supplier_id").select2();
-      $(".location").select2();
-      $(".warranty_type_id").select2();
-      $(".invoice_id").select2();
-      $(".status_id").select2();
+  $(document).ready(function() {
+  $(".model_id").select2();
+  $(".division_id").select2();
+  $(".supplier_id").select2();
+  $(".location").select2();
+  $(".location_id").select2();
+  $(".assigned_to").select2();
+  $(".asset_type_id").select2();
+  $(".warranty_type_id").select2();
+  $(".invoice_id").select2();
+  $(".status_id").select2();
 
       // Handle asset model change to show/hide conditional fields
-      $('#model_id').on('change', function() {
-        var selectedOption = $(this).find('option:selected');
-        var assetType = selectedOption.data('asset-type');
-        var assetTypeInfo = $('#asset-type-info');
-        
-        // Hide all conditional fields first
+      // When asset type changes, show/hide PC-specific fields and filter model list
+      $('#asset_type_id').on('change', function() {
+        var selectedText = $(this).find('option:selected').text();
+        var selectedId = $(this).val();
+        // Hide PC/Laptop fields by default
         $('.pc-laptop-fields').hide();
-        
-        if (assetType) {
-          // Show asset type information
-          assetTypeInfo.text('Asset Type: ' + assetType).show();
-          
-          // Show relevant fields based on asset type
-          if (assetType.toLowerCase().includes('pc') || assetType.toLowerCase().includes('laptop')) {
-            $('.pc-laptop-fields').show();
+
+        if (selectedText && (selectedText.toLowerCase().includes('pc') || selectedText.toLowerCase().includes('laptop') || selectedText.toLowerCase().includes('computer'))) {
+          $('.pc-laptop-fields').show();
+        }
+
+        // Filter model select options by data-asset-type
+        $('#model_id option').each(function() {
+          var mt = $(this).data('asset-type') ? String($(this).data('asset-type')) : '';
+          if (!selectedId || mt === '' || mt === selectedId) {
+            $(this).show();
+          } else {
+            $(this).hide();
           }
-        } else {
-          // Hide asset type info if no selection
-          assetTypeInfo.hide();
+        });
+        // Reset model selection if current option hidden
+        if ($('#model_id option:selected').is(':hidden')) {
+          $('#model_id').val('').trigger('change');
         }
       });
 
