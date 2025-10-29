@@ -26,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
         \App\Status::observe(\App\Observers\StatusObserver::class);
     // Observe assets so status changes dispatch events
     \App\Asset::observe(\App\Observers\AssetObserver::class);
+    // Observe tickets to keep immutable ticket_history audit
+    \App\Ticket::observe(\App\Observers\TicketObserver::class);
     }
     
     /**

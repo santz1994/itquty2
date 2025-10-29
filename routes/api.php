@@ -47,6 +47,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('/assets/{asset}/unassign', [AssetController::class, 'unassign']);
     Route::post('/assets/{asset}/maintenance', [AssetController::class, 'markForMaintenance']);
     Route::get('/assets/{asset}/history', [AssetController::class, 'getHistory']);
+    // AJAX endpoint: check serial uniqueness (optional exclude_id query param)
+    Route::get('/assets/check-serial', [AssetController::class, 'checkSerial'])->name('api.assets.checkSerial');
     
     // Ticket API endpoints
     Route::apiResource('tickets', TicketController::class)->names([

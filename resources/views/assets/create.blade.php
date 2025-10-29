@@ -88,6 +88,18 @@
             </div>
 
             <div class="form-group">
+              <label for="purchase_order_id">Purchase Order (Optional)</label>
+              <select class="form-control purchase_order_id" name="purchase_order_id" id="purchase_order_id">
+                <option value="">-- No Purchase Order --</option>
+        @foreach($purchaseOrders ?? [] as $po)
+          <option value="{{ $po->id }}" {{ old('purchase_order_id') == $po->id ? 'selected' : '' }}>
+            {{ $po->po_number }} - {{ $po->order_date ? \Carbon\Carbon::parse($po->order_date)->format('Y-m-d') : '' }} - {{ $po->supplier ? $po->supplier->name : '' }}
+          </option>
+        @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
               <label for="warranty_type_id">Jenis Garansi <span class="text-red">*</span></label>
               <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id" required>
                 <option value="">-- Pilih Jenis Garansi --</option>
@@ -115,6 +127,7 @@
             <div class="form-group">
               <label for="serial_number">S/N</label>
               <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{ old('serial_number') }}">
+              <small id="serial-feedback" class="text-muted" style="display:none"></small>
             </div>
             <div class="form-group">
               <label for="invoice_id">Invoice (Optional)</label>
@@ -125,23 +138,7 @@
                 @endforeach
               </select>
             </div>
-            <div class="form-group">
-              <label for="purchase_date">Purchase Date</label>
-              <input type="date" name="purchase_date" id="purchase_date" class="form-control" value="{{old('purchase_date')}}">
-            </div>
-            <div class="form-group">
-              <label for="warranty_months">Warranty Months</label>
-              <input type="number" name="warranty_months" id="warranty_months" class="form-control" value="{{old('warranty_months')}}">
-            </div>
-            <div class="form-group">
-              <label for="warranty_type_id">Warranty Type</label>
-              <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id">
-                <option value = ""></option>
-                @foreach($warranty_types as $warranty_type)
-                    <option value="{{$warranty_type->id}}">{{$warranty_type->name}}</option>
-                @endforeach
-              </select>
-            </div>
+            <!-- Removed duplicate purchase_date and warranty_type blocks (kept the required ones above) -->
             <!-- Computer-specific fields -->
             <div class="pc-laptop-fields" style="display: none;">
               <fieldset style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px;">
@@ -158,8 +155,8 @@
             </div>
             <div class="form-group">
               <label for="asset_tag">Asset Tag <span class="text-red">*</span></label>
-              <input type="text" name="asset_tag" id="asset_tag" class="form-control" value="{{old('asset_tag')}}" required maxlength="10" placeholder="e.g., AST-001">
-              <small class="text-muted">Maximum 10 characters, must be unique</small>
+              <input type="text" name="asset_tag" id="asset_tag" class="form-control" value="{{old('asset_tag')}}" required maxlength="50" placeholder="e.g., AST-001">
+              <small class="text-muted">Maximum 50 characters, must be unique</small>
             </div>
             
             {{-- Keep status and warranty fields hidden but preserve existing inputs so other logic continues to work (set defaults) --}}
@@ -217,6 +214,33 @@
 @endpush
 
 @section('footer')
+  <script>
+    // Serial number uniqueness check (AJAX) for create form
+    $(function(){
+      $('#serial_number').on('blur', function(){
+        var serial = $(this).val().trim();
+        if (!serial) {
+          $('#serial-feedback').hide();
+          return;
+        }
+        $.getJSON('{{ route("api.assets.checkSerial") }}', { serial: serial })
+          .done(function(resp){
+            if (resp && resp.success) {
+              if (resp.exists) {
+                $('#serial-feedback').show().removeClass('text-muted text-success').addClass('text-danger').text('Serial number already exists in the system.');
+              } else {
+                $('#serial-feedback').show().removeClass('text-danger text-muted').addClass('text-success').text('Serial number available.');
+              }
+            }
+          }).fail(function(){
+            $('#serial-feedback').hide();
+          });
+      });
+    });
+  </script>
+@endsection
+
+@section('footer')
   <script type="text/javascript">
   $(document).ready(function() {
   $(".model_id").select2();
@@ -261,6 +285,32 @@
       if ($('#model_id').val()) {
         $('#model_id').trigger('change');
       }
+    });
+  </script>
+  <script>
+    // Serial number uniqueness check (AJAX)
+    $(function(){
+      $('#serial_number').on('blur', function(){
+        var serial = $(this).val().trim();
+        if (!serial) {
+          $('#serial-feedback').hide();
+          return;
+        }
+        // Call API endpoint to check uniqueness
+        $.getJSON('{{ route("api.assets.checkSerial") }}', { serial: serial })
+          .done(function(resp){
+            if (resp && resp.success) {
+              if (resp.exists) {
+                $('#serial-feedback').show().removeClass('text-muted text-success').addClass('text-danger').text('Serial number already exists in the system.');
+              } else {
+                $('#serial-feedback').show().removeClass('text-danger text-muted').addClass('text-success').text('Serial number available.');
+              }
+            }
+          }).fail(function(){
+            // silently fail (keep UX responsive)
+            $('#serial-feedback').hide();
+          });
+      });
     });
   </script>
   <script>

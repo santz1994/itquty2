@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 
 class AssetRequest extends Model
 {
@@ -12,7 +13,7 @@ class AssetRequest extends Model
     protected $fillable = [
         'requested_by', 'user_id', 'asset_type_id', 'justification', 'priority', 'status',
         'approved_by', 'approved_at', 'approval_notes', 
-        'fulfilled_asset_id', 'fulfilled_at'
+        'fulfilled_asset_id', 'fulfilled_at', 'request_number'
     ];
 
     protected $dates = ['approved_at', 'fulfilled_at'];
@@ -74,6 +75,12 @@ class AssetRequest extends Model
             }
             if (empty($model->requested_by) && !empty($model->user_id)) {
                 $model->requested_by = $model->user_id;
+            }
+            // Generate request number if not provided
+            if (empty($model->request_number)) {
+                $year = date('Y');
+                $count = \DB::table('asset_requests')->whereRaw("YEAR(created_at) = ?", [$year])->count() + 1;
+                $model->request_number = sprintf('AR-%s-%04d', $year, $count);
             }
         });
 

@@ -138,7 +138,11 @@
                     <td><div class="hover-pointer" id="agent{{$ticket->id}}">{{$ticket->user->name}}</div></td>
                     <td><div class="hover-pointer" id="location{{$ticket->id}}">{{$ticket->location->location_name}}</div></td>
                     <td><div class="hover-pointer" id="asset{{$ticket->id}}">
-                      @if($ticket->asset)
+                      @if($ticket->assets && $ticket->assets->count())
+                        @foreach($ticket->assets as $a)
+                          @if(!$loop->first), @endif{{ $a->name }} ({{ $a->asset_tag }})
+                        @endforeach
+                      @elseif($ticket->asset)
                         {{ $ticket->asset->name }} ({{ $ticket->asset->asset_tag }})
                       @else
                         <span class="text-muted">No Asset</span>

@@ -80,12 +80,25 @@ class TicketService
             $this->autoAssignTicket($ticket);
             
             // Log maintenance activity if ticket is related to an asset
-            if (isset($data['asset_id']) && $data['asset_id']) {
-                $asset = \App\Asset::find($data['asset_id']);
-                if ($asset) {
-                    $description = "Ticket created: {$ticket->title}";
-                    $asset->logMaintenanceActivity($description, $ticket->user_id);
+            // Support multiple assets via pivot 'ticket_assets'. Backfill from single asset_id if present.
+            try {
+                if (!empty($data['asset_ids']) && is_array($data['asset_ids'])) {
+                    $ticket->assets()->sync(array_values($data['asset_ids']));
+                } elseif (!empty($data['asset_id'])) {
+                    // attach the single asset id (keep for backwards compat)
+                    $ticket->assets()->syncWithoutDetaching([$data['asset_id']]);
                 }
+
+                // Log maintenance activity for each attached asset (if any)
+                foreach ($ticket->assets as $asset) {
+                    try {
+                        $asset->logMaintenanceActivity("Ticket created: {$ticket->subject}", $ticket->user_id);
+                    } catch (\Exception $e) {
+                        // ignore per-asset logging errors
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to attach assets to ticket during createTicket: ' . $e->getMessage());
             }
             
             // Send notification (implement later with Reverb)

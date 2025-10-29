@@ -115,14 +115,11 @@ class UsersController extends Controller
     return view('admin.users.create', compact('pageTitle', 'roles', 'divisions'));
   }
 
-  public function edit($user)
+  public function edit(User $user)
   {
-    // Handle both bound User model and string ID for backward compatibility
-    if (is_string($user) || is_numeric($user)) {
-      $user = User::findOrFail($user);
-    }
-    
-    $pageTitle = 'Edit User - ' . $user->name;
+    // Rely on Laravel route model binding to provide a User instance.
+    // This is more robust and avoids view-level string/id handling.
+    $pageTitle = 'Edit User - ' . ($user->name ?? '');
     // Provide the same compatibility mapping as in index(): legacy views expect `user_id`.
     $usersRoles = DB::table('model_has_roles')->where('model_type', User::class)->get()
                     ->map(function ($r) { $r->user_id = $r->model_id; return $r; });

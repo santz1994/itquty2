@@ -110,6 +110,7 @@
                             <thead>
                                 <tr>
                                     <th class="sortable" data-column="id">ID</th>
+                                    <th class="sortable" data-column="request_number">Request #</th>
                                     <th class="sortable" data-column="title">Title</th>
                                     <th class="sortable" data-column="asset_type">Asset Type</th>
                                     <th class="sortable" data-column="requested_by">Requested By</th>
@@ -124,6 +125,7 @@
                                 @forelse($requests as $request)
                                     <tr>
                                         <td>#{{ $request->id }}</td>
+                                        <td>{{ $request->request_number ?? '-' }}</td>
                                         <td>
                                             <strong>{{ $request->title }}</strong>
                                             @if($request->requested_quantity > 1)

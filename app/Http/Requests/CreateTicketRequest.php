@@ -20,6 +20,8 @@ class CreateTicketRequest extends FormRequest
             'ticket_type_id' => 'required|exists:tickets_types,id',
             'location_id' => 'required|exists:locations,id',
             'asset_id' => 'nullable|exists:assets,id',
+            'asset_ids' => 'nullable|array',
+            'asset_ids.*' => 'exists:assets,id',
             'user_id' => 'required|exists:users,id'
         ];
     }

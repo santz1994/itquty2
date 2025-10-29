@@ -112,6 +112,15 @@ class Ticket extends Model implements HasMedia
     return $this->belongsTo(Asset::class);
   }
 
+  /**
+   * Many-to-many relation to assets via pivot table 'ticket_assets'.
+   * We keep the existing single 'asset' relation for backwards compatibility.
+   */
+  public function assets()
+  {
+    return $this->belongsToMany(Asset::class, 'ticket_assets', 'ticket_id', 'asset_id')->withTimestamps();
+  }
+
   public function ticket_status()
   {
     return $this->belongsTo(TicketsStatus::class, 'ticket_status_id');

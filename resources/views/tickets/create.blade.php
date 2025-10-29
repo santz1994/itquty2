@@ -33,11 +33,10 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="asset_id">Asset (Optional)</label>
-              <select class="form-control asset_id" name="asset_id">
-                <option value="">No Asset</option>
+              <label for="asset_ids">Asset(s) (Optional)</label>
+              <select class="form-control asset_ids" name="asset_ids[]" multiple>
                 @foreach($assets as $asset)
-                    <option value="{{$asset->id}}" {{ old('asset_id', $preselectedAssetId ?? null) == $asset->id ? 'selected' : '' }}>
+                    <option value="{{$asset->id}}" {{ (old('asset_ids') && in_array($asset->id, old('asset_ids'))) || (isset($preselectedAssetId) && $preselectedAssetId == $asset->id) ? 'selected' : '' }}>
                         {{ $asset->model_name ? $asset->model_name : 'Unknown Model' }} ({{ $asset->asset_tag }})
                     </option>
                 @endforeach
@@ -133,6 +132,7 @@
       $(".ticket_type_id").select2();
       $(".ticket_priority_id").select2();
       $(".subject").select2();
+        $(".asset_ids").select2({ placeholder: 'Select asset(s)', allowClear: true });
 
       // Add loading overlay on form submit
       $('#ticket-create-form').on('submit', function() {

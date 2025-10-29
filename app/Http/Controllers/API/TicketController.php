@@ -107,6 +107,8 @@ class TicketController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'asset_id' => 'nullable|exists:assets,id',
+            'asset_ids' => 'nullable|array',
+            'asset_ids.*' => 'exists:assets,id',
             'ticket_type_id' => 'required|exists:tickets_types,id',
             'ticket_priority_id' => 'required|exists:tickets_priorities,id',
             'assigned_to' => 'nullable|exists:users,id',
@@ -134,6 +136,17 @@ class TicketController extends Controller
         }
 
         $ticket = Ticket::create($ticketData);
+        // Attach assets if provided (supporting asset_ids array or single asset_id)
+        try {
+            if ($request->has('asset_ids') && is_array($request->asset_ids)) {
+                $ticket->assets()->sync($request->asset_ids);
+            } elseif (!empty($request->asset_id)) {
+                $ticket->assets()->syncWithoutDetaching([$request->asset_id]);
+            }
+        } catch (\Exception $e) {
+            // don't fail creation for pivot sync errors - log and continue
+            \Log::warning('Failed to sync ticket assets in API store: ' . $e->getMessage());
+        }
         $ticket->load(['user', 'asset', 'status', 'priority', 'assignedUser']);
 
         // Auto-assign if assigned_to is provided
@@ -186,6 +199,8 @@ class TicketController extends Controller
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'asset_id' => 'nullable|exists:assets,id',
+            'asset_ids' => 'nullable|array',
+            'asset_ids.*' => 'exists:assets,id',
             'ticket_type_id' => 'sometimes|exists:tickets_types,id',
             'ticket_priority_id' => 'sometimes|exists:tickets_priorities,id',
             'ticket_status_id' => 'sometimes|exists:tickets_statuses,id',
@@ -202,6 +217,18 @@ class TicketController extends Controller
         }
 
         $ticket->update($request->all());
+        // Sync assets if provided
+        try {
+            if ($request->has('asset_ids') && is_array($request->asset_ids)) {
+                $ticket->assets()->sync($request->asset_ids);
+            } elseif ($request->has('asset_id')) {
+                // keep single-asset behavior if only asset_id provided
+                $ticket->assets()->syncWithoutDetaching([$request->asset_id]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to sync ticket assets in API update: ' . $e->getMessage());
+        }
+
         $ticket->load(['user', 'asset', 'status', 'priority', 'assignedUser']);
 
         return response()->json([

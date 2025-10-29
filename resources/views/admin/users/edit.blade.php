@@ -13,10 +13,10 @@
             // unexpectedly empty (best-effort DB lookup).
             $resolvedName = old('name');
             $resolvedEmail = old('email');
-            if (empty($resolvedName) && isset($user->name) && $user->name) {
+            if (empty($resolvedName) && isset($user) && is_object($user) && !empty($user->name)) {
               $resolvedName = $user->name;
             }
-            if (empty($resolvedEmail) && isset($user->email) && $user->email) {
+            if (empty($resolvedEmail) && isset($user) && is_object($user) && !empty($user->email)) {
               $resolvedEmail = $user->email;
             }
             if ((empty($resolvedName) || empty($resolvedEmail))) {
@@ -33,13 +33,40 @@
                   if ($u) {
                     $resolvedName = $resolvedName ?: $u->name;
                     $resolvedEmail = $resolvedEmail ?: $u->email;
+                    // ensure $userSafe points to the resolved user when view was passed an id/string
+                    $user = $user ?? $u;
                   }
                 }
               } catch (\Exception $ex) {
                 // ignore
               }
             }
-          @endphp
+      @endphp
+      @php
+      // Normalize $user to an object for safe property access in the template.
+      $userSafe = null;
+      if (isset($user) && is_object($user)) {
+        $userSafe = $user;
+      } else {
+        // If controller passed an id or route provided a string/number, attempt to load the model
+        $routeUser = $routeUser ?? request()->route('user');
+        $candidateId = null;
+        if (is_object($routeUser) && property_exists($routeUser, 'id')) {
+          $candidateId = $routeUser->id;
+        } elseif (is_numeric($routeUser) || (is_string($routeUser) && ctype_digit($routeUser))) {
+          $candidateId = (int) $routeUser;
+        } elseif (isset($user) && (is_numeric($user) || (is_string($user) && ctype_digit($user)))) {
+          $candidateId = (int) $user;
+        }
+        if ($candidateId) {
+          try {
+            $userSafe = \App\User::find($candidateId);
+          } catch (\Exception $e) {
+            $userSafe = null;
+          }
+        }
+      }
+      @endphp
           <div id="user-name-plain" style="display:block; font-weight:bold;">{{ $resolvedName }}</div>
         </div>
         <div class="box-body">
@@ -70,8 +97,8 @@
             <div id="__direct_legacy_message_qp" style="color:red;font-weight:bold;">{{ $qpDirect }}</div>
           @endif
           @php
-            // Safely get user ID - controller guarantees $user is an object
-            $userId = $user->id ?? null;
+            // Safely get user ID - prefer $userSafe when available
+            $userId = $userSafe->id ?? (is_object($user) ? ($user->id ?? null) : (is_numeric($user) ? (int)$user : null));
           @endphp
           <form method="POST" action="/admin/users/{{ $userId }}">
             {{method_field('PATCH')}}
@@ -79,16 +106,16 @@
               <div class="form-group ">
                 <label for="name">Name</label>
                 {{-- Prefer old() so failed validation preserves input, fall back to model value --}} 
-                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name ?? '') }}">
+                <input type="text" name="name" class="form-control" value="{{ old('name', $userSafe->name ?? ($user->name ?? '')) }}">
               </div>
               <div class="form-group ">
                 <label for="email">Email</label>
-                <input type="text" name="email" class="form-control" value="{{ old('email', $user->email ?? '') }}">
+                <input type="text" name="email" class="form-control" value="{{ old('email', $userSafe->email ?? ($user->email ?? '')) }}">
               </div>
               
               <div class="form-group">
                 <label for="phone">Phone Number</label>
-                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="{{ old('phone', $user->phone ?? '') }}">
+                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="{{ old('phone', $userSafe->phone ?? ($user->phone ?? '')) }}">
                 <small class="help-block text-muted">Optional - User's contact phone number</small>
               </div>
               
@@ -99,7 +126,7 @@
                   @if(isset($divisions))
                     @foreach($divisions as $division)
                       <option value="{{ $division->id }}" 
-                        {{ old('division_id', $user->division_id ?? '') == $division->id ? 'selected' : '' }}>
+                        {{ old('division_id', $userSafe->division_id ?? ($user->division_id ?? '')) == $division->id ? 'selected' : '' }}>
                         {{ $division->name }}
                       </option>
                     @endforeach
@@ -127,7 +154,7 @@
                     @php 
                       $roleUserId = isset($usersRole->user_id) ? $usersRole->user_id : (isset($usersRole->model_id) ? $usersRole->model_id : null);
                     @endphp
-                    @if($user->id == $roleUserId)
+                    @if(($userSafe->id ?? null) == $roleUserId || (is_object($user) && ($user->id ?? null) == $roleUserId))
                       @foreach($roles as $role)
                         @if($role && is_object($role) && isset($role->id) && (isset($role->name) || isset($role->display_name)))
                           <option
@@ -154,8 +181,8 @@
   </div>
   <!-- Prefill values: prefer old() so failed validation redirects preserve input. Visible in testing for legacy harnesses. -->
   <div id="prefill-values" style="@if(app()->environment('testing'))display:block;@else display:none;@endif">
-    <span class="prefill-name">{{ old('name') ? old('name') : ($user->name ?? '') }}</span>
-    <span class="prefill-email">{{ old('email') ? old('email') : ($user->email ?? '') }}</span>
+    <span class="prefill-name">{{ old('name') ? old('name') : ($userSafe->name ?? (is_object($user) ? ($user->name ?? '') : '')) }}</span>
+    <span class="prefill-email">{{ old('email') ? old('email') : ($userSafe->email ?? (is_object($user) ? ($user->email ?? '') : '')) }}</span>
   </div>
   @if(Session::has('status'))
     <script>
@@ -179,7 +206,7 @@
     </div>
   @endif
   <div id="__test_helpers__" style="display:block">
-    <div id="__flash_status">{{ Session::get('status') }}</div>
+      <div id="__flash_status">{{ Session::get('status') }}</div>
     <div id="__flash_title">{{ Session::get('title') }}</div>
     <div id="__flash_message">{{ Session::get('message') }}</div>
     <div id="__flash_generic">{{ Session::get('flash_message') ?? Session::get('flash') }}</div>

@@ -16,6 +16,7 @@ use App\Division;
 use App\Supplier;
 use App\Invoice;
 use App\WarrantyType;
+use App\PurchaseOrder;
 use Illuminate\Support\Facades\Response;
 use App\Traits\RoleBasedAccessTrait;
 
@@ -116,8 +117,10 @@ class AssetsController extends Controller
         $statuses = Status::all(); // Fetch all statuses
         $locations = Location::all(); // Fetch all locations
 
+    $purchaseOrders = PurchaseOrder::orderBy('order_date', 'desc')->get();
+
     $pageTitle = 'Create Asset';
-    return view('assets.create', compact('asset_types','asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations', 'pageTitle'));
+    return view('assets.create', compact('asset_types','asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations', 'purchaseOrders', 'pageTitle'));
     }
 
     /**
@@ -143,6 +146,7 @@ class AssetsController extends Controller
             'purchase_cost' => $validated['purchase_cost'] ?? null,
             'location_id' => $validated['location_id'] ?? null,
             'assigned_to' => $validated['assigned_to'] ?? null,
+            'purchase_order_id' => $validated['purchase_order_id'] ?? null,
         ];
 
         Asset::create($assetData);
@@ -177,12 +181,13 @@ class AssetsController extends Controller
     $asset_types = AssetType::orderBy('type_name')->get();
         $divisions = Division::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
-        $invoices = Invoice::orderBy('invoiced_date', 'desc')->get();
-        $warranty_types = WarrantyType::orderBy('name')->get();
-        $statuses = Status::orderBy('name')->get();
-        $locations = Location::orderBy('location_name')->get();
+    $invoices = Invoice::orderBy('invoiced_date', 'desc')->get();
+    $warranty_types = WarrantyType::orderBy('name')->get();
+    $statuses = Status::orderBy('name')->get();
+    $locations = Location::orderBy('location_name')->get();
+    $purchaseOrders = PurchaseOrder::orderBy('order_date', 'desc')->get();
 
-        return view('assets.edit', compact('asset', 'asset_types', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations'));
+    return view('assets.edit', compact('asset', 'asset_types', 'asset_models', 'divisions', 'suppliers', 'invoices', 'warranty_types', 'statuses', 'locations', 'purchaseOrders'));
     }
 
     /**

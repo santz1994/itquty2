@@ -12,6 +12,15 @@
     </div>
 
     <div class="col-md-6">
+        @if(optional($assetRequest)->request_number)
+            <div class="form-group">
+                <label for="request_number">Request #</label>
+                <input type="text" id="request_number" class="form-control" value="{{ $assetRequest->request_number }}" disabled>
+            </div>
+        @endif
+    </div>
+
+    <div class="col-md-6">
         <div class="form-group">
             <label for="division">Divisi</label>
             <input type="text" id="division" class="form-control" value="{{ old('division', optional(optional($assetRequest)->requestedBy)->division ?? auth()->user()->division ?? '') }}" disabled>

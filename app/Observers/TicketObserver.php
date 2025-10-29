@@ -5,91 +5,116 @@ namespace App\Observers;
 use App\Ticket;
 use App\DailyActivity;
 use App\Services\CacheService;
+use Illuminate\Support\Facades\DB;
 
 class TicketObserver
 {
-    /**
-     * Handle the Ticket "created" event.
-     */
-    public function created(Ticket $ticket): void
+    public function created(Ticket $ticket)
     {
-        // Auto create daily activity when ticket is created
+        // Immutable audit
+        DB::table('ticket_history')->insert([
+            'ticket_id' => $ticket->id,
+            'user_id' => $ticket->user_id ?? null,
+            'event_type' => 'created',
+            'data' => json_encode($ticket->toArray()),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Auto create daily activity when ticket assigned on creation
         if ($ticket->assigned_to) {
-            DailyActivity::create([
-                'user_id' => $ticket->assigned_to,
-                'activity_date' => now(),
-                'description' => 'Tiket baru ditugaskan: ' . $ticket->subject,
-                'ticket_id' => $ticket->id,
-                'type' => 'ticket_assignment',
-                'activity_type' => 'system'
-            ]);
+            try {
+                DailyActivity::create([
+                    'user_id' => $ticket->assigned_to,
+                    'activity_date' => now(),
+                    'description' => 'Tiket baru ditugaskan: ' . $ticket->subject,
+                    'ticket_id' => $ticket->id,
+                    'type' => 'ticket_assignment',
+                    'activity_type' => 'system'
+                ]);
+            } catch (\Exception $e) {
+                // ignore activity creation errors
+            }
         }
     }
 
-    /**
-     * Handle the Ticket "updated" event.
-     */
-    public function updated(Ticket $ticket): void
+    public function updated(Ticket $ticket)
     {
-        // Check if status changed to completed
-        if ($ticket->isDirty('ticket_status_id')) {
-            $status = $ticket->status;
-            if ($status && strtolower($status->name) === 'completed') {
-                // Create daily activity for ticket completion
-                DailyActivity::create([
-                    'user_id' => $ticket->assigned_to ?? $ticket->user_id,
-                    'activity_date' => now(),
-                    'description' => 'Menyelesaikan Tiket: ' . $ticket->subject . 
-                                   ($ticket->asset ? ' - Asset: ' . $ticket->asset->asset_tag : ''),
-                    'ticket_id' => $ticket->id,
-                    'type' => 'ticket_completion',
-                    'activity_type' => 'system'
-                ]);
+        // Write immutable history entry with changes
+        $changes = $ticket->getChanges();
+        DB::table('ticket_history')->insert([
+            'ticket_id' => $ticket->id,
+            'user_id' => auth()->id() ?? null,
+            'event_type' => 'updated',
+            'data' => json_encode(['changes' => $changes, 'attributes' => $ticket->getAttributes()]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-                // Update resolved_at timestamp
-                $ticket->resolved_at = now();
-                $ticket->saveQuietly(); // Prevent infinite loop
+        // If status changed to a completion-like state, create daily activity and set resolved_at
+        if ($ticket->wasChanged('ticket_status_id')) {
+            try {
+                $status = $ticket->ticket_status;
+                if ($status && strtolower($status->status ?? $status->name ?? '') === 'resolved') {
+                    DailyActivity::create([
+                        'user_id' => $ticket->assigned_to ?? $ticket->user_id,
+                        'activity_date' => now(),
+                        'description' => 'Menyelesaikan Tiket: ' . $ticket->subject .
+                                       ($ticket->asset ? ' - Asset: ' . $ticket->asset->asset_tag : ''),
+                        'ticket_id' => $ticket->id,
+                        'type' => 'ticket_completion',
+                        'activity_type' => 'system'
+                    ]);
+
+                    if (!$ticket->resolved_at) {
+                        $ticket->resolved_at = now();
+                        $ticket->saveQuietly();
+                    }
+                }
+            } catch (\Exception $e) {
+                // ignore activity errors
             }
         }
 
-        // Check if ticket is assigned to someone new
-        if ($ticket->isDirty('assigned_to') && $ticket->assigned_to) {
-            DailyActivity::create([
-                'user_id' => $ticket->assigned_to,
-                'activity_date' => now(),
-                'description' => 'Tiket ditugaskan ulang: ' . $ticket->subject,
-                'ticket_id' => $ticket->id,
-                'type' => 'ticket_reassignment',
-                'activity_type' => 'system'
-            ]);
+        // Reassignment activity
+        if ($ticket->wasChanged('assigned_to') && $ticket->assigned_to) {
+            try {
+                DailyActivity::create([
+                    'user_id' => $ticket->assigned_to,
+                    'activity_date' => now(),
+                    'description' => 'Tiket ditugaskan ulang: ' . $ticket->subject,
+                    'ticket_id' => $ticket->id,
+                    'type' => 'ticket_reassignment',
+                    'activity_type' => 'system'
+                ]);
+            } catch (\Exception $e) {
+                // ignore
+            }
         }
-        
-        // Clear cache when ticket changes
-        app(CacheService::class)->clearCacheOnUpdate('ticket');
+
+        // Clear ticket-related caches
+        try {
+            app(CacheService::class)->clearCacheOnUpdate('ticket');
+        } catch (\Exception $e) {
+            // ignore cache clearing errors
+        }
     }
 
-    /**
-     * Handle the Ticket "deleted" event.
-     */
-    public function deleted(Ticket $ticket): void
+    public function deleted(Ticket $ticket)
     {
-        // Clear cache when ticket is deleted
-        app(CacheService::class)->clearCacheOnUpdate('ticket');
-    }
+        DB::table('ticket_history')->insert([
+            'ticket_id' => $ticket->id,
+            'user_id' => auth()->id() ?? null,
+            'event_type' => 'deleted',
+            'data' => json_encode($ticket->toArray()),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-    /**
-     * Handle the Ticket "restored" event.
-     */
-    public function restored(Ticket $ticket): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Ticket "force deleted" event.
-     */
-    public function forceDeleted(Ticket $ticket): void
-    {
-        //
+        try {
+            app(CacheService::class)->clearCacheOnUpdate('ticket');
+        } catch (\Exception $e) {
+            // ignore
+        }
     }
 }

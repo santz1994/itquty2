@@ -38,7 +38,7 @@
                             <h4 class="mb-3">Request Details</h4>
                             <dl class="row">
                                 <dt class="col-sm-3">Request ID</dt>
-                                <dd class="col-sm-9">#{{ $assetRequest->id }}</dd>
+                                <dd class="col-sm-9">#{{ $assetRequest->id }} @if($assetRequest->request_number) <small class="text-muted">({{ $assetRequest->request_number }})</small> @endif</dd>
 
                                 <dt class="col-sm-3">Asset Type</dt>
                                 <dd class="col-sm-9">

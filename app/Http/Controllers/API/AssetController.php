@@ -115,7 +115,7 @@ class AssetController extends Controller
         $validator = Validator::make($request->all(), [
             'asset_tag' => 'required|string|unique:assets',
             'name' => 'required|string|max:255',
-            'serial_number' => 'nullable|string|max:255',
+            'serial_number' => 'nullable|string|max:255|unique:assets,serial_number',
             'mac_address' => 'nullable|string|max:17',
             'ip_address' => 'nullable|ip',
             'purchase_date' => 'nullable|date',
@@ -195,7 +195,7 @@ class AssetController extends Controller
         $validator = Validator::make($request->all(), [
             'asset_tag' => 'sometimes|string|unique:assets,asset_tag,' . $asset->id,
             'name' => 'sometimes|string|max:255',
-            'serial_number' => 'nullable|string|max:255',
+            'serial_number' => 'nullable|string|max:255|unique:assets,serial_number,' . $asset->id,
             'mac_address' => 'nullable|string|max:17',
             'ip_address' => 'nullable|ip',
             'purchase_date' => 'nullable|date',
@@ -231,6 +231,32 @@ class AssetController extends Controller
             'data' => $this->transformAsset($asset),
             'message' => 'Asset updated successfully'
         ]);
+    }
+
+    /**
+     * Check serial number uniqueness (AJAX)
+     *
+     * Query params:
+     * - serial (string) required
+     * - exclude_id (int) optional - asset id to exclude from check (for edits)
+     */
+    public function checkSerial(Request $request)
+    {
+        $serial = $request->query('serial');
+        $exclude = $request->query('exclude_id');
+
+        if (!$serial) {
+            return response()->json(['success' => false, 'message' => 'serial parameter is required'], 400);
+        }
+
+        $query = Asset::where('serial_number', $serial);
+        if ($exclude) {
+            $query->where('id', '!=', $exclude);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json(['success' => true, 'exists' => $exists]);
     }
 
     /**

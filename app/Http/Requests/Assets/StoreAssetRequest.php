@@ -43,7 +43,7 @@ class StoreAssetRequest extends Request
           'mac_address' => 'nullable|string|max:255',
           'asset_tag' => $assetId ? 'nullable|string|max:255|unique:assets,asset_tag,' . $assetId : 'nullable|string|max:255|unique:assets,asset_tag',
           'name' => 'nullable|string|max:255',
-          'serial_number' => 'nullable|string|max:255',
+          'serial_number' => $assetId ? 'nullable|string|max:255|unique:assets,serial_number,' . $assetId : 'nullable|string|max:255|unique:assets,serial_number',
           'purchase_date' => 'nullable|date',
           'purchase_cost' => 'nullable|numeric|min:0',
           'location_id' => 'nullable|exists:locations,id',

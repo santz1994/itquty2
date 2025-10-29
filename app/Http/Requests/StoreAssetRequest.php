@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class StoreAssetRequest extends FormRequest
 {
@@ -24,7 +25,12 @@ class StoreAssetRequest extends FormRequest
     {
         return [
             'asset_tag' => ['required', 'string', 'max:255', 'unique:assets,asset_tag'],
-            'serial_number' => ['nullable', 'string', 'max:255', 'unique:assets,serial_number'],
+            'serial_number' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('assets', 'serial_number')->ignore($this->route('asset')? $this->route('asset')->id : null)
+            ],
             'model_id' => ['required', 'integer', 'exists:asset_models,id'],
             'division_id' => ['nullable', 'integer', 'exists:divisions,id'],
             'supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
@@ -32,6 +38,7 @@ class StoreAssetRequest extends FormRequest
             'warranty_months' => ['nullable', 'integer', 'min:0', 'max:120'],
             'warranty_type_id' => ['nullable', 'integer', 'exists:warranty_types,id'],
             'invoice_id' => ['nullable', 'integer', 'exists:invoices,id'],
+            'purchase_order_id' => ['nullable', 'integer', 'exists:purchase_orders,id'],
             'ip_address' => ['nullable', 'ip'],
             'mac_address' => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/'],
             'status_id' => ['required', 'integer', 'exists:statuses,id'],

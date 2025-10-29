@@ -18,6 +18,9 @@ class Kernel extends ConsoleKernel
         Commands\TestAllViewFixes::class,
         Commands\TestCriticalFixes::class,
         Commands\CheckNotifications::class,
+        Commands\DetectDuplicateSerials::class,
+        Commands\ExportDuplicateSerialRows::class,
+        Commands\CleanupDuplicateSerials::class,
     ];
 
     /**

@@ -102,6 +102,18 @@
             </div>
 
             <div class="form-group">
+              <label for="purchase_order_id">Purchase Order (Optional)</label>
+              <select class="form-control purchase_order_id" name="purchase_order_id" id="purchase_order_id">
+                <option value="">-- No Purchase Order --</option>
+                @foreach($purchaseOrders ?? [] as $po)
+                  <option value="{{ $po->id }}" {{ (old('purchase_order_id', $asset->purchase_order_id) == $po->id) ? 'selected' : '' }}>
+                    {{ $po->po_number }} - {{ $po->order_date ? \Carbon\Carbon::parse($po->order_date)->format('Y-m-d') : '' }} - {{ $po->supplier ? $po->supplier->name : '' }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
               <label for="notes">Spesifikasi <span class="text-red">*</span></label>
               <textarea name="notes" id="notes" class="form-control" rows="3" required>{{ old('notes', $asset->notes) }}</textarea>
             </div>
@@ -119,6 +131,7 @@
             <div class="form-group">
               <label for="serial_number">S/N</label>
               <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{ old('serial_number', $asset->serial_number) }}">
+              <small id="serial-feedback" class="text-muted" style="display:none"></small>
             </div>
 
             <div class="form-group">
@@ -201,6 +214,31 @@
       $(".assigned_to").select2();
       $(".asset_type_id").select2();
   $(".asset_type_id").select2();
+    });
+  </script>
+  <script>
+    // Serial number uniqueness check (AJAX) for edit form
+    $(function(){
+      $('#serial_number').on('blur', function(){
+        var serial = $(this).val().trim();
+        var excludeId = '{{ $asset->id }}';
+        if (!serial) {
+          $('#serial-feedback').hide();
+          return;
+        }
+        $.getJSON('{{ route("api.assets.checkSerial") }}', { serial: serial, exclude_id: excludeId })
+          .done(function(resp){
+            if (resp && resp.success) {
+              if (resp.exists) {
+                $('#serial-feedback').show().removeClass('text-muted text-success').addClass('text-danger').text('Serial number already exists in the system.');
+              } else {
+                $('#serial-feedback').show().removeClass('text-danger text-muted').addClass('text-success').text('Serial number available.');
+              }
+            }
+          }).fail(function(){
+            $('#serial-feedback').hide();
+          });
+      });
     });
   </script>
   <script type="text/javascript">

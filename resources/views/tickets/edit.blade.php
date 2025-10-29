@@ -171,12 +171,13 @@
                             <div class="form-group">
                                 <label for="asset_id">Asset</label>
                                 <select class="form-control @error('asset_id') is-invalid @enderror" 
-                                        name="asset_id" 
-                                        id="asset_id">
+                                        name="asset_ids[]" 
+                                        id="asset_id" multiple>
                                     <option value="">No Asset</option>
+                                    @php $selectedAssets = old('asset_ids', $ticket->assets->pluck('id')->toArray()); @endphp
                                     @foreach($assets as $asset)
                                         <option value="{{ $asset->id }}" 
-                                                {{ old('asset_id', $ticket->asset_id) == $asset->id ? 'selected' : '' }}>
+                                                {{ in_array($asset->id, $selectedAssets ?? []) ? 'selected' : '' }}>
                                             {{ $asset->model_name ? $asset->model_name : 'Unknown Model' }} ({{ $asset->asset_tag }})
                                         </option>
                                     @endforeach
@@ -233,6 +234,8 @@ $(document).ready(function() {
     $('#ticket-edit-form').on('submit', function() {
         showLoading('Updating ticket...');
     });
+    // Init multi-select for assets
+    $('#asset_id').select2({ placeholder: 'Select asset(s)', allowClear: true });
 });
 </script>
 @endpush

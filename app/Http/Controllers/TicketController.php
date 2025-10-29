@@ -221,7 +221,7 @@ class TicketController extends BaseController
                            ->with('error', 'You do not have permission to edit this ticket.');
         }
 
-        $ticket->load(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'ticket_type', 'location', 'asset']);
+    $ticket->load(['user', 'assignedTo', 'ticket_status', 'ticket_priority', 'ticket_type', 'location', 'asset', 'assets']);
         
         // Get dropdown data for the edit form
         // Note: Most dropdown data is provided by TicketFormComposer
@@ -254,6 +254,17 @@ class TicketController extends BaseController
             ]);
             
             $ticket->update($request->validated());
+
+            // Sync assets if provided (support asset_ids from multi-select)
+            try {
+                if ($request->filled('asset_ids')) {
+                    $ticket->assets()->sync($request->input('asset_ids', []));
+                } elseif ($request->filled('asset_id')) {
+                    $ticket->assets()->syncWithoutDetaching([$request->input('asset_id')]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to sync ticket assets during web update: ' . $e->getMessage());
+            }
             
             Log::info('Ticket updated successfully', ['ticket_id' => $ticket->id]);
             
