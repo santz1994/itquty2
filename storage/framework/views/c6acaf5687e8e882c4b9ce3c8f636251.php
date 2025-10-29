@@ -98,7 +98,7 @@
           <?php endif; ?>
           <?php
             // Safely get user ID - prefer $userSafe when available
-            $userId = $userSafe->id ?? (is_object($user) ? ($user->id ?? null) : (is_numeric($user) ? (int)$user : null));
+            $userId = optional($userSafe)->id ?? (is_object($user) ? ($user->id ?? null) : (is_numeric($user) ? (int)$user : null));
           ?>
           <form method="POST" action="/admin/users/<?php echo e($userId); ?>">
             <?php echo e(method_field('PATCH')); ?>
@@ -108,16 +108,16 @@
               <div class="form-group ">
                 <label for="name">Name</label>
                  
-                <input type="text" name="name" class="form-control" value="<?php echo e(old('name', $userSafe->name ?? ($user->name ?? ''))); ?>">
+                <input type="text" name="name" class="form-control" value="<?php echo e(old('name', optional($userSafe)->name ?? (optional($user)->name ?? ''))); ?>">
               </div>
               <div class="form-group ">
                 <label for="email">Email</label>
-                <input type="text" name="email" class="form-control" value="<?php echo e(old('email', $userSafe->email ?? ($user->email ?? ''))); ?>">
+                <input type="text" name="email" class="form-control" value="<?php echo e(old('email', optional($userSafe)->email ?? (optional($user)->email ?? ''))); ?>">
               </div>
               
               <div class="form-group">
                 <label for="phone">Phone Number</label>
-                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="<?php echo e(old('phone', $userSafe->phone ?? ($user->phone ?? ''))); ?>">
+                <input type="text" name="phone" class="form-control" placeholder="+1234567890" value="<?php echo e(old('phone', optional($userSafe)->phone ?? (optional($user)->phone ?? ''))); ?>">
                 <small class="help-block text-muted">Optional - User's contact phone number</small>
               </div>
               
@@ -128,7 +128,7 @@
                   <?php if(isset($divisions)): ?>
                     <?php $__currentLoopData = $divisions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $division): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                       <option value="<?php echo e($division->id); ?>" 
-                        <?php echo e(old('division_id', $userSafe->division_id ?? ($user->division_id ?? '')) == $division->id ? 'selected' : ''); ?>>
+                        <?php echo e(old('division_id', optional($userSafe)->division_id ?? (optional($user)->division_id ?? '')) == $division->id ? 'selected' : ''); ?>>
                         <?php echo e($division->name); ?>
 
                       </option>
@@ -159,7 +159,7 @@
                     <?php 
                       $roleUserId = isset($usersRole->user_id) ? $usersRole->user_id : (isset($usersRole->model_id) ? $usersRole->model_id : null);
                     ?>
-                    <?php if(($userSafe->id ?? null) == $roleUserId || (is_object($user) && ($user->id ?? null) == $roleUserId)): ?>
+                    <?php if((optional($userSafe)->id ?? null) == $roleUserId || (optional($user)->id ?? null) == $roleUserId): ?>
                       <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php if($role && is_object($role) && isset($role->id) && (isset($role->name) || isset($role->display_name))): ?>
                           <option
@@ -187,8 +187,8 @@
   </div>
   <!-- Prefill values: prefer old() so failed validation redirects preserve input. Visible in testing for legacy harnesses. -->
   <div id="prefill-values" style="<?php if(app()->environment('testing')): ?>display:block;<?php else: ?> display:none;<?php endif; ?>">
-    <span class="prefill-name"><?php echo e(old('name') ? old('name') : ($userSafe->name ?? (is_object($user) ? ($user->name ?? '') : ''))); ?></span>
-    <span class="prefill-email"><?php echo e(old('email') ? old('email') : ($userSafe->email ?? (is_object($user) ? ($user->email ?? '') : ''))); ?></span>
+  <span class="prefill-name"><?php echo e(old('name') ? old('name') : (optional($userSafe)->name ?? (optional($user)->name ?? ''))); ?></span>
+  <span class="prefill-email"><?php echo e(old('email') ? old('email') : (optional($userSafe)->email ?? (optional($user)->email ?? ''))); ?></span>
   </div>
   <?php if(Session::has('status')): ?>
     <script>

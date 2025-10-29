@@ -23,20 +23,21 @@ class FormDataComposer
         // Only bind basic user management form data
         // Use caching to improve performance
         $view->with([
+            // Return model collections so views can access ->id and ->name properties
             'divisions' => Cache::remember('divisions_dropdown', 3600, function () {
-                return Division::orderBy('name')->pluck('name', 'id');
+                return Division::select('id', 'name')->orderBy('name')->get();
             }),
             'locations' => Cache::remember('locations_dropdown', 3600, function () {
-                return Location::orderBy('location_name')->pluck('location_name', 'id');
+                return Location::select('id', 'location_name as name')->orderBy('location_name')->get();
             }),
             'statuses' => Cache::remember('statuses_dropdown', 3600, function () {
-                return Status::orderBy('name')->pluck('name', 'id');
+                return Status::select('id', 'name')->orderBy('name')->get();
             }),
             'users' => Cache::remember('users_dropdown', 1800, function () {
-                return User::orderBy('name')->pluck('name', 'id');
+                return User::select('id', 'name')->orderBy('name')->get();
             }),
             'roles' => Cache::remember('roles_dropdown', 7200, function () {
-                return Role::orderBy('display_name')->pluck('display_name', 'id');
+                return Role::select('id', 'display_name')->orderBy('display_name')->get();
             }),
         ]);
     }
