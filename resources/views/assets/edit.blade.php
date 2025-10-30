@@ -149,20 +149,6 @@
             </div>
 
             <div class="form-group">
-              <label for="location_id">Location</label>
-              <select class="form-control location_id" name="location_id" id="location_id">
-                <option value="">No Location</option>
-                @foreach($locations as $location)
-                  <option
-                    @if($asset->location_id == $location->id)
-                      selected
-                    @endif
-                  value="{{$location->id}}">{{$location->location_name}} - {{$location->building}}, {{$location->office}}</option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="form-group">
               <button type="submit" class="btn btn-primary btn-lg">
                 <i class="fa fa-save"></i> <b>Update Asset</b>
               </button>

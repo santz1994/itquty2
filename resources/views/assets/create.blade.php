@@ -138,30 +138,9 @@
                 @endforeach
               </select>
             </div>
-            <!-- Removed duplicate purchase_date and warranty_type blocks (kept the required ones above) -->
-            <!-- Computer-specific fields -->
-            <div class="pc-laptop-fields" style="display: none;">
-              <fieldset style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px;">
-                <legend style="font-size: 14px; font-weight: bold; color: #337ab7;">Computer Specifications</legend>
-                <div class="form-group">
-                  <label for="ip_address">IP Address</label>
-                  <input type="text" name="ip_address" id="ip_address" class="form-control" value="{{old('ip_address')}}" placeholder="e.g., 192.168.1.100">
-                </div>
-                <div class="form-group">
-                  <label for="mac_address">MAC Address</label>
-                  <input type="text" name="mac_address" id="mac_address" class="form-control" value="{{old('mac_address')}}" placeholder="e.g., 00:1B:44:11:3A:B7">
-                </div>
-              </fieldset>
-            </div>
-            <div class="form-group">
-              <label for="asset_tag">Asset Tag <span class="text-red">*</span></label>
-              <input type="text" name="asset_tag" id="asset_tag" class="form-control" value="{{old('asset_tag')}}" required maxlength="50" placeholder="e.g., AST-001">
-              <small class="text-muted">Maximum 50 characters, must be unique</small>
-            </div>
             
             {{-- Keep status and warranty fields hidden but preserve existing inputs so other logic continues to work (set defaults) --}}
             <input type="hidden" name="status_id" value="{{ old('status_id', 1) }}">
-            <input type="hidden" name="warranty_type_id" value="{{ old('warranty_type_id') }}">
             <input type="hidden" name="warranty_months" value="{{ old('warranty_months', 0) }}">
 
             <div class="form-group">

@@ -69,19 +69,40 @@ class User extends Authenticatable
     return $this->hasOne(Movement::class);
   }
 
-  public function ticket()
+  /**
+   * Tickets created by this user
+   */
+  public function createdTickets()
   {
-    return $this->hasMany(Ticket::class);
+    return $this->hasMany(Ticket::class, 'user_id');
   }
 
+  /**
+   * Tickets assigned to this user
+   */
   public function assignedTickets()
   {
     return $this->hasMany(Ticket::class, 'assigned_to');
   }
 
-  public function assets()
+  /**
+   * Assets assigned to this user
+   */
+  public function assignedAssets()
   {
     return $this->hasMany(Asset::class, 'assigned_to');
+  }
+
+  // Legacy alias for backward compatibility
+  public function ticket()
+  {
+    return $this->createdTickets();
+  }
+
+  // Legacy alias for backward compatibility
+  public function assets()
+  {
+    return $this->assignedAssets();
   }
 
   public function dailyActivities()

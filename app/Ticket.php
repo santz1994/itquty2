@@ -136,6 +136,22 @@ class Ticket extends Model implements HasMedia
     return $this->belongsTo(TicketsType::class, 'ticket_type_id');
   }
 
+  /**
+   * Immutable audit trail for all ticket changes
+   */
+  public function history()
+  {
+    return $this->hasMany(TicketHistory::class)->orderBy('changed_at', 'desc');
+  }
+
+  /**
+   * Comments on this ticket (separate from ticket entries for cleaner interface)
+   */
+  public function comments()
+  {
+    return $this->hasMany(TicketComment::class)->orderBy('created_at', 'desc');
+  }
+
   // ========================
   // ACCESSORS & MUTATORS
   // ========================
@@ -346,6 +362,23 @@ class Ticket extends Model implements HasMedia
     }
 
     $this->update($updateData);
+    
+    // Log daily activity for ticket resolution
+    if ($this->assigned_to && $this->resolved_at) {
+      $durationMinutes = $this->created_at->diffInMinutes($this->resolved_at);
+      DailyActivity::create([
+        'user_id' => $this->assigned_to,
+        'ticket_id' => $this->id,
+        'activity_type' => 'ticket_resolution',
+        'type' => 'ticket_resolution',
+        'title' => 'Ticket Resolved: ' . $this->subject,
+        'description' => 'Ticket #' . $this->ticket_code . ' resolved after ' . $durationMinutes . ' minutes',
+        'duration_minutes' => $durationMinutes,
+        'activity_date' => $this->resolved_at->toDateString(),
+        'notes' => $resolution,
+      ]);
+    }
+    
     return true;
   }
 
@@ -363,6 +396,21 @@ class Ticket extends Model implements HasMedia
       'ticket_status_id' => $closedStatus->id,
       'closed' => now(),
     ]);
+    
+    // Log daily activity for ticket closure
+    if ($this->assigned_to && $this->closed) {
+      $durationMinutes = $this->created_at->diffInMinutes($this->closed);
+      DailyActivity::create([
+        'user_id' => $this->assigned_to,
+        'ticket_id' => $this->id,
+        'activity_type' => 'ticket_close',
+        'type' => 'ticket_close',
+        'title' => 'Ticket Closed: ' . $this->subject,
+        'description' => 'Ticket #' . $this->ticket_code . ' closed after ' . $durationMinutes . ' minutes',
+        'duration_minutes' => $durationMinutes,
+        'activity_date' => $this->closed->toDateString(),
+      ]);
+    }
 
     return true;
   }
@@ -388,6 +436,32 @@ class Ticket extends Model implements HasMedia
     ]);
 
     return true;
+  }
+
+  /**
+   * Sync assets for this ticket via many-to-many pivot table
+   * @param array $assetIds Array of asset IDs to attach
+   * @param bool $detach Whether to detach existing assets first
+   * @return void
+   */
+  public function syncAssets(array $assetIds, bool $detach = true): void
+  {
+    try {
+      if ($detach) {
+        // Replace all assets
+        $this->assets()->sync(array_values($assetIds));
+      } else {
+        // Add without removing existing
+        $this->assets()->syncWithoutDetaching(array_values($assetIds));
+      }
+    } catch (\Exception $e) {
+      Log::error('Failed to sync ticket assets', [
+        'ticket_id' => $this->id,
+        'asset_ids' => $assetIds,
+        'error' => $e->getMessage()
+      ]);
+      throw $e;
+    }
   }
 
   /**

@@ -29,6 +29,8 @@ class UpdateTicketRequest extends FormRequest
             'ticket_status_id' => 'required|exists:tickets_statuses,id',
             'location_id' => 'nullable|exists:locations,id',
             'asset_id' => 'nullable|exists:assets,id',
+            'asset_ids' => 'nullable|array',
+            'asset_ids.*' => 'exists:assets,id',
             'assigned_to' => 'nullable|exists:users,id',
         ];
     }

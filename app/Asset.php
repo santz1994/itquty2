@@ -146,9 +146,21 @@ class Asset extends Model implements HasMedia
     return $this->belongsTo(User::class, 'assigned_to');
   }
 
+  /**
+   * Purchase order relationship
+   */
+  public function purchaseOrder()
+  {
+    return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
+  }
+
+  /**
+   * Many-to-many relation to tickets via 'ticket_assets' pivot table.
+   * Replaces the legacy hasMany relationship.
+   */
   public function tickets()
   {
-    return $this->hasMany(Ticket::class);
+    return $this->belongsToMany(Ticket::class, 'ticket_assets', 'asset_id', 'ticket_id')->withTimestamps();
   }
 
   public function assetRequests()
@@ -232,7 +244,15 @@ class Asset extends Model implements HasMedia
 
   public function scopeWithRelations($query)
   {
-    return $query->with(['model', 'division', 'status', 'assignedTo', 'supplier']);
+    return $query->with(['model', 'division', 'status', 'assignedTo', 'supplier', 'purchaseOrder']);
+  }
+
+  /**
+   * Eager load tickets via many-to-many relationship
+   */
+  public function scopeWithTickets($query)
+  {
+    return $query->with(['tickets', 'tickets.ticket_status', 'tickets.ticket_priority', 'tickets.assignedTo']);
   }
 
   // ========================
