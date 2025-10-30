@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Asset;
 use App\User;
 use App\Http\Requests\SearchAssetRequest;
+use App\Http\Requests\AssetFilterRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -13,58 +14,34 @@ use Illuminate\Support\Facades\Auth;
 class AssetController extends Controller
 {
   /**
-   * Display a listing of assets
+   * Display a listing of assets with advanced filtering
    *
-   * @param Request $request
+   * Supports:
+   * - Date range: ?date_from=2025-01-01&date_to=2025-12-31
+   * - Multi-select: ?status_id[]=1&status_id[]=2&status_id[]=3
+   * - Location hierarchy: ?location_id=5&include_sublocation=true
+   * - Range filters: ?price_min=1000&price_max=5000
+   * - Complex filters: Combined with search, sorting, and pagination
+   *
+   * @param AssetFilterRequest $request
    * @return \Illuminate\Http\JsonResponse
    */
-  public function index(Request $request)
+  public function index(AssetFilterRequest $request)
   {
+    $filters = $request->getFilterParams();
+    
     $query = Asset::withNestedRelations(); // Use optimized nested loading
 
-    // Apply filters
-    if ($request->has('status_id')) {
-      $query->byStatus($request->status_id);
-    }
-
-    if ($request->has('division_id')) {
-      $query->where('division_id', $request->division_id);
-    }
-
-    if ($request->has('location_id')) {
-      $query->where('location_id', $request->location_id);
-    }
-
-    if ($request->has('assigned_to') && $request->assigned_to !== '') {
-      if ($request->assigned_to === 'unassigned') {
-        $query->unassigned();
-      } else {
-        $query->assignedTo($request->assigned_to);
-      }
-    }
-
-    // Filter by status type
-    if ($request->has('active') && $request->active === 'true') {
-      $query->active();
-    }
-
-    if ($request->has('search')) {
-      $search = $request->search;
-      $query->where(function($q) use ($search) {
-        $q->where('asset_tag', 'like', "%{$search}%")
-          ->orWhere('name', 'like', "%{$search}%")
-          ->orWhere('serial_number', 'like', "%{$search}%");
-      });
-    }
+    // Apply advanced filters
+    $query->applyFilters($filters);
 
     // Sorting with relationship support
-    $sortBy = $request->get('sort_by', 'id');
-    $sortOrder = $request->get('sort_order', 'desc');
+    $sortBy = $filters['sort_by'] ?? 'id';
+    $sortOrder = $filters['sort_order'] ?? 'desc';
     $query->sortBy($sortBy, $sortOrder);
 
-    // Pagination with validation
-    $perPage = min((int)$request->get('per_page', 15), 100); // Max 100 per page
-    $perPage = max(1, $perPage); // Min 1 per page
+    // Pagination with validation (max 50)
+    $perPage = min($filters['per_page'] ?? 15, 50);
 
     /** @var \Illuminate\Pagination\LengthAwarePaginator $assets */
     $assets = $query->paginate($perPage);

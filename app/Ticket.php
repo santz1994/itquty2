@@ -13,11 +13,12 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use App\Traits\Auditable;
 use App\Traits\SortableQuery;
 use App\Traits\SearchServiceTrait;
+use App\Traits\FilterBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Ticket extends Model implements HasMedia
 {
-  use InteractsWithMedia, Auditable, SortableQuery, SearchServiceTrait, HasFactory;
+  use InteractsWithMedia, Auditable, SortableQuery, SearchServiceTrait, FilterBuilder, HasFactory;
   
   protected $fillable = [
     'user_id', 'location_id', 'ticket_status_id', 'ticket_type_id', 

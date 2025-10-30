@@ -7,6 +7,7 @@ use App\Ticket;
 use App\User;
 use App\TicketsEntry;
 use App\Http\Requests\SearchTicketRequest;
+use App\Http\Requests\TicketFilterRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -14,80 +15,34 @@ use Illuminate\Support\Facades\Auth;
 class TicketController extends Controller
 {
   /**
-   * Display a listing of tickets
+   * Display a listing of tickets with advanced filtering
    *
-   * @param Request $request
+   * Supports:
+   * - Date range: ?date_from=2025-01-01&date_to=2025-12-31
+   * - Multi-select: ?status_id[]=1&status_id[]=2&priority_id[]=1,2
+   * - Location hierarchy: ?location_id=5&include_sublocation=true
+   * - Resolution status: ?is_resolved=true&is_open=false
+   * - Complex filters: Combined with search, sorting, and pagination
+   *
+   * @param TicketFilterRequest $request
    * @return \Illuminate\Http\JsonResponse
    */
-  public function index(Request $request)
+  public function index(TicketFilterRequest $request)
   {
+    $filters = $request->getFilterParams();
+    
     $query = Ticket::withNestedRelations(); // Use optimized nested loading
 
-    // Apply filters using scopes
-    if ($request->has('status_id')) {
-      $query->byStatus($request->status_id);
-    }
-
-    if ($request->has('priority_id')) {
-      $query->byPriority($request->priority_id);
-    }
-
-    if ($request->has('type_id')) {
-      $query->byType($request->type_id);
-    }
-
-    if ($request->has('assigned_to') && $request->assigned_to !== '') {
-      if ($request->assigned_to === 'unassigned') {
-        $query->unassigned();
-      } else {
-        $query->assignedTo($request->assigned_to);
-      }
-    }
-
-    if ($request->has('user_id')) {
-      $query->forUser($request->user_id);
-    }
-
-    // Status filters using scopes
-    if ($request->has('open') && $request->open === 'true') {
-      $query->open();
-    }
-
-    if ($request->has('closed') && $request->closed === 'true') {
-      $query->closed();
-    }
-
-    if ($request->has('search')) {
-      $search = $request->search;
-      $query->where(function($q) use ($search) {
-        $q->where('subject', 'like', "%{$search}%")
-          ->orWhere('description', 'like', "%{$search}%");
-      });
-    }
-
-    // Date filters
-    if ($request->has('date_from') && $request->has('date_to')) {
-      $query->createdBetween($request->date_from, $request->date_to);
-    }
-
-    // Overdue filter
-    if ($request->has('overdue') && $request->overdue === 'true') {
-      $query->overdue();
-    }
-
-    // Near deadline filter
-    if ($request->has('near_deadline') && $request->near_deadline === 'true') {
-      $query->nearDeadline($request->get('deadline_hours', 2));
-    }
+    // Apply advanced filters
+    $query->applyFilters($filters);
 
     // Order by created_at DESC by default, allow override
-    $sortBy = $request->get('sort_by', 'created_at');
-    $sortOrder = $request->get('sort_order', 'desc');
+    $sortBy = $filters['sort_by'] ?? 'created_at';
+    $sortOrder = $filters['sort_order'] ?? 'desc';
     $query->sortBy($sortBy, $sortOrder);
 
-    // Pagination with validation
-    $perPage = min((int)$request->get('per_page', 15), 100); // Max 100 per page
-    $perPage = max(1, $perPage); // Min 1 per page
+    // Pagination with validation (max 50)
+    $perPage = min($filters['per_page'] ?? 15, 50);
 
     $tickets = $query->paginate($perPage);
 

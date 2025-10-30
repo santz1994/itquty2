@@ -9,6 +9,7 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DailyActivityApiController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\SearchController;
+use App\Http\Controllers\API\FilterController;
 use App\Http\Controllers\Api\DatatableController;
 
 /*
@@ -119,6 +120,14 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/search/global', [SearchController::class, 'global'])->name('api.search.global');
     Route::get('/search/suggest', [SearchController::class, 'suggest'])->name('api.search.suggest');
     Route::get('/search/stats', [SearchController::class, 'stats'])->name('api.search.stats');
+    
+    // Filter endpoints - filter options for dropdowns
+    Route::get('/assets/filter-options/{filter}', [FilterController::class, 'filterOptions'])->name('api.assets.filterOptions');
+    Route::get('/tickets/filter-options/{filter}', [FilterController::class, 'filterOptions'])->name('api.tickets.filterOptions');
+    
+    // Filter builder and statistics
+    Route::get('/filter-builder', [FilterController::class, 'filterBuilder'])->name('api.filterBuilder');
+    Route::get('/filter-stats', [FilterController::class, 'filterStats'])->name('api.filterStats');
     
 });
 
