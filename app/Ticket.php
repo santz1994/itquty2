@@ -17,6 +17,7 @@ use App\Traits\FilterBuilder;
 use App\Traits\BulkOperationBuilder;
 use App\Traits\ExportBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Listeners\TicketChangeLogger;
 
 class Ticket extends Model implements HasMedia
 {
@@ -88,6 +89,31 @@ class Ticket extends Model implements HasMedia
     static::creating(function ($ticket) {
       $ticket->ticket_code = self::generateTicketCode();
       $ticket->sla_due = self::calculateSLADue($ticket->ticket_priority_id);
+    });
+
+    /**
+     * Automatically log ticket changes to ticket_history table.
+     * Tracks: status_id, priority_id, assigned_to, sla_due, resolved_at
+     */
+    static::updated(function ($ticket) {
+      $original = $ticket->getOriginal();
+      $changes = $ticket->getChanges();
+      
+      // List of fields to track in audit log
+      $trackedFields = ['ticket_status_id', 'ticket_priority_id', 'assigned_to', 'sla_due', 'resolved_at'];
+      
+      foreach ($trackedFields as $field) {
+        if (isset($changes[$field]) && $original[$field] !== $changes[$field]) {
+          TicketChangeLogger::logChange(
+            $ticket->id,
+            $field,
+            $original[$field],
+            $changes[$field],
+            auth()->id() ?? 1,
+            'field_change'
+          );
+        }
+      }
     });
   }
 

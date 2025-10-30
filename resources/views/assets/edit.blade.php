@@ -178,31 +178,13 @@
 
 @endsection
 
-@push('scripts')
-<script type="text/javascript">
-  // Form loading state
-  $('#asset-edit-form').on('submit', function() {
-    showLoading('Updating asset...');
-  });
-</script>
-@endpush
-
 @section('footer')
   <script type="text/javascript">
-    $(document).ready(function() {
-      $(".model_id").select2();
-      $(".division_id").select2();
-      $(".supplier_id").select2();
-      $(".invoice_id").select2();
-      $(".warranty_type_id").select2();
-      $(".status_id").select2();
-      $(".location_id").select2();
-      $(".assigned_to").select2();
-      $(".asset_type_id").select2();
-  $(".asset_type_id").select2();
+    // Form loading state
+    $('#asset-edit-form').on('submit', function() {
+      showLoading('Updating asset...');
     });
-  </script>
-  <script>
+
     // Serial number uniqueness check (AJAX) for edit form
     $(function(){
       $('#serial_number').on('blur', function(){
@@ -226,9 +208,28 @@
           });
       });
     });
+
+    $(":input").keypress(function(event){
+      if (event.which == '10' || event.which == '13') {
+        event.preventDefault();
+      }
+    });
   </script>
+
   <script type="text/javascript">
     $(document).ready(function() {
+      // Initialize Select2 for all dropdowns
+      $(".model_id").select2();
+      $(".division_id").select2();
+      $(".supplier_id").select2();
+      $(".invoice_id").select2();
+      $(".warranty_type_id").select2();
+      $(".status_id").select2();
+      $(".location_id").select2();
+      $(".assigned_to").select2();
+      $(".asset_type_id").select2();
+      $(".purchase_order_id").select2();
+
       // When asset type changes in edit form, filter model options and toggle PC fields
       $('#asset_type_id').on('change', function() {
         var selectedText = $(this).find('option:selected').text();
@@ -249,16 +250,10 @@
           $('#model_id').val('').trigger('change');
         }
       });
+
       // Trigger change on load to apply filtering if an asset type is already selected
       if ($('#asset_type_id').val()) {
         $('#asset_type_id').trigger('change');
-      }
-    });
-  </script>
-  <script>
-    $(":input").keypress(function(event){
-      if (event.which == '10' || event.which == '13') {
-        event.preventDefault();
       }
     });
   </script>

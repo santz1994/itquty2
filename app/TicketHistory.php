@@ -14,7 +14,7 @@ class TicketHistory extends Model
     protected $table = 'ticket_history';
     
     // Immutable - no updates allowed
-    protected $fillable = ['ticket_id', 'field_changed', 'old_value', 'new_value', 'changed_by_user_id', 'changed_at'];
+    protected $fillable = ['ticket_id', 'field_changed', 'old_value', 'new_value', 'changed_by_user_id', 'changed_at', 'change_type', 'reason'];
     
     // Cast timestamps
     protected $casts = [

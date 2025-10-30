@@ -63,6 +63,8 @@ require __DIR__ . '/modules/admin.php';
 require __DIR__ . '/modules/user-portal.php';
 // Master data import/export landing
 require __DIR__ . '/modules/masterdata.php';
+// Conflict resolution for imports
+require __DIR__ . '/modules/imports.php';
 
 // ========================================
 // DEBUG/TEST ROUTES (Local environment only)

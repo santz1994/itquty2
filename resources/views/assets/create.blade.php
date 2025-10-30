@@ -183,18 +183,14 @@
 
 @endsection
 
-@push('scripts')
-<script type="text/javascript">
-  // Form loading state
-  $('#asset-create-form').on('submit', function() {
-    showLoading('Creating asset...');
-  });
-</script>
-@endpush
-
 @section('footer')
-  <script>
-    // Serial number uniqueness check (AJAX) for create form
+  <script type="text/javascript">
+    // Form loading state
+    $('#asset-create-form').on('submit', function() {
+      showLoading('Creating asset...');
+    });
+
+    // Serial number uniqueness check (AJAX)
     $(function(){
       $('#serial_number').on('blur', function(){
         var serial = $(this).val().trim();
@@ -216,25 +212,29 @@
           });
       });
     });
-  </script>
-@endsection
 
-@section('footer')
+    $(":input").keypress(function(event){
+      if (event.which == '10' || event.which == '13') {
+        event.preventDefault();
+      }
+    });
+  </script>
+
   <script type="text/javascript">
-  $(document).ready(function() {
-  $(".model_id").select2();
-  $(".division_id").select2();
-  $(".supplier_id").select2();
-  $(".location").select2();
-  $(".location_id").select2();
-  $(".assigned_to").select2();
-  $(".asset_type_id").select2();
-  $(".warranty_type_id").select2();
-  $(".invoice_id").select2();
-  $(".status_id").select2();
+    $(document).ready(function() {
+      $(".model_id").select2();
+      $(".division_id").select2();
+      $(".supplier_id").select2();
+      $(".location").select2();
+      $(".location_id").select2();
+      $(".assigned_to").select2();
+      $(".asset_type_id").select2();
+      $(".warranty_type_id").select2();
+      $(".invoice_id").select2();
+      $(".purchase_order_id").select2();
+      $(".status_id").select2();
 
       // Handle asset model change to show/hide conditional fields
-      // When asset type changes, show/hide PC-specific fields and filter model list
       $('#asset_type_id').on('change', function() {
         var selectedText = $(this).find('option:selected').text();
         var selectedId = $(this).val();
@@ -260,42 +260,9 @@
         }
       });
 
-      // Trigger change event on page load if there's a selected value (for form validation errors)
+      // Trigger change event on page load if there's a selected value
       if ($('#model_id').val()) {
         $('#model_id').trigger('change');
-      }
-    });
-  </script>
-  <script>
-    // Serial number uniqueness check (AJAX)
-    $(function(){
-      $('#serial_number').on('blur', function(){
-        var serial = $(this).val().trim();
-        if (!serial) {
-          $('#serial-feedback').hide();
-          return;
-        }
-        // Call API endpoint to check uniqueness
-        $.getJSON('{{ route("api.assets.checkSerial") }}', { serial: serial })
-          .done(function(resp){
-            if (resp && resp.success) {
-              if (resp.exists) {
-                $('#serial-feedback').show().removeClass('text-muted text-success').addClass('text-danger').text('Serial number already exists in the system.');
-              } else {
-                $('#serial-feedback').show().removeClass('text-danger text-muted').addClass('text-success').text('Serial number available.');
-              }
-            }
-          }).fail(function(){
-            // silently fail (keep UX responsive)
-            $('#serial-feedback').hide();
-          });
-      });
-    });
-  </script>
-  <script>
-    $(":input").keypress(function(event){
-      if (event.which == '10' || event.which == '13') {
-        event.preventDefault();
       }
     });
   </script>

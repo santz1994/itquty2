@@ -102,9 +102,11 @@ return new class extends Migration
 
         // Remove standard indexes
         if (Schema::hasTable('daily_activities')) {
-            Schema::table('daily_activities', function (Blueprint $table) {
-                $table->dropIndexIfExists('daily_activities_activity_type_idx');
-            });
+            try {
+                DB::statement('ALTER TABLE daily_activities DROP INDEX daily_activities_activity_type_idx');
+            } catch (\Exception $e) {
+                // Index doesn't exist, continue
+            }
         }
     }
 

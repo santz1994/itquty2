@@ -157,6 +157,28 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::get('/exports/{export_id}/download', [ExportController::class, 'downloadExport'])->name('api.exports.download');
         Route::get('/exports/{export_id}/logs', [ExportController::class, 'getExportLogs'])->name('api.exports.logs');
         Route::post('/exports/{export_id}/retry', [ExportController::class, 'retryExport'])->name('api.exports.retry');
+        
+        // Import conflict resolution
+        Route::prefix('imports/{importId}')->name('api.imports.conflicts.')->group(function () {
+            Route::get('conflicts', [\App\Http\Controllers\API\ConflictResolutionController::class, 'index'])
+                ->name('index');
+            Route::get('conflicts/statistics', [\App\Http\Controllers\API\ConflictResolutionController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('conflicts/{conflictId}', [\App\Http\Controllers\API\ConflictResolutionController::class, 'show'])
+                ->name('show');
+            Route::post('conflicts/{conflictId}/resolve', [\App\Http\Controllers\API\ConflictResolutionController::class, 'resolve'])
+                ->name('resolve');
+            Route::post('conflicts/bulk-resolve', [\App\Http\Controllers\API\ConflictResolutionController::class, 'bulkResolve'])
+                ->name('bulk-resolve');
+            Route::post('conflicts/auto-resolve', [\App\Http\Controllers\API\ConflictResolutionController::class, 'autoResolve'])
+                ->name('auto-resolve');
+            Route::get('conflicts/history', [\App\Http\Controllers\API\ConflictResolutionController::class, 'history'])
+                ->name('history');
+            Route::get('conflicts/export', [\App\Http\Controllers\API\ConflictResolutionController::class, 'exportReport'])
+                ->name('export-report');
+            Route::post('conflicts/rollback', [\App\Http\Controllers\API\ConflictResolutionController::class, 'rollback'])
+                ->name('rollback');
+        });
     });
     
 });
