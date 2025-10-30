@@ -20,7 +20,7 @@
             <?php echo e(csrf_field()); ?>
 
             <div class="form-group">
-              <label>Agent</label>
+              <label>User/Creator</label>
               <p class="form-control-static"><?php echo e(Auth::user()->name); ?></p>
               <input type="hidden" name="user_id" value="<?php echo e(old('user_id', Auth::id())); ?>">
             </div>

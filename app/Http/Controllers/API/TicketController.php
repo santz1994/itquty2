@@ -81,9 +81,7 @@ class TicketController extends Controller
     // Order by created_at DESC by default, allow override
     $sortBy = $request->get('sort_by', 'created_at');
     $sortOrder = $request->get('sort_order', 'desc');
-    if (in_array($sortBy, ['created_at', 'updated_at', 'sla_due', 'ticket_priority_id'])) {
-      $query->orderBy($sortBy, strtolower($sortOrder) === 'asc' ? 'asc' : 'desc');
-    }
+    $query->sortBy($sortBy, $sortOrder);
 
     // Pagination with validation
     $perPage = min((int)$request->get('per_page', 15), 100); // Max 100 per page

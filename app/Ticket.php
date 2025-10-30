@@ -11,11 +11,12 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 use App\Traits\Auditable;
+use App\Traits\SortableQuery;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Ticket extends Model implements HasMedia
 {
-  use InteractsWithMedia, Auditable, HasFactory;
+  use InteractsWithMedia, Auditable, SortableQuery, HasFactory;
   
   protected $fillable = [
     'user_id', 'location_id', 'ticket_status_id', 'ticket_type_id', 
@@ -35,6 +36,40 @@ class Ticket extends Model implements HasMedia
     'resolved_at' => 'datetime',
     'closed' => 'datetime',
   ];
+
+  /**
+   * Define sortable columns for API queries
+   * @return array
+   */
+  public function getSortableColumns()
+  {
+    return [
+      'id' => 'id',
+      'ticket_code' => 'ticket_code',
+      'subject' => 'subject',
+      'created_at' => 'created_at',
+      'updated_at' => 'updated_at',
+      'resolved_at' => 'resolved_at',
+      'sla_due' => 'sla_due',
+      'status_id' => 'ticket_status_id',
+      'priority_id' => 'ticket_priority_id',
+      'assigned_to' => 'assigned_to',
+    ];
+  }
+
+  /**
+   * Define relationship-based sorting (requires joins)
+   * @return array
+   */
+  public function getSortableRelations()
+  {
+    return [
+      'status' => ['tickets_statuses', 'id', 'name'],
+      'priority' => ['tickets_priorities', 'id', 'name'],
+      'user' => ['users', 'id', 'name'],
+      'assigned' => ['users', 'id', 'name'],  // Sort by assigned technician
+    ];
+  }
 
   protected static function boot()
   {

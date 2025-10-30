@@ -11,11 +11,12 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use App\Traits\Auditable;
+use App\Traits\SortableQuery;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Asset extends Model implements HasMedia
 {
-  use InteractsWithMedia, Auditable, HasFactory;
+  use InteractsWithMedia, Auditable, SortableQuery, HasFactory;
   
   /**
    * Mass assignable attributes
@@ -33,6 +34,41 @@ class Asset extends Model implements HasMedia
     'purchase_date' => 'date',
     'warranty_months' => 'integer',
   ];
+
+  /**
+   * Define sortable columns for API queries
+   * @return array
+   */
+  public function getSortableColumns()
+  {
+    return [
+      'id' => 'id',
+      'asset_tag' => 'asset_tag',
+      'name' => 'name',
+      'serial_number' => 'serial_number',
+      'created_at' => 'created_at',
+      'updated_at' => 'updated_at',
+      'status_id' => 'status_id',
+      'division_id' => 'division_id',
+      'purchase_date' => 'purchase_date',
+      'warranty_expiry' => 'warranty_expiry_date',
+      'assigned_to' => 'assigned_to',
+    ];
+  }
+
+  /**
+   * Define relationship-based sorting (requires joins)
+   * @return array
+   */
+  public function getSortableRelations()
+  {
+    return [
+      'status' => ['statuses', 'id', 'name'],
+      'division' => ['divisions', 'id', 'name'],
+      'location' => ['locations', 'id', 'name'],
+      'manufacturer' => ['manufacturers', 'id', 'name'],
+    ];
+  }
 
   protected static function boot()
   {

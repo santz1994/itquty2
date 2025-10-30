@@ -19,7 +19,7 @@
           <form method="POST" action="{{ url('tickets') }}" id="ticket-create-form">
             {{csrf_field()}}
             <div class="form-group">
-              <label>Agent</label>
+              <label>User/Creator</label>
               <p class="form-control-static">{{ Auth::user()->name }}</p>
               <input type="hidden" name="user_id" value="{{ old('user_id', Auth::id()) }}">
             </div>
@@ -33,7 +33,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="asset_ids">Asset(s) (Optional)</label>
+              <label for="asset_ids">Assets (Optional)</label>
               <select class="form-control asset_ids" name="asset_ids[]" multiple>
                 @foreach($assets as $asset)
                     <option value="{{$asset->id}}" {{ (old('asset_ids') && in_array($asset->id, old('asset_ids'))) || (isset($preselectedAssetId) && $preselectedAssetId == $asset->id) ? 'selected' : '' }}>

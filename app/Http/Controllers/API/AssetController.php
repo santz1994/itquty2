@@ -56,6 +56,11 @@ class AssetController extends Controller
       });
     }
 
+    // Sorting with relationship support
+    $sortBy = $request->get('sort_by', 'id');
+    $sortOrder = $request->get('sort_order', 'desc');
+    $query->sortBy($sortBy, $sortOrder);
+
     // Pagination with validation
     $perPage = min((int)$request->get('per_page', 15), 100); // Max 100 per page
     $perPage = max(1, $perPage); // Min 1 per page
