@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Ticket;
 use App\User;
+use App\TicketsEntry;
+use App\Http\Requests\SearchTicketRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -547,5 +549,173 @@ class TicketController extends Controller
         
         return user_has_any_role($user, ['admin', 'super-admin', 'management']) || 
                $ticket->assigned_to == $user->id;
+    }
+
+    /**
+     * Search tickets using FULLTEXT search
+     *
+     * @param SearchTicketRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function search(SearchTicketRequest $request)
+    {
+        $params = $request->validated();
+        $query = $params['q'];
+        $type = $params['type'] ?? 'all';
+        $sort = $params['sort'] ?? 'relevance';
+        $perPage = min($params['per_page'] ?? 20, 50);
+        $includeResolved = $params['include_resolved'] ?? false;
+
+        // Determine search columns based on type
+        $columns = match($type) {
+            'subject' => ['subject'],
+            'description' => ['description'],
+            'code' => ['ticket_code'],
+            default => ['subject', 'description', 'ticket_code']
+        };
+
+        // Build search query with eager loading
+        $tickets = Ticket::withNestedRelations()
+            ->fulltextSearch($query, $columns);
+
+        // Filter resolved/closed tickets
+        if (!$includeResolved) {
+            $tickets->open();
+        }
+
+        // Apply additional filters if provided
+        if ($request->has('status_id')) {
+            $tickets->byStatus($request->get('status_id'));
+        }
+
+        if ($request->has('priority_id')) {
+            $tickets->byPriority($request->get('priority_id'));
+        }
+
+        if ($request->has('assigned_to')) {
+            if ($request->get('assigned_to') === 'unassigned') {
+                $tickets->unassigned();
+            } else {
+                $tickets->assignedTo($request->get('assigned_to'));
+            }
+        }
+
+        if ($request->has('user_id')) {
+            $tickets->forUser($request->get('user_id'));
+        }
+
+        // Apply sorting
+        if ($sort === 'relevance') {
+            // Add relevance score to query
+            $searchTerm = Ticket::parseSearchQuery($query);
+            $columnString = implode(',', $columns);
+            $tickets = $tickets->selectRaw(
+                "tickets.*, MATCH($columnString) AGAINST(? IN BOOLEAN MODE) as relevance_score",
+                [$searchTerm]
+            )->orderByDesc('relevance_score');
+        } else if ($sort === 'date') {
+            $tickets->orderBy('created_at', 'desc');
+        } else if ($sort === 'priority') {
+            $tickets->orderBy('ticket_priority_id', 'desc');
+        }
+
+        $results = $tickets->paginate($perPage);
+
+        // Transform results with snippets
+        $results->getCollection()->transform(function ($ticket) use ($query) {
+            return [
+                'id' => $ticket->id,
+                'ticket_code' => $ticket->ticket_code,
+                'subject' => $ticket->subject,
+                'priority' => [
+                    'id' => $ticket->ticket_priority_id,
+                    'name' => $ticket->priority->name ?? null,
+                ],
+                'status' => [
+                    'id' => $ticket->ticket_status_id,
+                    'name' => $ticket->status->name ?? null,
+                ],
+                'assigned_to' => $ticket->assignedUser ? [
+                    'id' => $ticket->assignedUser->id,
+                    'name' => $ticket->assignedUser->name,
+                ] : null,
+                'created_at' => $ticket->created_at,
+                'relevance_score' => $ticket->relevance_score ?? null,
+                'snippet' => Ticket::generateSnippet($ticket->subject . ' ' . ($ticket->description ?? ''), $query),
+            ];
+        });
+
+        return response()->json([
+            'data' => $results->items(),
+            'meta' => [
+                'total' => $results->total(),
+                'per_page' => $results->perPage(),
+                'current_page' => $results->currentPage(),
+                'from' => $results->firstItem(),
+                'to' => $results->lastItem(),
+                'last_page' => $results->lastPage(),
+            ]
+        ]);
+    }
+
+    /**
+     * Search comments in a specific ticket
+     *
+     * @param Ticket $ticket
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function commentsSearch(Ticket $ticket, Request $request)
+    {
+        $validated = $request->validate([
+            'q' => 'required|string|min:2|max:200',
+            'per_page' => 'nullable|integer|between:1,50',
+            'page' => 'nullable|integer|min:1',
+        ]);
+
+        $query = $validated['q'];
+        $perPage = min($validated['per_page'] ?? 20, 50);
+
+        // Search comments using FULLTEXT
+        $comments = TicketsEntry::where('ticket_id', $ticket->id)
+            ->fulltextSearch($query, ['description'])
+            ->with('user');
+
+        // Add relevance score
+        $searchTerm = TicketsEntry::parseSearchQuery($query);
+        $comments = $comments->selectRaw(
+            "tickets_entries.*, MATCH(description) AGAINST(? IN BOOLEAN MODE) as relevance_score",
+            [$searchTerm]
+        )->orderByDesc('relevance_score');
+
+        $results = $comments->paginate($perPage);
+
+        // Transform results
+        $results->getCollection()->transform(function ($comment) use ($query) {
+            return [
+                'id' => $comment->id,
+                'content' => $comment->description,
+                'author' => $comment->user ? [
+                    'id' => $comment->user->id,
+                    'name' => $comment->user->name,
+                    'email' => $comment->user->email,
+                ] : null,
+                'created_at' => $comment->created_at,
+                'relevance_score' => $comment->relevance_score ?? null,
+                'snippet' => TicketsEntry::generateSnippet($comment->description, $query),
+            ];
+        });
+
+        return response()->json([
+            'data' => $results->items(),
+            'meta' => [
+                'total' => $results->total(),
+                'per_page' => $results->perPage(),
+                'current_page' => $results->currentPage(),
+                'from' => $results->firstItem(),
+                'to' => $results->lastItem(),
+                'last_page' => $results->lastPage(),
+            ]
+        ]);
     }
 }

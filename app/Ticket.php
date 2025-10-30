@@ -12,11 +12,12 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 use App\Traits\Auditable;
 use App\Traits\SortableQuery;
+use App\Traits\SearchServiceTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Ticket extends Model implements HasMedia
 {
-  use InteractsWithMedia, Auditable, SortableQuery, HasFactory;
+  use InteractsWithMedia, Auditable, SortableQuery, SearchServiceTrait, HasFactory;
   
   protected $fillable = [
     'user_id', 'location_id', 'ticket_status_id', 'ticket_type_id', 
@@ -24,6 +25,12 @@ class Ticket extends Model implements HasMedia
     'assigned_to', 'assigned_at', 'assignment_type', 'sla_due',
     'first_response_at', 'resolved_at', 'asset_id'
   ];
+
+  /**
+   * FULLTEXT searchable columns
+   * @var array
+   */
+  protected $searchColumns = ['subject', 'description', 'ticket_code'];
 
   protected $dates = [
     'assigned_at', 'sla_due', 'first_response_at', 'resolved_at', 'closed'

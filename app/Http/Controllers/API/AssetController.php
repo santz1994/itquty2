@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Asset;
 use App\User;
+use App\Http\Requests\SearchAssetRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -488,5 +489,106 @@ class AssetController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Search assets using FULLTEXT search
+     *
+     * @param SearchAssetRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function search(SearchAssetRequest $request)
+    {
+        $params = $request->validated();
+        $query = $params['q'];
+        $type = $params['type'] ?? 'all';
+        $sort = $params['sort'] ?? 'relevance';
+        $perPage = min($params['per_page'] ?? 20, 50);
+
+        // Determine search columns based on type
+        $columns = match($type) {
+            'name' => ['name'],
+            'tag' => ['asset_tag'],
+            'serial' => ['serial_number'],
+            default => ['name', 'description', 'asset_tag', 'serial_number']
+        };
+
+        // Build search query with eager loading
+        $assets = Asset::withNestedRelations()
+            ->fulltextSearch($query, $columns);
+
+        // Apply additional filters if provided
+        if ($request->has('status_id')) {
+            $assets->byStatus($request->get('status_id'));
+        }
+
+        if ($request->has('division_id')) {
+            $assets->where('division_id', $request->get('division_id'));
+        }
+
+        if ($request->has('location_id')) {
+            $assets->where('location_id', $request->get('location_id'));
+        }
+
+        if ($request->has('manufacturer_id')) {
+            $assets->whereHas('assetModel', function($q) {
+                $q->where('manufacturer_id', request()->get('manufacturer_id'));
+            });
+        }
+
+        if ($request->has('active')) {
+            $assets->active();
+        }
+
+        // Apply sorting
+        if ($sort === 'relevance') {
+            // Add relevance score to query
+            $searchTerm = Asset::parseSearchQuery($query);
+            $columnString = implode(',', $columns);
+            $assets = $assets->selectRaw(
+                "assets.*, MATCH($columnString) AGAINST(? IN BOOLEAN MODE) as relevance_score",
+                [$searchTerm]
+            )->orderByDesc('relevance_score');
+        } else if ($sort === 'name') {
+            $assets->orderBy('name', 'asc');
+        } else if ($sort === 'date') {
+            $assets->orderBy('created_at', 'desc');
+        }
+
+        $results = $assets->paginate($perPage);
+
+        // Transform results with snippets
+        $results->getCollection()->transform(function ($asset) use ($query) {
+            return [
+                'id' => $asset->id,
+                'asset_tag' => $asset->asset_tag,
+                'name' => $asset->name,
+                'serial_number' => $asset->serial_number,
+                'status' => [
+                    'id' => $asset->status_id,
+                    'name' => $asset->status->name ?? null,
+                ],
+                'division' => $asset->division->name ?? null,
+                'location' => $asset->location->name ?? null,
+                'assigned_to' => $asset->assignedTo ? [
+                    'id' => $asset->assignedTo->id,
+                    'name' => $asset->assignedTo->name,
+                ] : null,
+                'relevance_score' => $asset->relevance_score ?? null,
+                'snippet' => Asset::generateSnippet($asset->name . ' ' . ($asset->description ?? ''), $query),
+            ];
+        });
+
+        return response()->json([
+            'data' => $results->items(),
+            'meta' => [
+                'total' => $results->total(),
+                'per_page' => $results->perPage(),
+                'current_page' => $results->currentPage(),
+                'from' => $results->firstItem(),
+                'to' => $results->lastItem(),
+                'last_page' => $results->lastPage(),
+            ]
+        ]);
     }
 }

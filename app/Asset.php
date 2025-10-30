@@ -12,11 +12,12 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use App\Traits\Auditable;
 use App\Traits\SortableQuery;
+use App\Traits\SearchServiceTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Asset extends Model implements HasMedia
 {
-  use InteractsWithMedia, Auditable, SortableQuery, HasFactory;
+  use InteractsWithMedia, Auditable, SortableQuery, SearchServiceTrait, HasFactory;
   
   /**
    * Mass assignable attributes
@@ -27,6 +28,12 @@ class Asset extends Model implements HasMedia
     'purchase_date', 'warranty_months', 'warranty_type_id', 'invoice_id', 
     'ip_address', 'mac_address', 'qr_code', 'status_id', 'assigned_to', 'notes', 'purchase_order_id'
   ];
+
+  /**
+   * FULLTEXT searchable columns
+   * @var array
+   */
+  protected $searchColumns = ['name', 'description', 'asset_tag', 'serial_number'];
 
   protected $dates = ['purchase_date'];
   

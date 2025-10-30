@@ -49,6 +49,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/assets/{asset}/history', [AssetController::class, 'getHistory']);
     // AJAX endpoint: check serial uniqueness (optional exclude_id query param)
     Route::get('/assets/check-serial', [AssetController::class, 'checkSerial'])->name('api.assets.checkSerial');
+    // Search endpoint for assets
+    Route::get('/assets/search', [AssetController::class, 'search'])->name('api.assets.search');
     
     // Ticket API endpoints
     Route::apiResource('tickets', TicketController::class)->names([
@@ -63,6 +65,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close']);
     Route::post('/tickets/{ticket}/reopen', [TicketController::class, 'reopen']);
     Route::get('/tickets/{ticket}/timeline', [TicketController::class, 'getTimeline']);
+    // Search endpoints for tickets
+    Route::get('/tickets/search', [TicketController::class, 'search'])->name('api.tickets.search');
+    Route::get('/tickets/{ticket}/comments/search', [TicketController::class, 'commentsSearch'])->name('api.tickets.commentsSearch');
     
     // User API endpoints
     Route::apiResource('users', UserController::class)->names([
