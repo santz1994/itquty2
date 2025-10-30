@@ -85,6 +85,41 @@
         </div>
       </div>
       
+      <!-- Ticket History Section -->
+      @if($ticket->history && $ticket->history->count() > 0)
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title"><i class="fa fa-history"></i> Ticket History (Audit Trail)</h3>
+        </div>
+        <div class="box-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-condensed">
+              <thead>
+                <tr>
+                  <th>Date/Time</th>
+                  <th>Field Changed</th>
+                  <th>Old Value</th>
+                  <th>New Value</th>
+                  <th>Changed By</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($ticket->history()->orderBy('changed_at', 'desc')->get() as $history)
+                <tr>
+                  <td>{{ $history->changed_at->format('Y-m-d H:i:s') }}</td>
+                  <td><span class="label label-info">{{ ucwords(str_replace('_', ' ', $history->field_changed)) }}</span></td>
+                  <td>{{ $history->old_value ?? '-' }}</td>
+                  <td>{{ $history->new_value ?? '-' }}</td>
+                  <td>{{ $history->changedByUser->name ?? 'System' }}</td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      @endif
+
       <!-- File Attachments Section -->
       <div class="box box-default">
         <div class="box-header with-border">

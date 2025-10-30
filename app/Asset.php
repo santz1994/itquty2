@@ -622,9 +622,10 @@ class Asset extends Model implements HasMedia
 
     // Create maintenance ticket if reason provided
     if ($reason) {
-      $ticketType = TicketsType::where('name', 'Maintenance')->first();
-      $ticketPriority = TicketsPriority::where('name', 'Normal')->first();
-      $ticketStatus = TicketsStatus::where('name', 'Open')->first();
+  $ticketType = TicketsType::where('name', 'Maintenance')->first();
+  $ticketPriority = TicketsPriority::where('name', 'Normal')->first();
+  // tickets_statuses uses `status` column
+  $ticketStatus = TicketsStatus::where('status', 'Open')->first();
 
       if ($ticketType && $ticketPriority && $ticketStatus) {
         Ticket::create([

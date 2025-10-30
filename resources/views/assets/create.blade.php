@@ -2,6 +2,8 @@
 
 @section('main-content')
 
+{{-- All styles moved to public/css/ui-enhancements.css for better performance and maintainability --}}
+
 {{-- Page Header --}}
 @include('components.page-header', [
     'title' => $pageTitle ?? 'Create New Asset',
@@ -23,36 +25,83 @@
           <h3 class="box-title">Asset Information</h3>
         </div>
         <div class="box-body">
+          @if(session('success'))
+            <div class="alert alert-success alert-dismissible">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <i class="icon fa fa-check"></i> {{ session('success') }}
+            </div>
+          @endif
+          
+          @if(session('error'))
+            <div class="alert alert-danger alert-dismissible">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <i class="icon fa fa-ban"></i> {{ session('error') }}
+            </div>
+          @endif
+
           <form method="POST" action="{{ url('assets') }}" id="asset-create-form">
             {{csrf_field()}}
-            {{-- Standardized fields per request: Kode Assets, Kategori, Lokasi, User/PIC, Tanggal Beli, Suplier, Spesifikasi, IP, MAC, S/N --}}
-            <div class="form-group">
-              <label for="asset_tag">Kode Assets <span class="text-red">*</span></label>
-              <input type="text" name="asset_tag" id="asset_tag" class="form-control" value="{{ old('asset_tag') }}" required maxlength="50" placeholder="e.g., AST-001">
-            </div>
+            
+            {{-- SECTION 1: Basic Information --}}
+            <fieldset>
+              <legend><i class="fa fa-info-circle"></i> Basic Information</legend>
+              
+              <div class="form-group">
+                <label for="asset_tag">Kode Assets <span class="text-red">*</span></label>
+                <input type="text" name="asset_tag" id="asset_tag" class="form-control @error('asset_tag') is-invalid @enderror" value="{{ old('asset_tag') }}" required maxlength="50" placeholder="e.g., AST-001">
+                <small class="text-muted">Unique identifier for this asset (max 50 characters)</small>
+                @error('asset_tag')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
 
             <div class="form-group">
               <label for="asset_type_id">Kategori (Tipe Asset) <span class="text-red">*</span></label>
-              <select name="asset_type_id" id="asset_type_id" class="form-control asset_type_id" required>
+              <select name="asset_type_id" id="asset_type_id" class="form-control asset_type_id @error('asset_type_id') is-invalid @enderror" required>
                 <option value="">-- Pilih Kategori (Tipe) --</option>
                 @foreach($asset_types as $atype)
                   <option value="{{ $atype->id }}" {{ old('asset_type_id') == $atype->id ? 'selected' : '' }}>{{ $atype->type_name }}</option>
                 @endforeach
               </select>
+              @error('asset_type_id')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+              @enderror
             </div>
 
             <div class="form-group">
-              <label for="model_id">Model (optional)</label>
-              <select name="model_id" id="model_id" class="form-control model_id">
-                <option value="">-- Pilih Model (optional) --</option>
-                @foreach($asset_models as $model)
-                  <option value="{{ $model->id }}" data-asset-type="{{ $model->asset_type_id }}" {{ old('model_id') == $model->id ? 'selected' : '' }}>{{ $model->manufacturer->name ?? '' }} - {{ $model->asset_model }}</option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="location_id">Lokasi <span class="text-red">*</span></label>
+                <label for="model_id">Model <small class="text-muted">(optional)</small></label>
+                <select name="model_id" id="model_id" class="form-control model_id">
+                  <option value="">-- Pilih Model (optional) --</option>
+                  @foreach($asset_models as $model)
+                    <option value="{{ $model->id }}" data-asset-type="{{ $model->asset_type_id }}" {{ old('model_id') == $model->id ? 'selected' : '' }}>{{ $model->manufacturer->name ?? '' }} - {{ $model->asset_model }}</option>
+                  @endforeach
+                </select>
+                <small class="text-muted">Select model after choosing asset type above</small>
+              </div>
+              
+              <div class="form-group">
+                <label for="serial_number">Serial Number</label>
+                <input type="text" name="serial_number" id="serial_number" class="form-control @error('serial_number') is-invalid @enderror" value="{{ old('serial_number') }}">
+                <small id="serial-feedback" class="text-muted" style="display:none"></small>
+                <small class="text-muted">Leave blank if not applicable</small>
+                @error('serial_number')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
+              
+              <div class="form-group">
+                <label for="notes">Spesifikasi <span class="text-red">*</span></label>
+                <textarea name="notes" id="notes" class="form-control" rows="3" required placeholder="Enter detailed specifications...">{{ old('notes') }}</textarea>
+                <small class="text-muted">Describe the asset specifications (min 10 characters)</small>
+              </div>
+            </fieldset>
+            
+            {{-- SECTION 2: Location & Assignment --}}
+            <fieldset>
+              <legend><i class="fa fa-map-marker"></i> Location & Assignment</legend>
+              
+              <div class="form-group">
+                <label for="location_id">Lokasi <span class="text-red">*</span></label>
               <select class="form-control location_id" name="location_id" id="location_id" required>
                 <option value="">-- Pilih Lokasi --</option>
                 @foreach($locations as $location)
@@ -61,24 +110,31 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="assigned_to">User / PIC <span class="text-red">*</span></label>
-              <select name="assigned_to" id="assigned_to" class="form-control assigned_to" required>
-                <option value="">-- Pilih User / PIC --</option>
-                @php $activeUsers = \App\User::where('is_active', 1)->orderBy('name')->get(); @endphp
-                @foreach($activeUsers as $u)
-                  <option value="{{ $u->id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->email }})</option>
-                @endforeach
-              </select>
-            </div>
+              <div class="form-group">
+                <label for="assigned_to">User / PIC <span class="text-red">*</span></label>
+                <select name="assigned_to" id="assigned_to" class="form-control assigned_to" required>
+                  <option value="">-- Pilih User / PIC --</option>
+                  @php $activeUsers = \App\User::where('is_active', 1)->orderBy('name')->get(); @endphp
+                  @foreach($activeUsers as $u)
+                    <option value="{{ $u->id }}" {{ old('assigned_to') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->email }})</option>
+                  @endforeach
+                </select>
+                <small class="text-muted">Person responsible for this asset</small>
+              </div>
+            </fieldset>
+            
+            {{-- SECTION 3: Purchase & Warranty Information --}}
+            <fieldset>
+              <legend><i class="fa fa-shopping-cart"></i> Purchase & Warranty Information</legend>
+              
+              <div class="form-group">
+                <label for="purchase_date">Tanggal Beli <span class="text-red">*</span></label>
+                <input type="date" name="purchase_date" id="purchase_date" class="form-control" value="{{ old('purchase_date') }}" required>
+                <small class="text-muted">Date when asset was purchased</small>
+              </div>
 
-            <div class="form-group">
-              <label for="purchase_date">Tanggal Beli <span class="text-red">*</span></label>
-              <input type="date" name="purchase_date" id="purchase_date" class="form-control" value="{{ old('purchase_date') }}" required>
-            </div>
-
-            <div class="form-group">
-              <label for="supplier_id">Suplier <span class="text-red">*</span></label>
+              <div class="form-group">
+                <label for="supplier_id">Supplier <span class="text-red">*</span></label>
               <select class="form-control supplier_id" name="supplier_id" id="supplier_id" required>
                 <option value="">-- Pilih Supplier --</option>
                 @foreach($suppliers as $supplier)
@@ -87,67 +143,74 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="purchase_order_id">Purchase Order (Optional)</label>
-              <select class="form-control purchase_order_id" name="purchase_order_id" id="purchase_order_id">
-                <option value="">-- No Purchase Order --</option>
-        @foreach($purchaseOrders ?? [] as $po)
-          <option value="{{ $po->id }}" {{ old('purchase_order_id') == $po->id ? 'selected' : '' }}>
-            {{ $po->po_number }} - {{ $po->order_date ? \Carbon\Carbon::parse($po->order_date)->format('Y-m-d') : '' }} - {{ $po->supplier ? $po->supplier->name : '' }}
-          </option>
-        @endforeach
-              </select>
-            </div>
+              <div class="form-group">
+                <label for="purchase_order_id">Purchase Order <small class="text-muted">(optional)</small></label>
+                <select class="form-control purchase_order_id" name="purchase_order_id" id="purchase_order_id">
+                  <option value="">-- No Purchase Order --</option>
+          @foreach($purchaseOrders ?? [] as $po)
+            <option value="{{ $po->id }}" {{ old('purchase_order_id') == $po->id ? 'selected' : '' }}>
+              {{ $po->po_number }} - {{ $po->order_date ? \Carbon\Carbon::parse($po->order_date)->format('Y-m-d') : '' }} - {{ $po->supplier ? $po->supplier->name : '' }}
+            </option>
+          @endforeach
+                </select>
+                <small class="text-muted">Link to existing purchase order if applicable</small>
+              </div>
 
-            <div class="form-group">
-              <label for="warranty_type_id">Jenis Garansi <span class="text-red">*</span></label>
-              <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id" required>
-                <option value="">-- Pilih Jenis Garansi --</option>
-                @foreach($warranty_types as $warranty_type)
-                    <option value="{{$warranty_type->id}}" {{ old('warranty_type_id') == $warranty_type->id ? 'selected' : '' }}>{{$warranty_type->name}}</option>
-                @endforeach
-              </select>
-            </div>
+              <div class="form-group">
+                <label for="warranty_type_id">Jenis Garansi <span class="text-red">*</span></label>
+                <select class="form-control warranty_type_id" name="warranty_type_id" id="warranty_type_id" required>
+                  <option value="">-- Pilih Jenis Garansi --</option>
+                  @foreach($warranty_types as $warranty_type)
+                      <option value="{{$warranty_type->id}}" {{ old('warranty_type_id') == $warranty_type->id ? 'selected' : '' }}>{{$warranty_type->name}}</option>
+                  @endforeach
+                </select>
+                <small class="text-muted">Warranty type for this asset</small>
+              </div>
+              
+              <div class="form-group">
+                <label for="invoice_id">Invoice <small class="text-muted">(optional)</small></label>
+                <select class="form-control invoice_id" name="invoice_id" id="invoice_id">
+                  <option value="">No Invoice</option>
+                  @foreach($invoices as $invoice)
+                      <option value="{{$invoice->id}}">{{$invoice->invoice_number}} - {{$invoice->invoiced_date}} - {{$invoice->supplier->name}} - R{{$invoice->total}}</option>
+                  @endforeach
+                </select>
+                <small class="text-muted">Link to purchase invoice</small>
+              </div>
+            </fieldset>
+            
+            {{-- SECTION 4: Network & Additional Details --}}
+            <fieldset>
+              <legend><i class="fa fa-network-wired"></i> Network & Additional Details</legend>
+              
+              <div class="form-group">
+                <label for="ip_address">IP Address</label>
+                <input type="text" name="ip_address" id="ip_address" class="form-control @error('ip_address') is-invalid @enderror" value="{{ old('ip_address') }}" placeholder="e.g., 192.168.1.100">
+                <small class="text-muted">Only applicable for network devices</small>
+                @error('ip_address')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
 
-            <div class="form-group">
-              <label for="notes">Spesifikasi <span class="text-red">*</span></label>
-              <textarea name="notes" id="notes" class="form-control" rows="3" required>{{ old('notes') }}</textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="ip_address">IP Address</label>
-              <input type="text" name="ip_address" id="ip_address" class="form-control" value="{{ old('ip_address') }}" placeholder="e.g., 192.168.1.100">
-            </div>
-
-            <div class="form-group">
-              <label for="mac_address">MAC Address</label>
-              <input type="text" name="mac_address" id="mac_address" class="form-control" value="{{ old('mac_address') }}" placeholder="e.g., 00:1B:44:11:3A:B7">
-            </div>
-
-            <div class="form-group">
-              <label for="serial_number">S/N</label>
-              <input type="text" name="serial_number" id="serial_number" class="form-control" value="{{ old('serial_number') }}">
-              <small id="serial-feedback" class="text-muted" style="display:none"></small>
-            </div>
-            <div class="form-group">
-              <label for="invoice_id">Invoice (Optional)</label>
-              <select class="form-control invoice_id" name="invoice_id" id="invoice_id">
-                <option value="">No Invoice</option>
-                @foreach($invoices as $invoice)
-                    <option value="{{$invoice->id}}">{{$invoice->invoice_number}} - {{$invoice->invoiced_date}} - {{$invoice->supplier->name}} - R{{$invoice->total}}</option>
-                @endforeach
-              </select>
-            </div>
+              <div class="form-group">
+                <label for="mac_address">MAC Address</label>
+                <input type="text" name="mac_address" id="mac_address" class="form-control @error('mac_address') is-invalid @enderror" value="{{ old('mac_address') }}" placeholder="e.g., 00:1B:44:11:3A:B7">
+                <small class="text-muted">Hardware address for network identification</small>
+                @error('mac_address')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
+            </fieldset>
             
             {{-- Keep status and warranty fields hidden but preserve existing inputs so other logic continues to work (set defaults) --}}
             <input type="hidden" name="status_id" value="{{ old('status_id', 1) }}">
             <input type="hidden" name="warranty_months" value="{{ old('warranty_months', 0) }}">
 
-            <div class="form-group">
+            <div class="form-group" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #ddd;">
               <button type="submit" class="btn btn-primary btn-lg">
                 <i class="fa fa-save"></i> <b>Add New Asset</b>
               </button>
-              <a href="{{ route('assets.index') }}" class="btn btn-secondary btn-lg">
+              <a href="{{ route('assets.index') }}" class="btn btn-default btn-lg">
                 <i class="fa fa-times"></i> Cancel
               </a>
             </div>

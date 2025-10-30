@@ -101,7 +101,7 @@
             $userId = optional($userSafe)->id ?? (is_object($user) ? ($user->id ?? null) : (is_numeric($user) ? (int)$user : null));
           @endphp
           <form method="POST" action="/admin/users/{{ $userId }}">
-            {{method_field('PATCH')}}
+            {{ method_field('PUT') }}
             {{csrf_field()}}
               <div class="form-group ">
                 <label for="name">Name</label>

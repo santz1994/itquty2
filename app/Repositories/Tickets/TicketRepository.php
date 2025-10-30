@@ -159,15 +159,15 @@ class TicketRepository implements TicketRepositoryInterface
 
         return [
             'total' => $query->count(),
-            'open' => $query->whereHas('ticket_status', function($q) {
-                $q->where('name', 'Open');
-            })->count(),
-            'in_progress' => $query->whereHas('ticket_status', function($q) {
-                $q->where('name', 'In Progress');
-            })->count(),
-            'closed' => $query->whereHas('ticket_status', function($q) {
-                $q->where('name', 'Closed');
-            })->count(),
+                'open' => $query->whereHas('ticket_status', function($q) {
+                    $q->where('status', 'Open');
+                })->count(),
+                'in_progress' => $query->whereHas('ticket_status', function($q) {
+                    $q->where('status', 'In Progress');
+                })->count(),
+                'closed' => $query->whereHas('ticket_status', function($q) {
+                    $q->where('status', 'Closed');
+                })->count(),
         ];
     }
 

@@ -415,12 +415,14 @@ class BulkOperationController extends Controller
                         ->orderBy('name')
                         ->get();
 
-            $statuses = TicketsStatus::select('id', 'name', 'color')
-                                    ->orderBy('name')
+            // tickets_statuses table stores the label in `status` column; map it to `name` for API consumers
+            $statuses = TicketsStatus::select('id', DB::raw('status as name'), 'color')
+                                    ->orderBy('status')
                                     ->get();
 
-            $priorities = TicketsPriority::select('id', 'name', 'color')
-                                        ->orderBy('id')
+            // tickets_priorities stores the label in `priority` column
+            $priorities = TicketsPriority::select('id', DB::raw('priority as name'), 'color')
+                                        ->orderBy('priority')
                                         ->get();
 
             $types = TicketsType::select('id', 'name')

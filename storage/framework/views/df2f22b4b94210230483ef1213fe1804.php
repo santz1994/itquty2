@@ -23,7 +23,9 @@
     <link href="<?php echo e(asset('/css/dashboard-widgets.css')); ?>" rel="stylesheet" type="text/css" />
     <link href="<?php echo e(asset('/css/button-standards.css')); ?>" rel="stylesheet" type="text/css" />
     <link href="<?php echo e(asset('/css/search-enhancement.css')); ?>" rel="stylesheet" type="text/css" />
-    <link href="<?php echo e(asset('/css/notification-ui.css')); ?>" rel="stylesheet" type="text/css" />    
+    <link href="<?php echo e(asset('/css/notification-ui.css')); ?>" rel="stylesheet" type="text/css" />
+    <!-- Centralized UI Enhancements (Forms, Tables, Filters) -->
+    <link href="<?php echo e(asset('/css/ui-enhancements.css')); ?>" rel="stylesheet" type="text/css" />    
     <script src="<?php echo e(asset('/plugins/jQuery/jQuery-2.1.4.min.js')); ?>"></script>
     <script src="<?php echo e(asset('/js/search-enhancement.js')); ?>"></script>
     <script src="<?php echo e(asset('/js/notification-ui.js')); ?>"></script>

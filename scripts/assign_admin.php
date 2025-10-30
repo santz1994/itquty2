@@ -13,7 +13,7 @@ if (! $user) {
 }
 
 try {
-    $user->assignRole('admin');
+    $user->assignRole('super-admin');
     echo "ASSIGNED: {$user->email}\n";
 } catch (Exception $e) {
     echo "ERROR: " . $e->getMessage() . "\n";

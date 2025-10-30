@@ -85,8 +85,13 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::get('/', [\App\Http\Controllers\UsersController::class, 'index'])->name('admin.users.index');
             Route::get('/create', [\App\Http\Controllers\UsersController::class, 'create'])->name('admin.users.create');
             Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('admin.users.store');
-            Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('admin.users.show');
+            // Declare the edit route before the show route so the literal 'edit'
+            // segment is not captured by the generic "{user}" parameter. If the
+            // generic route appears first then requests to '/admin/users/edit'
+            // will be treated as '/admin/users/{user}' with 'edit' as the value,
+            // causing route-model binding to fail and resulting in a 404.
             Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('admin.users.edit');
+            Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('admin.users.show');
             Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('admin.users.update');
             Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('admin.users.destroy');
         });
@@ -102,8 +107,10 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::post('/', [\App\Http\Controllers\UsersController::class, 'store'])->name('users.store');
             // Bulk delete endpoint for AJAX bulk actions
             Route::post('/bulk-delete', [\App\Http\Controllers\UsersController::class, 'bulkDelete'])->name('users.bulk-delete');
-            Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('users.show');
+            // Same ordering fix for the non-prefixed users routes used by some
+            // parts of the application and tests.
             Route::get('/{user}/edit', [\App\Http\Controllers\UsersController::class, 'edit'])->name('users.edit');
+            Route::get('/{user}', [\App\Http\Controllers\UsersController::class, 'show'])->name('users.show');
             Route::put('/{user}', [\App\Http\Controllers\UsersController::class, 'update'])->name('users.update');
             Route::delete('/{user}', [\App\Http\Controllers\UsersController::class, 'destroy'])->name('users.destroy');
         });

@@ -75,7 +75,8 @@ class Ticket extends Model implements HasMedia
   public function getSortableRelations()
   {
     return [
-      'status' => ['tickets_statuses', 'id', 'name'],
+      // tickets_statuses stores the label in `status` column
+      'status' => ['tickets_statuses', 'id', 'status'],
       'priority' => ['tickets_priorities', 'id', 'name'],
       'user' => ['users', 'id', 'name'],
       'assigned' => ['users', 'id', 'name'],  // Sort by assigned technician
@@ -376,7 +377,7 @@ class Ticket extends Model implements HasMedia
 
     // Update status to 'In Progress' if currently 'Open'
     if ($this->ticket_status->name === 'Open') {
-      $inProgressStatus = TicketsStatus::where('name', 'In Progress')->first();
+      $inProgressStatus = TicketsStatus::where('status', 'In Progress')->first();
       if ($inProgressStatus) {
         $this->update(['ticket_status_id' => $inProgressStatus->id]);
       }
@@ -418,7 +419,7 @@ class Ticket extends Model implements HasMedia
       return false;
     }
 
-    $resolvedStatus = TicketsStatus::where('name', 'Resolved')->first();
+  $resolvedStatus = TicketsStatus::where('status', 'Resolved')->first();
     if (!$resolvedStatus) {
       return false;
     }
@@ -458,7 +459,7 @@ class Ticket extends Model implements HasMedia
    */
   public function close(): bool
   {
-    $closedStatus = TicketsStatus::where('name', 'Closed')->first();
+  $closedStatus = TicketsStatus::where('status', 'Closed')->first();
     if (!$closedStatus) {
       return false;
     }
@@ -495,7 +496,7 @@ class Ticket extends Model implements HasMedia
       return false;
     }
 
-    $openStatus = TicketsStatus::where('name', 'Open')->first();
+  $openStatus = TicketsStatus::where('status', 'Open')->first();
     if (!$openStatus) {
       return false;
     }
@@ -542,16 +543,16 @@ class Ticket extends Model implements HasMedia
   {
     return [
       'total' => self::count(),
-      'open' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'Open'))->count(),
-      'in_progress' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'In Progress'))->count(),
-      'resolved' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'Resolved'))->count(),
-      'closed' => self::whereHas('ticket_status', fn($q) => $q->where('name', 'Closed'))->count(),
+  'open' => self::whereHas('ticket_status', fn($q) => $q->where('status', 'Open'))->count(),
+  'in_progress' => self::whereHas('ticket_status', fn($q) => $q->where('status', 'In Progress'))->count(),
+  'resolved' => self::whereHas('ticket_status', fn($q) => $q->where('status', 'Resolved'))->count(),
+  'closed' => self::whereHas('ticket_status', fn($q) => $q->where('status', 'Closed'))->count(),
       'overdue' => self::where('sla_due', '<', now())
                       ->whereNull('resolved_at')
                       ->count(),
-      'pending_response' => self::whereNull('first_response_at')
-                               ->whereHas('ticket_status', fn($q) => $q->whereIn('name', ['Open', 'In Progress']))
-                               ->count(),
+  'pending_response' => self::whereNull('first_response_at')
+           ->whereHas('ticket_status', fn($q) => $q->whereIn('status', ['Open', 'In Progress']))
+           ->count(),
     ];
   }
 

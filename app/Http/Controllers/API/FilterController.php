@@ -16,6 +16,7 @@ use App\TicketsType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * FilterController
@@ -160,9 +161,10 @@ class FilterController extends Controller
      */
     private function getTicketStatusOptions(): array
     {
-        $statuses = TicketsStatus::select('id', 'status_name')
+        // tickets_statuses stores the label in `status` column
+        $statuses = TicketsStatus::select('id', DB::raw('status as status_name'))
             ->withCount('tickets')
-            ->orderBy('status_name')
+            ->orderBy('status')
             ->get();
 
         return $statuses->map(fn($s) => [
@@ -177,9 +179,10 @@ class FilterController extends Controller
      */
     private function getPriorityOptions(): array
     {
-        $priorities = TicketsPriority::select('id', 'priority_name')
+        // tickets_priorities stores label in `priority` column
+        $priorities = TicketsPriority::select('id', DB::raw('priority as priority_name'))
             ->withCount('tickets')
-            ->orderBy('priority_name')
+            ->orderBy('priority')
             ->get();
 
         return $priorities->map(fn($p) => [

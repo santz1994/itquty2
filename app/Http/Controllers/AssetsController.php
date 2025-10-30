@@ -128,30 +128,40 @@ class AssetsController extends Controller
      */
     public function store(StoreAssetRequest $request)
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Normalize model id (tests may send `model_id` while request uses `asset_model_id`)
-        $modelId = $validated['model_id'] ?? $validated['asset_model_id'] ?? null;
+            // Normalize model id (tests may send `model_id` while request uses `asset_model_id`)
+            $modelId = $validated['model_id'] ?? $validated['asset_model_id'] ?? null;
 
-        $assetData = [
-            'model_id' => $modelId,
-            'asset_tag' => $validated['asset_tag'] ?? null,
-            'name' => $validated['name'] ?? ($validated['asset_tag'] ?? null),
-            'serial_number' => $validated['serial_number'] ?? null,
-            'division_id' => $validated['division_id'] ?? null,
-            'supplier_id' => $validated['supplier_id'] ?? null,
-            'warranty_type_id' => $validated['warranty_type_id'] ?? null,
-            'status_id' => $validated['status_id'] ?? null,
-            'purchase_date' => $validated['purchase_date'] ?? null,
-            'purchase_cost' => $validated['purchase_cost'] ?? null,
-            'location_id' => $validated['location_id'] ?? null,
-            'assigned_to' => $validated['assigned_to'] ?? null,
-            'purchase_order_id' => $validated['purchase_order_id'] ?? null,
-        ];
+            $assetData = [
+                'model_id' => $modelId,
+                'asset_tag' => $validated['asset_tag'] ?? null,
+                'name' => $validated['name'] ?? ($validated['asset_tag'] ?? null),
+                'serial_number' => $validated['serial_number'] ?? null,
+                'division_id' => $validated['division_id'] ?? null,
+                'supplier_id' => $validated['supplier_id'] ?? null,
+                'warranty_type_id' => $validated['warranty_type_id'] ?? null,
+                'status_id' => $validated['status_id'] ?? null,
+                'purchase_date' => $validated['purchase_date'] ?? null,
+                'purchase_cost' => $validated['purchase_cost'] ?? null,
+                'location_id' => $validated['location_id'] ?? null,
+                'assigned_to' => $validated['assigned_to'] ?? null,
+                'purchase_order_id' => $validated['purchase_order_id'] ?? null,
+                'ip_address' => $validated['ip_address'] ?? null,
+                'mac_address' => $validated['mac_address'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'warranty_months' => $validated['warranty_months'] ?? null,
+                'invoice_id' => $validated['invoice_id'] ?? null,
+            ];
 
-        Asset::create($assetData);
+            $asset = Asset::create($assetData);
 
-        return redirect()->route('assets.index')->with('success', 'Asset created successfully.');
+            return redirect()->route('assets.show', $asset)->with('success', 'Asset berhasil dibuat dengan kode: ' . $asset->asset_tag);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Gagal membuat asset: ' . $e->getMessage()])
+                         ->withInput();
+        }
     }
 
     /**

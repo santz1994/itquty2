@@ -46,4 +46,44 @@ class CreateTicketRequest extends FormRequest
             'user_id' => auth()->id() ?? $this->user_id
         ]);
     }
+
+    /**
+     * Configure the validator instance with cross-field validation.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // Description should have reasonable length
+            if ($this->filled('description') && strlen($this->description) < 10) {
+                $validator->errors()->add('description', 'Description should be at least 10 characters to properly describe the issue.');
+            }
+
+            // If assets are selected, verify they're not already in "In Repair" status
+            if ($this->filled('asset_ids') && is_array($this->asset_ids)) {
+                $assetsInRepair = \App\Asset::whereIn('id', $this->asset_ids)
+                    ->whereIn('status_id', [3, 4]) // Out for Repairs, Waiting for Repairs
+                    ->exists();
+                
+                if ($assetsInRepair) {
+                    $validator->errors()->add('asset_ids', 'One or more selected assets are already marked as "In Repair". Please check the asset status.');
+                }
+            }
+
+            // Subject should not be too short
+            if ($this->filled('subject') && strlen($this->subject) < 5) {
+                $validator->errors()->add('subject', 'Subject should be at least 5 characters.');
+            }
+
+            // Verify ticket_status_id is valid if provided
+            if ($this->filled('ticket_status_id')) {
+                $status = \App\TicketsStatus::find($this->ticket_status_id);
+                if (!$status) {
+                    $validator->errors()->add('ticket_status_id', 'Invalid ticket status selected.');
+                }
+            }
+        });
+    }
 }

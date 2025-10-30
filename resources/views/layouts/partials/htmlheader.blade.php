@@ -23,7 +23,9 @@
     <link href="{{ asset('/css/dashboard-widgets.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/button-standards.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/search-enhancement.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('/css/notification-ui.css') }}" rel="stylesheet" type="text/css" />    
+    <link href="{{ asset('/css/notification-ui.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Centralized UI Enhancements (Forms, Tables, Filters) -->
+    <link href="{{ asset('/css/ui-enhancements.css') }}" rel="stylesheet" type="text/css" />    
     <script src="{{ asset('/plugins/jQuery/jQuery-2.1.4.min.js') }}"></script>
     <script src="{{ asset('/js/search-enhancement.js') }}"></script>
     <script src="{{ asset('/js/notification-ui.js') }}"></script>

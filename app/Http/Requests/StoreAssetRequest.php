@@ -108,4 +108,40 @@ class StoreAssetRequest extends FormRequest
             'notes' => 'notes',
         ];
     }
+
+    /**
+     * Configure the validator instance with cross-field validation.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // If warranty_months is provided, warranty_type_id should also be provided
+            if ($this->filled('warranty_months') && $this->warranty_months > 0 && !$this->filled('warranty_type_id')) {
+                $validator->errors()->add('warranty_type_id', 'Please select a warranty type when warranty period is specified.');
+            }
+
+            // If IP address is provided for non-computer assets, warn (but don't fail)
+            if ($this->filled('ip_address') && $this->filled('model_id')) {
+                $model = \App\AssetModel::find($this->model_id);
+                if ($model && $model->asset_type_id) {
+                    $assetType = \App\AssetType::find($model->asset_type_id);
+                    if ($assetType && !stripos($assetType->type_name, 'computer') && !stripos($assetType->type_name, 'pc') && !stripos($assetType->type_name, 'laptop')) {
+                        // Just log a warning, don't fail validation
+                        Log::info("IP address provided for non-computer asset type: {$assetType->type_name}");
+                    }
+                }
+            }
+
+            // If purchase_order_id is provided, verify supplier matches
+            if ($this->filled('purchase_order_id') && $this->filled('supplier_id')) {
+                $po = \App\PurchaseOrder::find($this->purchase_order_id);
+                if ($po && $po->supplier_id != $this->supplier_id) {
+                    $validator->errors()->add('purchase_order_id', 'The purchase order supplier must match the selected supplier.');
+                }
+            }
+        });
+    }
 }

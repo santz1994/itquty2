@@ -36,7 +36,9 @@ class UpdateAssetRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('assets', 'serial_number')->ignore($assetId)
+                Rule::unique('assets', 'serial_number')
+                    ->ignore($assetId)
+                    ->whereNotNull('serial_number')  // Fix: Allow multiple NULLs in database
             ],
             'model_id' => ['sometimes', 'required', 'integer', 'exists:asset_models,id'],
             'division_id' => ['nullable', 'integer', 'exists:divisions,id'],
