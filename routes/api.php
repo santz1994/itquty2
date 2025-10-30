@@ -11,6 +11,7 @@ use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\SearchController;
 use App\Http\Controllers\API\FilterController;
 use App\Http\Controllers\API\BulkOperationController;
+use App\Http\Controllers\API\ExportController;
 use App\Http\Controllers\Api\DatatableController;
 
 /*
@@ -147,6 +148,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::get('/bulk-operations/{operation_id}', [BulkOperationController::class, 'getBulkOperationStatus'])->name('api.bulkOperationStatus');
         Route::get('/bulk-operations/{operation_id}/logs', [BulkOperationController::class, 'getBulkOperationLogs'])->name('api.bulkOperationLogs');
         Route::post('/bulk-operations/{operation_id}/retry', [BulkOperationController::class, 'retryBulkOperation'])->name('api.bulkOperationRetry');
+        
+        // Export operations
+        Route::post('/assets/export', [ExportController::class, 'exportAssets'])->name('api.assets.export');
+        Route::post('/tickets/export', [ExportController::class, 'exportTickets'])->name('api.tickets.export');
+        Route::get('/exports', [ExportController::class, 'listExports'])->name('api.exports.list');
+        Route::get('/exports/{export_id}', [ExportController::class, 'getExportStatus'])->name('api.exports.status');
+        Route::get('/exports/{export_id}/download', [ExportController::class, 'downloadExport'])->name('api.exports.download');
+        Route::get('/exports/{export_id}/logs', [ExportController::class, 'getExportLogs'])->name('api.exports.logs');
+        Route::post('/exports/{export_id}/retry', [ExportController::class, 'retryExport'])->name('api.exports.retry');
     });
     
 });
