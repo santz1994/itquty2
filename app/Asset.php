@@ -182,6 +182,16 @@ class Asset extends Model implements HasMedia
     return $query->where('status_id', 15); // Active
   }
 
+  public function scopeActive($query)
+  {
+    return $query->whereIn('status_id', [1, 15]); // Ready to Deploy OR In Use
+  }
+
+  public function scopeInactive($query)
+  {
+    return $query->whereNotIn('status_id', [1, 15]); // Not Ready or In Use
+  }
+
   public function scopeInStock($query)
   {
     return $query->where('status_id', 1); // Ready to Deploy
@@ -248,11 +258,50 @@ class Asset extends Model implements HasMedia
   }
 
   /**
+   * Enhanced eager loading with nested relationships (Level 2)
+   * Includes manufacturer for asset model
+   */
+  public function scopeWithNestedRelations($query)
+  {
+    return $query->with([
+      'model.manufacturer', // Nested: AssetModel->Manufacturer
+      'division',
+      'location',
+      'status',
+      'assignedTo',
+      'supplier',
+      'purchaseOrder'
+    ]);
+  }
+
+  /**
    * Eager load tickets via many-to-many relationship
    */
   public function scopeWithTickets($query)
   {
     return $query->with(['tickets', 'tickets.ticket_status', 'tickets.ticket_priority', 'tickets.assignedTo']);
+  }
+
+  /**
+   * Eager load all related data for detail views
+   * Maximum safe level of nesting
+   */
+  public function scopeWithAllData($query)
+  {
+    return $query->with([
+      'model.manufacturer',
+      'division',
+      'location',
+      'status',
+      'warranty_type',
+      'assignedTo',
+      'supplier',
+      'purchaseOrder',
+      'invoice',
+      'maintenanceLogs',
+      'movements',
+      'tickets'
+    ]);
   }
 
   // ========================

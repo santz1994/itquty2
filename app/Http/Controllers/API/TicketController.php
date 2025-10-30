@@ -11,91 +11,110 @@ use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
-    /**
-     * Display a listing of tickets
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index(Request $request)
-    {
-        $query = Ticket::with(['user', 'asset', 'status', 'priority', 'assignedUser']);
+  /**
+   * Display a listing of tickets
+   *
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
+   */
+  public function index(Request $request)
+  {
+    $query = Ticket::withNestedRelations(); // Use optimized nested loading
 
-        // Apply filters
-        if ($request->has('status_id')) {
-            $query->where('ticket_status_id', $request->status_id);
-        }
-
-        if ($request->has('priority_id')) {
-            $query->where('ticket_priority_id', $request->priority_id);
-        }
-
-        if ($request->has('assigned_to') && $request->assigned_to !== '') {
-            if ($request->assigned_to === 'unassigned') {
-                $query->whereNull('assigned_to');
-            } else {
-                $query->where('assigned_to', $request->assigned_to);
-            }
-        }
-
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        // Date filters
-        if ($request->has('date_from')) {
-            $query->where('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->has('date_to')) {
-            $query->where('created_at', '<=', $request->date_to);
-        }
-
-        // Overdue filter
-        if ($request->has('overdue') && $request->overdue) {
-            $query->where('sla_due', '<', now())
-                  ->whereNotIn('ticket_status_id', [3, 4]); // Not closed or resolved
-        }
-
-        // Order
-        $query->orderBy('created_at', 'desc');
-
-        // Pagination
-        $perPage = $request->get('per_page', 15);
-        $tickets = $query->paginate($perPage);
-
-        // Transform data: map over paginator items and rebuild LengthAwarePaginator to avoid calling collection methods on the paginator contract
-        $transformedItems = collect($tickets->items())->map(function ($ticket) {
-            return $this->transformTicket($ticket);
-        })->values()->all();
-
-        $tickets = new \Illuminate\Pagination\LengthAwarePaginator(
-            $transformedItems,
-            $tickets->total(),
-            $tickets->perPage(),
-            $tickets->currentPage(),
-            [
-                'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
-                'query' => request()->query()
-            ]
-        );
-
-        return response()->json([
-            'success' => true,
-            'data' => $tickets,
-            'message' => 'Tickets retrieved successfully'
-        ]);
+    // Apply filters using scopes
+    if ($request->has('status_id')) {
+      $query->byStatus($request->status_id);
     }
 
-    /**
+    if ($request->has('priority_id')) {
+      $query->byPriority($request->priority_id);
+    }
+
+    if ($request->has('type_id')) {
+      $query->byType($request->type_id);
+    }
+
+    if ($request->has('assigned_to') && $request->assigned_to !== '') {
+      if ($request->assigned_to === 'unassigned') {
+        $query->unassigned();
+      } else {
+        $query->assignedTo($request->assigned_to);
+      }
+    }
+
+    if ($request->has('user_id')) {
+      $query->forUser($request->user_id);
+    }
+
+    // Status filters using scopes
+    if ($request->has('open') && $request->open === 'true') {
+      $query->open();
+    }
+
+    if ($request->has('closed') && $request->closed === 'true') {
+      $query->closed();
+    }
+
+    if ($request->has('search')) {
+      $search = $request->search;
+      $query->where(function($q) use ($search) {
+        $q->where('subject', 'like', "%{$search}%")
+          ->orWhere('description', 'like', "%{$search}%");
+      });
+    }
+
+    // Date filters
+    if ($request->has('date_from') && $request->has('date_to')) {
+      $query->createdBetween($request->date_from, $request->date_to);
+    }
+
+    // Overdue filter
+    if ($request->has('overdue') && $request->overdue === 'true') {
+      $query->overdue();
+    }
+
+    // Near deadline filter
+    if ($request->has('near_deadline') && $request->near_deadline === 'true') {
+      $query->nearDeadline($request->get('deadline_hours', 2));
+    }
+
+    // Order by created_at DESC by default, allow override
+    $sortBy = $request->get('sort_by', 'created_at');
+    $sortOrder = $request->get('sort_order', 'desc');
+    if (in_array($sortBy, ['created_at', 'updated_at', 'sla_due', 'ticket_priority_id'])) {
+      $query->orderBy($sortBy, strtolower($sortOrder) === 'asc' ? 'asc' : 'desc');
+    }
+
+    // Pagination with validation
+    $perPage = min((int)$request->get('per_page', 15), 100); // Max 100 per page
+    $perPage = max(1, $perPage); // Min 1 per page
+
+    $tickets = $query->paginate($perPage);
+
+    // Transform data: map over paginator items and rebuild LengthAwarePaginator to avoid calling collection methods on the paginator contract
+    $transformedItems = collect($tickets->items())->map(function ($ticket) {
+      return $this->transformTicket($ticket);
+    })->values()->all();
+
+    $tickets = new \Illuminate\Pagination\LengthAwarePaginator(
+      $transformedItems,
+      $tickets->total(),
+      $tickets->perPage(),
+      $tickets->currentPage(),
+      [
+        'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
+        'query' => request()->query()
+      ]
+    );
+
+    return response()->json([
+      'success' => true,
+      'data' => $tickets,
+      'message' => 'Tickets retrieved successfully'
+    ]);
+  }
+
+  /**
      * Store a newly created ticket
      *
      * @param Request $request

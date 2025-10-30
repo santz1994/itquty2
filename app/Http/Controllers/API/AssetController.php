@@ -11,93 +11,102 @@ use Illuminate\Support\Facades\Auth;
 
 class AssetController extends Controller
 {
-    /**
-     * Display a listing of assets
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index(Request $request)
-    {
-        $query = Asset::with(['status', 'division', 'location', 'assetModel', 'assignedUser']);
+  /**
+   * Display a listing of assets
+   *
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
+   */
+  public function index(Request $request)
+  {
+    $query = Asset::withNestedRelations(); // Use optimized nested loading
 
-        // Apply filters
-        if ($request->has('status_id')) {
-            $query->where('status_id', $request->status_id);
-        }
-
-        if ($request->has('division_id')) {
-            $query->where('division_id', $request->division_id);
-        }
-
-        if ($request->has('assigned_to') && $request->assigned_to !== '') {
-            if ($request->assigned_to === 'unassigned') {
-                $query->whereNull('assigned_to');
-            } else {
-                $query->where('assigned_to', $request->assigned_to);
-            }
-        }
-
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('asset_tag', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('serial_number', 'like', "%{$search}%");
-            });
-        }
-
-        // Pagination
-        $perPage = $request->get('per_page', 15);
-        /** @var \Illuminate\Pagination\LengthAwarePaginator $assets */
-        $assets = $query->paginate($perPage);
-
-        // Transform data
-        $assets->getCollection()->transform(function ($asset) {
-            return [
-                'id' => $asset->id,
-                'asset_tag' => $asset->asset_tag,
-                'name' => $asset->name,
-                'serial_number' => $asset->serial_number,
-                'mac_address' => $asset->mac_address,
-                'ip_address' => $asset->ip_address,
-                'purchase_date' => $asset->purchase_date,
-                'warranty_expiry' => $asset->warranty_expiry,
-                'location' => $asset->location->name ?? null,
-                'division' => $asset->division->name ?? null,
-                'status' => [
-                    'id' => $asset->status_id,
-                    'name' => $asset->status->name ?? null,
-                    'badge' => $asset->status_badge
-                ],
-                'assigned_user' => $asset->assignedUser ? [
-                    'id' => $asset->assignedUser->id,
-                    'name' => $asset->assignedUser->name,
-                    'email' => $asset->assignedUser->email
-                ] : null,
-                'asset_model' => $asset->assetModel ? [
-                    'id' => $asset->assetModel->id,
-                    'name' => $asset->assetModel->name,
-                    'manufacturer' => $asset->assetModel->manufacturer->name ?? null
-                ] : null,
-                'depreciation_percentage' => $asset->depreciation_percentage,
-                'warranty_expiry_date' => $asset->warranty_expiry_date,
-                'formatted_mac_address' => $asset->formatted_mac_address,
-                'is_warranty_expired' => $asset->is_warranty_expired,
-                'warranty_status' => $asset->warranty_status,
-                'created_at' => $asset->created_at,
-                'updated_at' => $asset->updated_at
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $assets,
-            'message' => 'Assets retrieved successfully'
-        ]);
+    // Apply filters
+    if ($request->has('status_id')) {
+      $query->byStatus($request->status_id);
     }
 
-    /**
+    if ($request->has('division_id')) {
+      $query->where('division_id', $request->division_id);
+    }
+
+    if ($request->has('location_id')) {
+      $query->where('location_id', $request->location_id);
+    }
+
+    if ($request->has('assigned_to') && $request->assigned_to !== '') {
+      if ($request->assigned_to === 'unassigned') {
+        $query->unassigned();
+      } else {
+        $query->assignedTo($request->assigned_to);
+      }
+    }
+
+    // Filter by status type
+    if ($request->has('active') && $request->active === 'true') {
+      $query->active();
+    }
+
+    if ($request->has('search')) {
+      $search = $request->search;
+      $query->where(function($q) use ($search) {
+        $q->where('asset_tag', 'like', "%{$search}%")
+          ->orWhere('name', 'like', "%{$search}%")
+          ->orWhere('serial_number', 'like', "%{$search}%");
+      });
+    }
+
+    // Pagination with validation
+    $perPage = min((int)$request->get('per_page', 15), 100); // Max 100 per page
+    $perPage = max(1, $perPage); // Min 1 per page
+
+    /** @var \Illuminate\Pagination\LengthAwarePaginator $assets */
+    $assets = $query->paginate($perPage);
+
+    // Transform data
+    $assets->getCollection()->transform(function ($asset) {
+      return [
+        'id' => $asset->id,
+        'asset_tag' => $asset->asset_tag,
+        'name' => $asset->name,
+        'serial_number' => $asset->serial_number,
+        'mac_address' => $asset->mac_address,
+        'ip_address' => $asset->ip_address,
+        'purchase_date' => $asset->purchase_date,
+        'warranty_expiry' => $asset->warranty_expiry,
+        'location' => $asset->location->name ?? null,
+        'division' => $asset->division->name ?? null,
+        'status' => [
+          'id' => $asset->status_id,
+          'name' => $asset->status->name ?? null,
+          'badge' => $asset->status_badge
+        ],
+        'assigned_user' => $asset->assignedTo ? [
+          'id' => $asset->assignedTo->id,
+          'name' => $asset->assignedTo->name,
+          'email' => $asset->assignedTo->email
+        ] : null,
+        'asset_model' => $asset->assetModel ? [
+          'id' => $asset->assetModel->id,
+          'name' => $asset->assetModel->name,
+          'manufacturer' => $asset->assetModel->manufacturer->name ?? null
+        ] : null,
+        'depreciation_percentage' => $asset->depreciation_percentage,
+        'warranty_expiry_date' => $asset->warranty_expiry_date,
+        'formatted_mac_address' => $asset->formatted_mac_address,
+        'is_warranty_expired' => $asset->is_warranty_expired,
+        'warranty_status' => $asset->warranty_status,
+        'created_at' => $asset->created_at,
+        'updated_at' => $asset->updated_at
+      ];
+    });
+
+    return response()->json([
+      'success' => true,
+      'data' => $assets,
+      'message' => 'Assets retrieved successfully'
+    ]);
+  }    /**
      * Store a newly created asset
      *
      * @param Request $request

@@ -562,6 +562,11 @@ class Ticket extends Model implements HasMedia
     return $query->where('assigned_to', $userId);
   }
 
+  public function scopeAssigned($query)
+  {
+    return $query->whereNotNull('assigned_to');
+  }
+
   public function scopeForUser($query, $userId)
   {
     return $query->where('user_id', $userId);
@@ -570,6 +575,11 @@ class Ticket extends Model implements HasMedia
   public function scopeOpen($query)
   {
     return $query->whereNotIn('ticket_status_id', [3, 4]); // Not closed/resolved
+  }
+
+  public function scopeResolved($query)
+  {
+    return $query->where('ticket_status_id', 3); // Resolved
   }
 
   public function scopeClosed($query)
@@ -603,6 +613,46 @@ class Ticket extends Model implements HasMedia
     return $query->with([
       'user', 'assignedTo', 'location', 'asset', 
       'ticket_status', 'ticket_priority', 'ticket_type'
+    ]);
+  }
+
+  /**
+   * Enhanced eager loading with nested relationships
+   * Includes nested user data and asset information
+   */
+  public function scopeWithNestedRelations($query)
+  {
+    return $query->with([
+      'user',           // Creator
+      'assignedTo',     // Assigned technician
+      'location',
+      'asset.status',   // Asset status (nested)
+      'assets',         // Many-to-many assets
+      'ticket_status',
+      'ticket_priority',
+      'ticket_type',
+      'comments.user'   // Comments with author info
+    ]);
+  }
+
+  /**
+   * Eager load all data including audit trail
+   * For detail views and reports
+   */
+  public function scopeWithAllData($query)
+  {
+    return $query->with([
+      'user',
+      'assignedTo',
+      'location',
+      'asset',
+      'assets.division',          // Assets with division info
+      'ticket_status',
+      'ticket_priority',
+      'ticket_type',
+      'comments.user',
+      'history',
+      'dailyActivities'           // Activity tracking
     ]);
   }
 
