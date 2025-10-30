@@ -32,9 +32,9 @@ class AssetMaintenanceController extends Controller
             'assets_needing_maintenance' => $assetsRequiringMaintenance->count(),
             'scheduled_maintenance' => $maintenanceSchedule->count(),
             'high_priority' => $maintenanceSchedule->where('priority', 'high')->count(),
-            'overdue_maintenance' => $assetsRequiringMaintenance->filter(function($asset) {
+                'overdue_maintenance' => $assetsRequiringMaintenance->filter(function($asset) {
                 return $asset->tickets()
-                           ->where('created_at', '>=', CarbonDate::now()->subMonths(1))
+                           ->where('tickets.created_at', '>=', CarbonDate::now()->subMonths(1))
                            ->count() >= 3;
             })->count()
         ];
@@ -266,12 +266,12 @@ class AssetMaintenanceController extends Controller
         // Calculate additional statistics
         $lemonStats = [
             'total_count' => $lemonAssets->count(),
-            'total_tickets' => $lemonAssets->sum(function($asset) {
-                return $asset->tickets()->where('created_at', '>=', CarbonDate::now()->subMonths(6))->count();
+                'total_tickets' => $lemonAssets->sum(function($asset) {
+                return $asset->tickets()->where('tickets.created_at', '>=', CarbonDate::now()->subMonths(6))->count();
             }),
             'average_tickets_per_asset' => $lemonAssets->count() > 0 ? 
                 round($lemonAssets->sum(function($asset) {
-                    return $asset->tickets()->where('created_at', '>=', CarbonDate::now()->subMonths(6))->count();
+                    return $asset->tickets()->where('tickets.created_at', '>=', CarbonDate::now()->subMonths(6))->count();
                 }) / $lemonAssets->count(), 1) : 0,
             'replacement_cost_estimate' => $lemonAssets->count() * 5000000 // Rp 5M per asset estimate
         ];

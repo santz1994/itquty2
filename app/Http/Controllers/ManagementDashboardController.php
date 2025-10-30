@@ -278,10 +278,10 @@ class ManagementDashboardController extends Controller
     private function getLemonAssets()
     {
         return Asset::whereHas('tickets', function($q) {
-                    $q->where('created_at', '>=', now()->subMonths(6));
+                    $q->where('tickets.created_at', '>=', now()->subMonths(6));
                 }, '>=', 3)
                 ->with(['model', 'tickets' => function($q) {
-                    $q->where('created_at', '>=', now()->subMonths(6));
+                    $q->where('tickets.created_at', '>=', now()->subMonths(6));
                 }])
                 ->get();
     }

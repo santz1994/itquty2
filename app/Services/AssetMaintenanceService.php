@@ -135,10 +135,10 @@ class AssetMaintenanceService
      */
     private function checkReplacementEligibility(Asset $asset)
     {
-        $ticketCount = $asset->tickets()->count();
-        $recentTickets = $asset->tickets()
-                             ->where('created_at', '>=', now()->subMonths(6))
-                             ->count();
+    $ticketCount = $asset->tickets()->count();
+    $recentTickets = $asset->tickets()
+                 ->where('tickets.created_at', '>=', now()->subMonths(6))
+                 ->count();
         
         // Asset qualifies if:
         // 1. More than 5 tickets total, OR
@@ -170,9 +170,9 @@ class AssetMaintenanceService
      */
     private function determineReplacementPriority(Asset $asset)
     {
-        $recentTickets = $asset->tickets()
-                             ->where('created_at', '>=', now()->subMonths(3))
-                             ->count();
+    $recentTickets = $asset->tickets()
+                 ->where('tickets.created_at', '>=', now()->subMonths(3))
+                 ->count();
         
         if ($recentTickets >= 3) return 'high';
         if ($recentTickets >= 2) return 'medium';
@@ -199,12 +199,12 @@ class AssetMaintenanceService
     {
         return Asset::with(['model', 'status', 'assignedTo'])
                    ->whereHas('tickets', function($query) {
-                       $query->where('created_at', '>=', now()->subMonths(1));
+                       $query->where('tickets.created_at', '>=', now()->subMonths(1));
                    }, '>=', 2)
                    ->orWhere(function($query) {
                        // Assets with no maintenance in 6+ months and have open tickets
                        $query->whereDoesntHave('tickets', function($subQuery) {
-                           $subQuery->where('created_at', '>=', now()->subMonths(6))
+                           $subQuery->where('tickets.created_at', '>=', now()->subMonths(6))
                                    ->where('ticket_status_id', 3);
                        })
                        ->whereHas('tickets', function($subQuery) {

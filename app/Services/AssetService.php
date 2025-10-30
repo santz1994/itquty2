@@ -232,7 +232,7 @@ class AssetService
                 'disposed' => Asset::whereIn('status_id', [5, 6, 8, 9])->count(),
                 'with_qr_codes' => Asset::whereNotNull('qr_code')->count(),
                 'lemon_assets' => Asset::whereHas('tickets', function($q) {
-                    $q->where('created_at', '>=', now()->subMonths(6));
+                    $q->where('tickets.created_at', '>=', now()->subMonths(6));
                 }, '>=', 3)->count()
             ];
         });
@@ -304,14 +304,14 @@ class AssetService
      */
     public function getLemonAssets($months = 6, $minTickets = 3)
     {
-        return Asset::whereHas('tickets', function($q) use ($months) {
-                    $q->where('created_at', '>=', now()->subMonths($months));
-                }, '>=', $minTickets)
-                ->with(['model', 'assignedTo', 'tickets' => function($q) use ($months) {
-                    $q->where('created_at', '>=', now()->subMonths($months))
-                      ->orderBy('created_at', 'desc');
-                }])
-                ->get();
+                return Asset::whereHas('tickets', function($q) use ($months) {
+                                        $q->where('tickets.created_at', '>=', now()->subMonths($months));
+                                }, '>=', $minTickets)
+                                ->with(['model', 'assignedTo', 'tickets' => function($q) use ($months) {
+                                        $q->where('tickets.created_at', '>=', now()->subMonths($months))
+                                            ->orderBy('tickets.created_at', 'desc');
+                                }])
+                                ->get();
     }
 
     /**

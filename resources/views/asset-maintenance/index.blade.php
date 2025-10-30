@@ -110,7 +110,7 @@
                                     </td>
                                     <td>
                                         @php
-                                            $recentTickets = $asset->tickets()->where('created_at', '>=', now()->subMonths(1))->count();
+                                            $recentTickets = $asset->tickets()->where('tickets.created_at', '>=', now()->subMonths(1))->count();
                                         @endphp
                                         <span class="badge bg-{{ $recentTickets >= 3 ? 'red' : ($recentTickets >= 2 ? 'yellow' : 'green') }}">
                                             {{ $recentTickets }} tickets

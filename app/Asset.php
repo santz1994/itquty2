@@ -505,9 +505,9 @@ class Asset extends Model implements HasMedia
   public function getIsLemonAssetAttribute()
   {
     // Asset yang sering rusak (>3 tiket dalam 6 bulan terakhir)
-    $recentTickets = $this->tickets()
-                          ->where('created_at', '>=', now()->subMonths(6))
-                          ->count();
+  $recentTickets = $this->tickets()
+              ->where('tickets.created_at', '>=', now()->subMonths(6))
+              ->count();
     
     return $recentTickets > 3;
   }
@@ -806,9 +806,9 @@ class Asset extends Model implements HasMedia
   public function getRecentIssues()
   {
     return $this->tickets()
-                ->where('created_at', '>=', Carbon::now()->subDays(30))
+                ->where('tickets.created_at', '>=', Carbon::now()->subDays(30))
                 ->with(['ticket_status', 'ticket_priority'])
-                ->orderBy('created_at', 'desc')
+                ->orderBy('tickets.created_at', 'desc')
                 ->get();
   }
 
@@ -888,7 +888,7 @@ class Asset extends Model implements HasMedia
         return 100; // Perfect score for no reported issues
     }
 
-    $recentTickets = $this->tickets()->where('created_at', '>=', now()->subMonths(6))->count();
+  $recentTickets = $this->tickets()->where('tickets.created_at', '>=', now()->subMonths(6))->count();
     $openTickets = $this->open_tickets_count;
     
     // Base score calculation

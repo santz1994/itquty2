@@ -29,7 +29,7 @@ Route::middleware(['web', 'auth', 'role:admin|super-admin'])->group(function () 
     // ========================================
     // MAIN CRUD ROUTES (TicketController) - admin-only actions
     // ========================================
-    Route::get('/tickets/unassigned', [\App\Http\Controllers\TicketController::class, 'unassigned'])->name('tickets.unassigned');
+    Route::get('/tickets/{ticket}/unassigned', [\App\Http\Controllers\TicketController::class, 'unassigned'])->name('tickets.unassigned');
     Route::get('/tickets/overdue', [\App\Http\Controllers\TicketController::class, 'overdue'])->name('tickets.overdue');
     Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
     Route::put('/tickets/{ticket}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
