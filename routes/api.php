@@ -8,6 +8,7 @@ use App\Http\Controllers\API\TicketController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DailyActivityApiController;
 use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\API\SearchController;
 use App\Http\Controllers\Api\DatatableController;
 
 /*
@@ -113,6 +114,11 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // Server-side DataTables API endpoints
     Route::get('/datatables/assets', [DatatableController::class, 'assets']);
     Route::get('/datatables/tickets', [DatatableController::class, 'tickets']);
+    
+    // Global search endpoints
+    Route::get('/search/global', [SearchController::class, 'global'])->name('api.search.global');
+    Route::get('/search/suggest', [SearchController::class, 'suggest'])->name('api.search.suggest');
+    Route::get('/search/stats', [SearchController::class, 'stats'])->name('api.search.stats');
     
 });
 
