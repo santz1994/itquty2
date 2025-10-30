@@ -10,6 +10,7 @@ use App\Http\Controllers\API\DailyActivityApiController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\SearchController;
 use App\Http\Controllers\API\FilterController;
+use App\Http\Controllers\API\BulkOperationController;
 use App\Http\Controllers\Api\DatatableController;
 
 /*
@@ -128,6 +129,25 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // Filter builder and statistics
     Route::get('/filter-builder', [FilterController::class, 'filterBuilder'])->name('api.filterBuilder');
     Route::get('/filter-stats', [FilterController::class, 'filterStats'])->name('api.filterStats');
+    
+    // Bulk Operations - for assets and tickets
+    Route::middleware(['throttle:api-bulk'])->group(function () {
+        // Asset bulk operations
+        Route::post('/assets/bulk/status', [BulkOperationController::class, 'bulkUpdateAssetStatus'])->name('api.assets.bulkUpdateStatus');
+        Route::post('/assets/bulk/assign', [BulkOperationController::class, 'bulkUpdateAssetAssignment'])->name('api.assets.bulkUpdateAssignment');
+        Route::post('/assets/bulk/update-fields', [BulkOperationController::class, 'bulkUpdateAssetFields'])->name('api.assets.bulkUpdateFields');
+        
+        // Ticket bulk operations
+        Route::post('/tickets/bulk/status', [BulkOperationController::class, 'bulkUpdateTicketStatus'])->name('api.tickets.bulkUpdateStatus');
+        Route::post('/tickets/bulk/assign', [BulkOperationController::class, 'bulkUpdateTicketAssignment'])->name('api.tickets.bulkUpdateAssignment');
+        Route::post('/tickets/bulk/update-fields', [BulkOperationController::class, 'bulkUpdateTicketFields'])->name('api.tickets.bulkUpdateFields');
+        
+        // Bulk operation history and monitoring
+        Route::get('/bulk-operations', [BulkOperationController::class, 'getBulkOperationHistory'])->name('api.bulkOperationHistory');
+        Route::get('/bulk-operations/{operation_id}', [BulkOperationController::class, 'getBulkOperationStatus'])->name('api.bulkOperationStatus');
+        Route::get('/bulk-operations/{operation_id}/logs', [BulkOperationController::class, 'getBulkOperationLogs'])->name('api.bulkOperationLogs');
+        Route::post('/bulk-operations/{operation_id}/retry', [BulkOperationController::class, 'retryBulkOperation'])->name('api.bulkOperationRetry');
+    });
     
 });
 
