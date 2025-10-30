@@ -32,6 +32,12 @@ class DivisionsController extends Controller
     return redirect()->route('divisions.index');
   }
 
+  public function show(Division $division)
+  {
+    $pageTitle = 'Division Details - ' . $division->name;
+    return view('divisions.show', compact('division', 'pageTitle'));
+  }
+
   public function edit(Division $division)
   {
     $pageTitle = 'Edit Division - ' . $division->name;

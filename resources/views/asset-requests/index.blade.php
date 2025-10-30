@@ -2,6 +2,8 @@
 
 @section('main-content')
 
+{{-- All styles from centralized CSS: public/css/ui-enhancements.css --}}
+
 {{-- Page Header --}}
 @include('components.page-header', [
     'title' => 'Asset Requests',
@@ -16,20 +18,104 @@
 ])
 
 <div class="container-fluid">
+
+    {{-- Flash Messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <i class="fa fa-check-circle"></i> {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <i class="fa fa-exclamation-triangle"></i> {{ session('error') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-warning alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <i class="fa fa-exclamation-circle"></i> <strong>Validation errors:</strong>
+            <ul style="margin-bottom: 0; margin-top: 5px;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- Quick Stats Cards --}}
+    <div class="row">
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-aqua" onclick="filterByStatus('all')" style="cursor: pointer;">
+                <div class="inner">
+                    <h3>{{ $stats['total'] ?? 0 }}</h3>
+                    <p>Total Requests</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-inbox"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-yellow" onclick="filterByStatus('pending')" style="cursor: pointer;">
+                <div class="inner">
+                    <h3>{{ $stats['pending'] ?? 0 }}</h3>
+                    <p>Pending Approval</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-clock"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-green" onclick="filterByStatus('approved')" style="cursor: pointer;">
+                <div class="inner">
+                    <h3>{{ $stats['approved'] ?? 0 }}</h3>
+                    <p>Approved</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-red" onclick="filterByStatus('rejected')" style="cursor: pointer;">
+                <div class="inner">
+                    <h3>{{ $stats['rejected'] ?? 0 }}</h3>
+                    <p>Rejected</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-times-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
             
-            {{-- Filters Card --}}
-            <div class="card mb-3">
-                <div class="card-header">
-                    <i class="fa fa-filter"></i> Filters
+            {{-- Enhanced Filters --}}
+            <div class="box box-default collapsed-box">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-filter"></i> Advanced Filters</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="box-body filter-bar">
                     <form method="GET" action="{{ route('asset-requests.index') }}" id="filter-form">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="status">Status</label>
+                                    <label for="status"><i class="fa fa-info-circle"></i> Status</label>
                                     <select name="status" id="status" class="form-control">
                                         <option value="">All Status</option>
                                         @foreach($statuses as $status)
@@ -42,7 +128,7 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="asset_type">Asset Type</label>
+                                    <label for="asset_type"><i class="fa fa-box"></i> Asset Type</label>
                                     <select name="asset_type" id="asset_type" class="form-control">
                                         <option value="">All Types</option>
                                         @foreach($assetTypes as $type)
@@ -55,7 +141,7 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="priority">Priority</label>
+                                    <label for="priority"><i class="fa fa-exclamation-triangle"></i> Priority</label>
                                     <select name="priority" id="priority" class="form-control">
                                         <option value="">All Priorities</option>
                                         @foreach($priorities as $priority)
@@ -70,11 +156,11 @@
                                 <div class="form-group">
                                     <label>&nbsp;</label>
                                     <div>
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fa fa-search"></i> Filter
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <i class="fa fa-search"></i> Apply Filters
                                         </button>
-                                        <a href="{{ route('asset-requests.index') }}" class="btn btn-secondary">
-                                            <i class="fa fa-times"></i> Clear
+                                        <a href="{{ route('asset-requests.index') }}" class="btn btn-default btn-block" style="margin-top: 5px;">
+                                            <i class="fa fa-times"></i> Clear All
                                         </a>
                                     </div>
                                 </div>
@@ -84,91 +170,75 @@
                 </div>
             </div>
 
-            {{-- Requests Table --}}
-            <div class="card">
-                <div class="card-header">
-                    <i class="fa fa-list"></i> Asset Requests
-                    <span class="badge badge-primary float-right">{{ $requests->total() }} Total</span>
+            {{-- Enhanced Requests Table --}}
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-clipboard-list"></i> Asset Requests</h3>
+                    <span class="count-badge">{{ $requests->total() }}</span>
                 </div>
-                <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
+                <div class="box-body">
                     <div class="table-responsive">
-                        <table class="table table-enhanced table-striped table-hover">
+                        <table id="requests-table" class="table table-enhanced table-striped table-hover">
                             <thead>
                                 <tr>
-                                    <th class="sortable" data-column="id">ID</th>
-                                    <th class="sortable" data-column="request_number">Request #</th>
-                                    <th class="sortable" data-column="title">Title</th>
-                                    <th class="sortable" data-column="asset_type">Asset Type</th>
-                                    <th class="sortable" data-column="requested_by">Requested By</th>
-                                    <th class="sortable" data-column="priority">Priority</th>
-                                    <th class="sortable" data-column="status">Status</th>
-                                    <th class="sortable" data-column="needed_date">Needed Date</th>
-                                    <th class="sortable" data-column="created_at">Created</th>
-                                    <th>Actions</th>
+                                    <th style="width: 60px;">ID</th>
+                                    <th>Request #</th>
+                                    <th>Title</th>
+                                    <th style="width: 120px;">Asset Type</th>
+                                    <th>Requested By</th>
+                                    <th style="width: 100px;">Priority</th>
+                                    <th style="width: 100px;">Status</th>
+                                    <th style="width: 110px;">Needed Date</th>
+                                    <th style="width: 100px;">Created</th>
+                                    <th style="width: 180px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($requests as $request)
                                     <tr>
                                         <td>#{{ $request->id }}</td>
-                                        <td>{{ $request->request_number ?? '-' }}</td>
+                                        <td><strong>{{ $request->request_number ?? '-' }}</strong></td>
                                         <td>
                                             <strong>{{ $request->title }}</strong>
                                             @if($request->requested_quantity > 1)
-                                                <br><small class="text-muted">Qty: {{ $request->requested_quantity }}</small>
+                                                <br><small class="text-muted"><i class="fa fa-box"></i> Qty: {{ $request->requested_quantity }}</small>
                                             @endif
                                         </td>
                                         <td>
                                             @if($request->assetType)
-                                                <span class="badge badge-info">{{ $request->assetType->name }}</span>
+                                                <span class="label label-info">{{ $request->assetType->name }}</span>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($request->requestedBy)
-                                                {{ $request->requestedBy->name }}
+                                                <i class="fa fa-user"></i> {{ $request->requestedBy->name }}
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td>
-                                            @php
-                                                $priorityColors = [
-                                                    'low' => 'secondary',
-                                                    'medium' => 'info',
-                                                    'high' => 'warning',
-                                                    'urgent' => 'danger'
-                                                ];
-                                                $color = $priorityColors[$request->priority] ?? 'secondary';
-                                            @endphp
-                                            <span class="badge badge-{{ $color }}">{{ ucfirst($request->priority) }}</span>
+                                            @if($request->priority === 'urgent')
+                                                <span class="label label-danger"><i class="fa fa-bolt"></i> Urgent</span>
+                                            @elseif($request->priority === 'high')
+                                                <span class="label label-warning"><i class="fa fa-arrow-up"></i> High</span>
+                                            @elseif($request->priority === 'medium')
+                                                <span class="label label-info"><i class="fa fa-minus"></i> Medium</span>
+                                            @else
+                                                <span class="label label-default"><i class="fa fa-arrow-down"></i> Low</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            @php
-                                                $statusColors = [
-                                                    'pending' => 'warning',
-                                                    'approved' => 'success',
-                                                    'rejected' => 'danger',
-                                                    'fulfilled' => 'primary'
-                                                ];
-                                                $statusColor = $statusColors[$request->status] ?? 'secondary';
-                                            @endphp
-                                            <span class="badge badge-{{ $statusColor }}">{{ ucfirst($request->status) }}</span>
+                                            @if($request->status === 'fulfilled')
+                                                <span class="label label-primary"><i class="fa fa-check-double"></i> Fulfilled</span>
+                                            @elseif($request->status === 'approved')
+                                                <span class="label label-success"><i class="fa fa-check"></i> Approved</span>
+                                            @elseif($request->status === 'rejected')
+                                                <span class="label label-danger"><i class="fa fa-times"></i> Rejected</span>
+                                            @else
+                                                <span class="label label-warning"><i class="fa fa-clock"></i> Pending</span>
+                                            @endif
                                         </td>
                                         <td>
                                             @if($request->needed_date)
@@ -179,14 +249,14 @@
                                         </td>
                                         <td>{{ $request->created_at->format('d M Y') }}</td>
                                         <td>
-                                            <div class="btn-group" role="group">
+                                            <div class="btn-group">
                                                 <a href="{{ route('asset-requests.show', $request->id) }}" 
-                                                   class="btn btn-sm btn-info" title="View">
+                                                   class="btn btn-xs btn-info" title="View">
                                                     <i class="fa fa-eye"></i>
                                                 </a>
                                                 @if($request->status === 'pending')
                                                     <a href="{{ route('asset-requests.edit', $request->id) }}" 
-                                                       class="btn btn-sm btn-warning" title="Edit">
+                                                       class="btn btn-xs btn-warning" title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
                                                 @endif
@@ -194,7 +264,7 @@
                                                     <form action="{{ route('asset-requests.approve', $request->id) }}" 
                                                           method="POST" style="display: inline;">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-sm btn-success" 
+                                                        <button type="submit" class="btn btn-xs btn-success" 
                                                                 title="Approve"
                                                                 onclick="return confirm('Approve this request?')">
                                                             <i class="fa fa-check"></i>
@@ -204,7 +274,7 @@
                                                     <form action="{{ route('asset-requests.reject', $request->id) }}" 
                                                           method="POST" style="display: inline;">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-sm btn-danger" 
+                                                        <button type="submit" class="btn btn-xs btn-danger" 
                                                                 title="Reject"
                                                                 onclick="return confirm('Reject this request?')">
                                                             <i class="fa fa-times"></i>
@@ -216,19 +286,14 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted">
-                                            <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                                            No asset requests found.
+                                        <td colspan="10" class="text-center empty-state">
+                                            <i class="fa fa-inbox fa-3x" style="opacity: 0.3; margin-bottom: 15px;"></i>
+                                            <p>No asset requests found.</p>
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
-                    </div>
-
-                    {{-- Pagination --}}
-                    <div class="mt-3">
-                        {{ $requests->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>
@@ -245,11 +310,85 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Enhanced DataTable with export buttons
+    var table = $('#requests-table').DataTable({
+        responsive: true,
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '<i class="fa fa-file-excel"></i> Excel',
+                className: 'btn btn-success btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                }
+            },
+            {
+                extend: 'csvHtml5',
+                text: '<i class="fa fa-file-csv"></i> CSV',
+                className: 'btn btn-info btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                }
+            },
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="fa fa-file-pdf"></i> PDF',
+                className: 'btn btn-danger btn-sm',
+                orientation: 'landscape',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                }
+            },
+            {
+                extend: 'copy',
+                text: '<i class="fa fa-copy"></i> Copy',
+                className: 'btn btn-default btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                }
+            }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 25,
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search requests...",
+            lengthMenu: "Show _MENU_ requests",
+            info: "Showing _START_ to _END_ of _TOTAL_ requests",
+            infoEmpty: "No requests to show",
+            infoFiltered: "(filtered from _MAX_ total requests)",
+            paginate: {
+                first: '<i class="fa fa-angle-double-left"></i>',
+                last: '<i class="fa fa-angle-double-right"></i>',
+                next: '<i class="fa fa-angle-right"></i>',
+                previous: '<i class="fa fa-angle-left"></i>'
+            }
+        }
+    });
+
+    // Move export buttons to header
+    table.buttons().container()
+        .appendTo($('.box-header .box-title').parent());
+
+    // Clickable stat cards filtering
+    window.filterByStatus = function(status) {
+        if (status === 'all') {
+            table.search('').draw();
+        } else {
+            table.search(status).draw();
+        }
+    };
+
     // Auto-submit filters
     $('#status, #asset_type, #priority').on('change', function() {
-        showLoading('Filtering requests...');
         $('#filter-form').submit();
     });
+
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
 });
 </script>
 @endpush

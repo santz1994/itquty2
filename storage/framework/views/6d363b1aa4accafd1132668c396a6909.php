@@ -1,41 +1,43 @@
-@extends('layouts.app')
 
-@section('main-content')
 
-{{-- All styles from centralized CSS: public/css/ui-enhancements.css --}}
+<?php $__env->startSection('main-content'); ?>
 
-{{-- Page Header --}}
-@include('components.page-header', [
+
+
+
+<?php echo $__env->make('components.page-header', [
     'title' => 'Asset Maintenance Management',
     'subtitle' => 'Track, Schedule & Monitor Asset Maintenance',
     'breadcrumbs' => [
         ['label' => 'Home', 'url' => route('home'), 'icon' => 'home'],
         ['label' => 'Maintenance']
     ]
-])
+], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
 <div class="container-fluid">
-    {{-- Flash Messages --}}
-    @if(session('success'))
+    
+    <?php if(session('success')): ?>
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <i class="fa fa-check-circle"></i> {{ session('success') }}
-        </div>
-    @endif
+            <i class="fa fa-check-circle"></i> <?php echo e(session('success')); ?>
 
-    @if(session('error'))
+        </div>
+    <?php endif; ?>
+
+    <?php if(session('error')): ?>
         <div class="alert alert-danger alert-dismissible">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <i class="fa fa-exclamation-triangle"></i> {{ session('error') }}
-        </div>
-    @endif
+            <i class="fa fa-exclamation-triangle"></i> <?php echo e(session('error')); ?>
 
-    {{-- Statistics Overview --}}
+        </div>
+    <?php endif; ?>
+
+    
     <div class="row">
         <div class="col-lg-3 col-xs-6">
             <div class="small-box bg-yellow">
                 <div class="inner">
-                    <h3>{{ $stats['assets_needing_maintenance'] ?? 0 }}</h3>
+                    <h3><?php echo e($stats['assets_needing_maintenance'] ?? 0); ?></h3>
                     <p>Need Maintenance</p>
                 </div>
                 <div class="icon">
@@ -50,7 +52,7 @@
         <div class="col-lg-3 col-xs-6">
             <div class="small-box bg-blue">
                 <div class="inner">
-                    <h3>{{ $stats['scheduled_maintenance'] ?? 0 }}</h3>
+                    <h3><?php echo e($stats['scheduled_maintenance'] ?? 0); ?></h3>
                     <p>Scheduled</p>
                 </div>
                 <div class="icon">
@@ -65,7 +67,7 @@
         <div class="col-lg-3 col-xs-6">
             <div class="small-box bg-red">
                 <div class="inner">
-                    <h3>{{ $stats['high_priority'] ?? 0 }}</h3>
+                    <h3><?php echo e($stats['high_priority'] ?? 0); ?></h3>
                     <p>High Priority</p>
                 </div>
                 <div class="icon">
@@ -80,7 +82,7 @@
         <div class="col-lg-3 col-xs-6">
             <div class="small-box bg-orange">
                 <div class="inner">
-                    <h3>{{ $stats['overdue_maintenance'] ?? 0 }}</h3>
+                    <h3><?php echo e($stats['overdue_maintenance'] ?? 0); ?></h3>
                     <p>Overdue</p>
                 </div>
                 <div class="icon">
@@ -93,23 +95,23 @@
         </div>
     </div>
 
-    {{-- Assets Requiring Maintenance --}}
+    
     <div class="row">
         <div class="col-md-8">
             <div class="box box-warning">
                 <div class="box-header with-border">
                     <h3 class="box-title">
                         <i class="fa fa-exclamation-triangle"></i> Assets Requiring Maintenance
-                        <span class="badge badge-warning">{{ $assetsRequiringMaintenance->count() ?? 0 }}</span>
+                        <span class="badge badge-warning"><?php echo e($assetsRequiringMaintenance->count() ?? 0); ?></span>
                     </h3>
                     <div class="box-tools pull-right">
-                        <a href="{{ route('asset-maintenance.analytics') ?? '#' }}" class="btn btn-info btn-xs">
+                        <a href="<?php echo e(route('asset-maintenance.analytics') ?? '#'); ?>" class="btn btn-info btn-xs">
                             <i class="fa fa-chart-bar"></i> Analytics
                         </a>
                     </div>
                 </div>
                 <div class="box-body">
-                    @if(isset($assetsRequiringMaintenance) && $assetsRequiringMaintenance->count() > 0)
+                    <?php if(isset($assetsRequiringMaintenance) && $assetsRequiringMaintenance->count() > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead style="background-color: #f7f7f7;">
@@ -123,71 +125,72 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($assetsRequiringMaintenance as $asset)
+                                    <?php $__currentLoopData = $assetsRequiringMaintenance; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $asset): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
                                         <td>
-                                            <strong>{{ $asset->asset_tag }}</strong>
-                                            @if($asset->is_lemon_asset ?? false)
+                                            <strong><?php echo e($asset->asset_tag); ?></strong>
+                                            <?php if($asset->is_lemon_asset ?? false): ?>
                                                 <span class="label label-danger">
                                                     <i class="fa fa-exclamation-triangle"></i> Problematic
                                                 </span>
-                                            @endif
+                                            <?php endif; ?>
                                         </td>
-                                        <td>{{ $asset->model->name ?? 'Unknown Model' }}</td>
-                                        <td>{{ $asset->location->location_name ?? 'N/A' }}</td>
+                                        <td><?php echo e($asset->model->name ?? 'Unknown Model'); ?></td>
+                                        <td><?php echo e($asset->location->location_name ?? 'N/A'); ?></td>
                                         <td>
-                                            <span class="label label-{{ $asset->status->color ?? 'default' }}">
-                                                {{ $asset->status->status ?? 'Unknown' }}
+                                            <span class="label label-<?php echo e($asset->status->color ?? 'default'); ?>">
+                                                <?php echo e($asset->status->status ?? 'Unknown'); ?>
+
                                             </span>
                                         </td>
                                         <td>
-                                            @php
+                                            <?php
                                                 $recentTickets = $asset->tickets()->where('tickets.created_at', '>=', now()->subMonths(1))->count();
-                                            @endphp
-                                            <span class="badge bg-{{ $recentTickets >= 3 ? 'red' : ($recentTickets >= 2 ? 'yellow' : 'green') }}">
-                                                <i class="fa fa-ticket-alt"></i> {{ $recentTickets }} ticket(s)
+                                            ?>
+                                            <span class="badge bg-<?php echo e($recentTickets >= 3 ? 'red' : ($recentTickets >= 2 ? 'yellow' : 'green')); ?>">
+                                                <i class="fa fa-ticket-alt"></i> <?php echo e($recentTickets); ?> ticket(s)
                                             </span>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-xs">
-                                                <a href="{{ route('asset-maintenance.show', $asset->id) }}" 
+                                                <a href="<?php echo e(route('asset-maintenance.show', $asset->id)); ?>" 
                                                    class="btn btn-info" 
                                                    title="View Maintenance History">
                                                     <i class="fa fa-eye"></i>
                                                 </a>
                                                 <button type="button" 
                                                         class="btn btn-warning" 
-                                                        onclick="createMaintenanceTicket({{ $asset->id }})" 
+                                                        onclick="createMaintenanceTicket(<?php echo e($asset->id); ?>)" 
                                                         title="Create Maintenance Ticket">
                                                     <i class="fa fa-wrench"></i>
                                                 </button>
-                                                @if($asset->is_lemon_asset ?? false)
+                                                <?php if($asset->is_lemon_asset ?? false): ?>
                                                     <button type="button" 
                                                             class="btn btn-danger" 
-                                                            onclick="generateReplacementRequest({{ $asset->id }})" 
+                                                            onclick="generateReplacementRequest(<?php echo e($asset->id); ?>)" 
                                                             title="Request Replacement">
                                                         <i class="fa fa-exchange-alt"></i>
                                                     </button>
-                                                @endif
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div class="empty-state">
                             <i class="fa fa-check-circle"></i>
                             <h4>All Assets in Good Condition</h4>
                             <p>No assets currently require maintenance attention.</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        {{-- Maintenance Schedule --}}
+        
         <div class="col-md-4">
             <div class="box box-info">
                 <div class="box-header with-border">
@@ -196,56 +199,58 @@
                     </h3>
                 </div>
                 <div class="box-body" style="max-height: 600px; overflow-y: auto;">
-                    @if(isset($maintenanceSchedule) && $maintenanceSchedule->count() > 0)
-                        @foreach($maintenanceSchedule->take(10) as $schedule)
+                    <?php if(isset($maintenanceSchedule) && $maintenanceSchedule->count() > 0): ?>
+                        <?php $__currentLoopData = $maintenanceSchedule->take(10); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $schedule): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="media maintenance-item" style="margin-bottom: 15px;">
                             <div class="media-left">
-                                <i class="fa fa-{{ $schedule['priority'] === 'high' ? 'fire text-red' : 'wrench text-warning' }} fa-2x"></i>
+                                <i class="fa fa-<?php echo e($schedule['priority'] === 'high' ? 'fire text-red' : 'wrench text-warning'); ?> fa-2x"></i>
                             </div>
                             <div class="media-body">
                                 <h5 class="media-heading" style="margin-top: 0;">
-                                    <strong>{{ $schedule['asset']->asset_tag }}</strong>
-                                    <span class="label label-{{ $schedule['priority'] === 'high' ? 'danger' : 'warning' }}">
-                                        {{ ucfirst($schedule['priority']) }}
+                                    <strong><?php echo e($schedule['asset']->asset_tag); ?></strong>
+                                    <span class="label label-<?php echo e($schedule['priority'] === 'high' ? 'danger' : 'warning'); ?>">
+                                        <?php echo e(ucfirst($schedule['priority'])); ?>
+
                                     </span>
                                 </h5>
-                                <p class="text-muted" style="margin: 5px 0;">{{ $schedule['asset']->model->name ?? 'Unknown Model' }}</p>
+                                <p class="text-muted" style="margin: 5px 0;"><?php echo e($schedule['asset']->model->name ?? 'Unknown Model'); ?></p>
                                 <small class="text-info">
-                                    <i class="fa fa-calendar"></i> Due: {{ $schedule['recommended_date']->format('M d, Y') }}
+                                    <i class="fa fa-calendar"></i> Due: <?php echo e($schedule['recommended_date']->format('M d, Y')); ?>
+
                                 </small>
                                 <br>
-                                <small class="text-muted">{{ $schedule['reason'] }}</small>
+                                <small class="text-muted"><?php echo e($schedule['reason']); ?></small>
                             </div>
                         </div>
                         <hr style="margin: 10px 0;">
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         
-                        @if($maintenanceSchedule->count() > 10)
+                        <?php if($maintenanceSchedule->count() > 10): ?>
                             <div class="text-center" style="margin-top: 10px;">
                                 <small class="text-muted">
-                                    <i class="fa fa-ellipsis-h"></i> And {{ $maintenanceSchedule->count() - 10 }} more items...
+                                    <i class="fa fa-ellipsis-h"></i> And <?php echo e($maintenanceSchedule->count() - 10); ?> more items...
                                 </small>
                             </div>
-                        @endif
-                    @else
+                        <?php endif; ?>
+                    <?php else: ?>
                         <div class="text-center" style="padding: 20px;">
                             <i class="fa fa-calendar-check" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
                             <p class="text-muted">No scheduled maintenance at this time.</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
-            {{-- Quick Actions --}}
+            
             <div class="box box-success">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-bolt"></i> Quick Actions</h3>
                 </div>
                 <div class="box-body">
-                    <a href="{{ route('asset-maintenance.analytics') ?? '#' }}" class="btn btn-info btn-block">
+                    <a href="<?php echo e(route('asset-maintenance.analytics') ?? '#'); ?>" class="btn btn-info btn-block">
                         <i class="fa fa-chart-line"></i> View Analytics
                     </a>
-                    <a href="{{ route('assets.index') }}" class="btn btn-default btn-block">
+                    <a href="<?php echo e(route('assets.index')); ?>" class="btn btn-default btn-block">
                         <i class="fa fa-laptop"></i> View All Assets
                     </a>
                     <button type="button" class="btn btn-warning btn-block" onclick="window.print()">
@@ -254,7 +259,7 @@
                 </div>
             </div>
 
-            {{-- Maintenance Tips --}}
+            
             <div class="box box-default">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-lightbulb"></i> Maintenance Tips</h3>
@@ -283,7 +288,7 @@
                 <h4 class="modal-title">Create Maintenance Ticket</h4>
             </div>
             <form id="maintenanceTicketForm" method="POST">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Asset</label>
@@ -294,9 +299,9 @@
                         <label>Priority</label>
                         <select name="priority_id" class="form-control" required>
                             <option value="">Select Priority</option>
-                            @foreach($priorities ?? [] as $priority)
-                                <option value="{{ $priority->id }}">{{ $priority->priority }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = $priorities ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $priority): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($priority->id); ?>"><?php echo e($priority->priority); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
                     
@@ -304,9 +309,9 @@
                         <label>Type</label>
                         <select name="type_id" class="form-control" required>
                             <option value="">Select Type</option>
-                            @foreach($ticketTypes ?? [] as $type)
-                                <option value="{{ $type->id }}">{{ $type->type }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = $ticketTypes ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $type): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($type->id); ?>"><?php echo e($type->type); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
                     
@@ -339,7 +344,7 @@
                 <h4 class="modal-title">Generate Replacement Request</h4>
             </div>
             <form id="replacementRequestForm" method="POST">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Asset</label>
@@ -366,9 +371,9 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('footer')
+<?php $__env->startSection('footer'); ?>
 <script>
 function createMaintenanceTicket(assetId) {
     // Get asset details via AJAX (you would implement this endpoint)
@@ -396,5 +401,7 @@ $(document).ready(function() {
     }, 300000);
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/asset-maintenance/index.blade.php ENDPATH**/ ?>

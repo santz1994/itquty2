@@ -2,74 +2,7 @@
 
 <?php $__env->startSection('main-content'); ?>
 
-<style>
-/* Enhanced filter bar styling */
-.filter-bar {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    border: 1px solid #e3e6f0;
-}
-.filter-bar .form-group {
-    margin-bottom: 10px;
-}
-.filter-bar label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 5px;
-}
-/* Enhanced status badges */
-.status-badge {
-    padding: 5px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-/* Quick action buttons in header */
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-@media (max-width: 768px) {
-    .action-buttons {
-        flex-direction: column;
-    }
-}
-/* Clickable badges for filtering */
-.clickable-badge {
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.clickable-badge:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-/* Age indicators */
-.age-danger { color: #d9534f; font-weight: bold; }
-.age-warning { color: #f0ad4e; font-weight: bold; }
-.age-success { color: #5cb85c; }
-/* Enhanced table styling */
-.table-enhanced thead th {
-    background-color: #3c8dbc;
-    color: white;
-    font-weight: 600;
-    border: 1px solid #2d6ca2;
-}
-.table-enhanced tbody tr:hover {
-    background-color: #f0f8ff !important;
-    cursor: pointer;
-}
-/* Info box hover effect */
-.small-box:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
-}
-</style>
+
 
 <?php echo $__env->make('components.page-header', [
     'title' => 'Assets',

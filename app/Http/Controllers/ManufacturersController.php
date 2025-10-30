@@ -38,6 +38,12 @@ class ManufacturersController extends Controller
     return redirect()->route('manufacturers.index');
   }
 
+  public function show(Manufacturer $manufacturer)
+  {
+    $pageTitle = 'Manufacturer Details - ' . $manufacturer->name;
+    return view('manufacturers.show', compact('manufacturer', 'pageTitle'));
+  }
+
   public function edit(Manufacturer $manufacturer)
   {
     $pageTitle = 'Edit Manufacturer - ' . $manufacturer->name;

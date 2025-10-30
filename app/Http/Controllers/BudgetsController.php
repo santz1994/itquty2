@@ -33,6 +33,12 @@ class BudgetsController extends Controller
     return redirect()->route('budgets.index');
   }
 
+  public function show(Budget $budget)
+  {
+    $pageTitle = 'Budget Details - ' . $budget->division->name . ' ' . $budget->year;
+    return view('budgets.show', compact('budget', 'pageTitle'));
+  }
+
   public function edit(Budget $budget)
   {
     $pageTitle = 'Edit Budget - ' . $budget->division->name . ' ' . $budget->year;

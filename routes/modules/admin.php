@@ -192,7 +192,11 @@ Route::middleware(['web', 'auth'])->group(function () {
         });
         Route::resource('/locations', \App\Http\Controllers\LocationsController::class);
         Route::resource('/divisions', \App\Http\Controllers\DivisionsController::class);
+        
+        // Invoice PDF download route (must be before resource route)
+        Route::get('/invoices/{invoice}/pdf', [\App\Http\Controllers\InvoicesController::class, 'downloadPdf'])->name('invoices.pdf');
         Route::resource('/invoices', \App\Http\Controllers\InvoicesController::class);
+        
         Route::resource('/budgets', \App\Http\Controllers\BudgetsController::class);
         
         // ========================================

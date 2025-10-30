@@ -31,6 +31,12 @@ class PcspecsController extends Controller
     return redirect()->route('pcspecs.index');
   }
 
+  public function show(Pcspec $pcspec)
+  {
+    $pageTitle = 'PC Specification Details - ' . $pcspec->cpu;
+    return view('pcspecs.show', compact('pcspec', 'pageTitle'));
+  }
+
   public function edit(Pcspec $pcspec)
   {
     $pageTitle = 'Edit PC Specification - ' . $pcspec->cpu . ', ' . $pcspec->ram . ', ' . $pcspec->hdd;

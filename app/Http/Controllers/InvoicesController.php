@@ -31,9 +31,26 @@ class InvoicesController extends Controller
     return view('invoices.index', compact('invoices', 'suppliers', 'divisions', 'pageTitle'));
   }
 
+  /**
+   * Display the invoice details page
+   */
   public function show(Invoice $invoice)
   {
+    $pageTitle = 'Invoice Details - ' . $invoice->invoice_number;
+    return view('invoices.show', compact('invoice', 'pageTitle'));
+  }
+
+  /**
+   * Download the invoice PDF file
+   */
+  public function downloadPdf(Invoice $invoice)
+  {
     $filepath = storage_path() . "/app/invoices/" . $invoice->invoice_number . ".pdf";
+    
+    if (!Storage::exists('invoices/' . $invoice->invoice_number . '.pdf')) {
+      return redirect('/invoices')->with('error', 'PDF file not found.');
+    }
+    
     return response()->file($filepath);
   }
 

@@ -1,11 +1,11 @@
-@extends('layouts.app')
 
-@section('main-content')
 
-{{-- All styles from centralized CSS: public/css/ui-enhancements.css --}}
+<?php $__env->startSection('main-content'); ?>
 
-{{-- Page Header --}}
-@include('components.page-header', [
+
+
+
+<?php echo $__env->make('components.page-header', [
     'title' => 'Create Asset Request',
     'subtitle' => 'Submit a new asset request for approval',
     'breadcrumbs' => [
@@ -13,11 +13,11 @@
         ['label' => 'Asset Requests', 'url' => route('asset-requests.index')],
         ['label' => 'Create']
     ]
-])
+], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
 <div class="container-fluid">
     <div class="row">
-        {{-- Main Form (8 columns) --}}
+        
         <div class="col-md-8">
             <div class="box box-primary">
                 <div class="box-header with-border">
@@ -25,23 +25,23 @@
                 </div>
                 <div class="box-body">
 
-                    {{-- Flash Messages --}}
-                    @if($errors->any())
+                    
+                    <?php if($errors->any()): ?>
                         <div class="alert alert-warning alert-dismissible">
                             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                             <i class="fa fa-exclamation-circle"></i> <strong>Validation errors:</strong>
                             <ul style="margin-bottom: 0; margin-top: 5px;">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
+                                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <li><?php echo e($error); ?></li>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </ul>
                         </div>
-                    @endif
+                    <?php endif; ?>
 
-                    <form action="{{ route('asset-requests.store') }}" method="POST" id="asset-request-form">
-                        @csrf
+                    <form action="<?php echo e(route('asset-requests.store')); ?>" method="POST" id="asset-request-form">
+                        <?php echo csrf_field(); ?>
 
-                        {{-- Section 1: Requester Information --}}
+                        
                         <fieldset>
                             <legend><span class="form-section-icon"><i class="fa fa-user"></i></span> Requester Information</legend>
                             
@@ -52,7 +52,7 @@
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-user"></i></span>
                                             <input type="text" id="requester_name" class="form-control" 
-                                                   value="{{ auth()->user()->name ?? '' }}" disabled>
+                                                   value="<?php echo e(auth()->user()->name ?? ''); ?>" disabled>
                                         </div>
                                         <small class="help-text">Your name (auto-filled from your account)</small>
                                     </div>
@@ -64,7 +64,7 @@
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-building"></i></span>
                                             <input type="text" id="division" class="form-control" 
-                                                   value="{{ auth()->user()->division ?? '' }}" disabled>
+                                                   value="<?php echo e(auth()->user()->division ?? ''); ?>" disabled>
                                         </div>
                                         <small class="help-text">Your division (auto-filled from your account)</small>
                                     </div>
@@ -72,7 +72,7 @@
                             </div>
                         </fieldset>
 
-                        {{-- Section 2: Asset Details --}}
+                        
                         <fieldset>
                             <legend><span class="form-section-icon"><i class="fa fa-box"></i></span> Asset Details</legend>
                             
@@ -83,29 +83,58 @@
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-tag"></i></span>
                                             <input type="text" name="title" id="title" 
-                                                   class="form-control @error('title') is-invalid @enderror" 
-                                                   value="{{ old('title') }}" 
+                                                   class="form-control <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                                   value="<?php echo e(old('title')); ?>" 
                                                    placeholder="e.g., Dell Latitude 7420 Laptop" required>
                                         </div>
                                         <small class="help-text">Enter the name or model of the asset you need</small>
-                                        @error('title')<span class="text-danger">{{ $message }}</span>@enderror
+                                        <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="asset_type_id">Asset Type <span class="text-danger">*</span></label>
-                                        <select class="form-control @error('asset_type_id') is-invalid @enderror" 
+                                        <select class="form-control <?php $__errorArgs = ['asset_type_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                                 id="asset_type_id" name="asset_type_id" required>
                                             <option value="">Select Type</option>
-                                            @foreach($assetTypes as $type)
-                                                <option value="{{ $type->id }}" {{ old('asset_type_id') == $type->id ? 'selected' : '' }}>
-                                                    {{ $type->name }}
+                                            <?php $__currentLoopData = $assetTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $type): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($type->id); ?>" <?php echo e(old('asset_type_id') == $type->id ? 'selected' : ''); ?>>
+                                                    <?php echo e($type->name); ?>
+
                                                 </option>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </select>
                                         <small class="help-text">Category of asset</small>
-                                        @error('asset_type_id')<span class="text-danger">{{ $message }}</span>@enderror
+                                        <?php $__errorArgs = ['asset_type_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
                             </div>
@@ -117,11 +146,25 @@
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-hashtag"></i></span>
                                             <input type="number" name="requested_quantity" id="requested_quantity" 
-                                                   class="form-control @error('requested_quantity') is-invalid @enderror" 
-                                                   value="{{ old('requested_quantity', 1) }}" min="1">
+                                                   class="form-control <?php $__errorArgs = ['requested_quantity'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                                   value="<?php echo e(old('requested_quantity', 1)); ?>" min="1">
                                         </div>
                                         <small class="help-text">How many units needed</small>
-                                        @error('requested_quantity')<span class="text-danger">{{ $message }}</span>@enderror
+                                        <?php $__errorArgs = ['requested_quantity'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
 
@@ -131,29 +174,58 @@
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-cube"></i></span>
                                             <input type="text" name="unit" id="unit" 
-                                                   class="form-control @error('unit') is-invalid @enderror" 
-                                                   value="{{ old('unit') }}"
+                                                   class="form-control <?php $__errorArgs = ['unit'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                                   value="<?php echo e(old('unit')); ?>"
                                                    placeholder="e.g., pcs, set, unit">
                                         </div>
                                         <small class="help-text">Unit of measurement</small>
-                                        @error('unit')<span class="text-danger">{{ $message }}</span>@enderror
+                                        <?php $__errorArgs = ['unit'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="priority">Priority</label>
-                                        <select class="form-control @error('priority') is-invalid @enderror" 
+                                        <select class="form-control <?php $__errorArgs = ['priority'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                                 id="priority" name="priority">
                                             <option value="">Select Priority</option>
-                                            @foreach($priorities as $priority)
-                                                <option value="{{ $priority }}" {{ old('priority') == $priority ? 'selected' : '' }}>
-                                                    {{ ucfirst($priority) }}
+                                            <?php $__currentLoopData = $priorities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $priority): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($priority); ?>" <?php echo e(old('priority') == $priority ? 'selected' : ''); ?>>
+                                                    <?php echo e(ucfirst($priority)); ?>
+
                                                 </option>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </select>
                                         <small class="help-text">Urgency level</small>
-                                        @error('priority')<span class="text-danger">{{ $message }}</span>@enderror
+                                        <?php $__errorArgs = ['priority'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
                             </div>
@@ -165,24 +237,45 @@
                                         <div class="input-group">
                                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                             <input type="date" name="needed_date" id="needed_date" 
-                                                   class="form-control @error('needed_date') is-invalid @enderror" 
-                                                   value="{{ old('needed_date') }}">
+                                                   class="form-control <?php $__errorArgs = ['needed_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                                   value="<?php echo e(old('needed_date')); ?>">
                                         </div>
                                         <small class="help-text">When do you need this asset?</small>
-                                        @error('needed_date')<span class="text-danger">{{ $message }}</span>@enderror
+                                        <?php $__errorArgs = ['needed_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
                             </div>
                         </fieldset>
 
-                        {{-- Section 3: Justification --}}
+                        
                         <fieldset>
                             <legend><span class="form-section-icon"><i class="fa fa-file-alt"></i></span> Justification</legend>
                             
                             <div class="form-group">
                                 <label for="justification">Business Justification <span class="text-danger">*</span></label>
-                                <textarea class="form-control @error('justification') is-invalid @enderror" 
-                                          id="justification" name="justification" rows="6" required>{{ old('justification') }}</textarea>
+                                <textarea class="form-control <?php $__errorArgs = ['justification'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                          id="justification" name="justification" rows="6" required><?php echo e(old('justification')); ?></textarea>
                                 <small class="help-text">
                                     <strong>Please explain:</strong>
                                     <ul style="margin: 5px 0 0 20px;">
@@ -191,24 +284,45 @@
                                         <li>What is the business impact if not provided?</li>
                                     </ul>
                                 </small>
-                                @error('justification')<span class="text-danger">{{ $message }}</span>@enderror
+                                <?php $__errorArgs = ['justification'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
 
                             <div class="form-group">
                                 <label for="notes">Additional Notes (Optional)</label>
-                                <textarea class="form-control @error('notes') is-invalid @enderror" 
-                                          id="notes" name="notes" rows="3">{{ old('notes') }}</textarea>
+                                <textarea class="form-control <?php $__errorArgs = ['notes'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                          id="notes" name="notes" rows="3"><?php echo e(old('notes')); ?></textarea>
                                 <small class="help-text">Any additional information or special requirements</small>
-                                @error('notes')<span class="text-danger">{{ $message }}</span>@enderror
+                                <?php $__errorArgs = ['notes'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><span class="text-danger"><?php echo e($message); ?></span><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                         </fieldset>
 
-                        {{-- Submit Buttons --}}
+                        
                         <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e3e3e3;">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fa fa-paper-plane"></i> <b>Submit Request</b>
                             </button>
-                            <a href="{{ route('asset-requests.index') }}" class="btn btn-default btn-lg">
+                            <a href="<?php echo e(route('asset-requests.index')); ?>" class="btn btn-default btn-lg">
                                 <i class="fa fa-times"></i> Cancel
                             </a>
                         </div>
@@ -218,10 +332,10 @@
             </div>
         </div>
 
-        {{-- Sidebar (4 columns) --}}
+        
         <div class="col-md-4">
             
-            {{-- Request Guidelines --}}
+            
             <div class="box box-info">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-lightbulb"></i> Request Guidelines</h3>
@@ -237,7 +351,7 @@
                 </div>
             </div>
 
-            {{-- Priority Guide --}}
+            
             <div class="box box-warning">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-exclamation-triangle"></i> Priority Levels</h3>
@@ -262,7 +376,7 @@
                 </div>
             </div>
 
-            {{-- Approval Process --}}
+            
             <div class="box box-success">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-check-circle"></i> Approval Process</h3>
@@ -284,9 +398,9 @@
     </div>
 </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 $(document).ready(function() {
     // Form validation
@@ -321,4 +435,6 @@ $(document).ready(function() {
     }, 5000);
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/asset-requests/create.blade.php ENDPATH**/ ?>

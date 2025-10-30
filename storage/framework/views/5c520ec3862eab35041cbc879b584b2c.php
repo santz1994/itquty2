@@ -1,63 +1,66 @@
-@extends('layouts.app')
 
-@section('main-content')
 
-{{-- All styles from centralized CSS: public/css/ui-enhancements.css --}}
+<?php $__env->startSection('main-content'); ?>
 
-{{-- Page Header --}}
-@include('components.page-header', [
+
+
+
+<?php echo $__env->make('components.page-header', [
     'title' => 'Budget Management',
     'subtitle' => 'Financial Planning & Tracking',
     'breadcrumbs' => [
         ['label' => 'Home', 'url' => route('home'), 'icon' => 'home'],
         ['label' => 'Budgets']
     ]
-])
+], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
 <div class="container-fluid">
-    {{-- Flash Messages --}}
-    @if(session('success'))
+    
+    <?php if(session('success')): ?>
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <i class="fa fa-check-circle"></i> {{ session('success') }}
-        </div>
-    @endif
+            <i class="fa fa-check-circle"></i> <?php echo e(session('success')); ?>
 
-    @if(session('error'))
+        </div>
+    <?php endif; ?>
+
+    <?php if(session('error')): ?>
         <div class="alert alert-danger alert-dismissible">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <i class="fa fa-exclamation-triangle"></i> {{ session('error') }}
-        </div>
-    @endif
+            <i class="fa fa-exclamation-triangle"></i> <?php echo e(session('error')); ?>
 
-    @if(Session::has('status'))
-        <div class="alert alert-{{ Session::get('status') == 'success' ? 'success' : 'danger' }} alert-dismissible">
+        </div>
+    <?php endif; ?>
+
+    <?php if(Session::has('status')): ?>
+        <div class="alert alert-<?php echo e(Session::get('status') == 'success' ? 'success' : 'danger'); ?> alert-dismissible">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <i class="fa fa-{{ Session::get('status') == 'success' ? 'check-circle' : 'exclamation-triangle' }}"></i>
-            <strong>{{ Session::get('title') }}</strong> - {{ Session::get('message') }}
-        </div>
-    @endif
+            <i class="fa fa-<?php echo e(Session::get('status') == 'success' ? 'check-circle' : 'exclamation-triangle'); ?>"></i>
+            <strong><?php echo e(Session::get('title')); ?></strong> - <?php echo e(Session::get('message')); ?>
 
-    @if($errors->any())
+        </div>
+    <?php endif; ?>
+
+    <?php if($errors->any()): ?>
         <div class="alert alert-warning alert-dismissible">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
             <h4><i class="icon fa fa-warning"></i> Validation Errors</h4>
             <ul>
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
+                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <li><?php echo e($error); ?></li>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </ul>
         </div>
-    @endif
+    <?php endif; ?>
 
     <div class="row">
-        {{-- Main Content --}}
+        
         <div class="col-md-9">
             <div class="box box-primary">
                 <div class="box-header with-border">
                     <h3 class="box-title">
                         <i class="fa fa-money-bill-wave"></i> All Budgets
-                        <span class="count-badge">{{ $budgets->count() }}</span>
+                        <span class="count-badge"><?php echo e($budgets->count()); ?></span>
                     </h3>
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-box-tool" data-widget="collapse">
@@ -76,29 +79,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if($budgets->count() > 0)
-                                @foreach($budgets as $budget)
+                            <?php if($budgets->count() > 0): ?>
+                                <?php $__currentLoopData = $budgets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $budget): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
-                                        <td><strong>{{ $budget->division->name }}</strong></td>
+                                        <td><strong><?php echo e($budget->division->name); ?></strong></td>
                                         <td>
-                                            <span class="badge bg-blue">{{ $budget->year }}</span>
+                                            <span class="badge bg-blue"><?php echo e($budget->year); ?></span>
                                         </td>
                                         <td>
                                             <strong style="color: #28a745; font-size: 14px;">
-                                                R {{ number_format($budget->total, 2) }}
+                                                R <?php echo e(number_format($budget->total, 2)); ?>
+
                                             </strong>
                                         </td>
                                         <td>
-                                            <a href="{{ url('budgets/' . $budget->id) }}" class="btn btn-xs btn-info" title="View Budget">
+                                            <a href="<?php echo e(url('budgets/' . $budget->id)); ?>" class="btn btn-xs btn-info" title="View Budget">
                                                 <i class="fa fa-eye"></i>
                                             </a>
-                                            <a href="{{ url('budgets/' . $budget->id . '/edit') }}" class="btn btn-xs btn-warning" title="Edit Budget">
+                                            <a href="<?php echo e(url('budgets/' . $budget->id . '/edit')); ?>" class="btn btn-xs btn-warning" title="Edit Budget">
                                                 <i class="fa fa-edit"></i>
                                             </a>
                                         </td>
                                     </tr>
-                                @endforeach
-                            @else
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php else: ?>
                                 <tr>
                                     <td colspan="4" class="text-center empty-state" style="padding: 30px;">
                                         <i class="fa fa-money-bill-wave fa-3x" style="opacity: 0.3; margin-bottom: 15px;"></i>
@@ -106,23 +110,23 @@
                                         <p class="text-muted" style="font-size: 12px;">Create your first budget using the form on the right.</p>
                                     </td>
                                 </tr>
-                            @endif
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        {{-- Sidebar --}}
+        
         <div class="col-md-3">
-            {{-- Create Budget Form --}}
+            
             <div class="box box-success">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-plus-circle"></i> Create Budget</h3>
                 </div>
                 <div class="box-body">
-                    <form method="POST" action="{{ url('budgets') }}" id="createBudgetForm">
-                        @csrf
+                    <form method="POST" action="<?php echo e(url('budgets')); ?>" id="createBudgetForm">
+                        <?php echo csrf_field(); ?>
                         
                         <fieldset>
                             <legend>
@@ -130,23 +134,25 @@
                                 Budget Details
                             </legend>
 
-                            <div class="form-group {{ hasErrorForClass($errors, 'division_id') }}">
+                            <div class="form-group <?php echo e(hasErrorForClass($errors, 'division_id')); ?>">
                                 <label for="division_id">
                                     <i class="fa fa-sitemap"></i> Division <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-control division_id" name="division_id" id="division_id" required>
                                     <option value="">-- Select Division --</option>
-                                    @foreach($divisions as $division)
-                                        <option value="{{ $division->id }}" {{ old('division_id') == $division->id ? 'selected' : '' }}>
-                                            {{ $division->name }}
+                                    <?php $__currentLoopData = $divisions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $division): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($division->id); ?>" <?php echo e(old('division_id') == $division->id ? 'selected' : ''); ?>>
+                                            <?php echo e($division->name); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                                 <small class="help-text">Select the division for this budget</small>
-                                {{ hasErrorForField($errors, 'division_id') }}
+                                <?php echo e(hasErrorForField($errors, 'division_id')); ?>
+
                             </div>
 
-                            <div class="form-group {{ hasErrorForClass($errors, 'year') }}">
+                            <div class="form-group <?php echo e(hasErrorForClass($errors, 'year')); ?>">
                                 <label for="year">
                                     <i class="fa fa-calendar"></i> Fiscal Year <span class="text-danger">*</span>
                                 </label>
@@ -154,16 +160,17 @@
                                        name="year" 
                                        id="year" 
                                        class="form-control" 
-                                       value="{{ old('year', date('Y')) }}"
+                                       value="<?php echo e(old('year', date('Y'))); ?>"
                                        min="2020"
                                        max="2099"
-                                       placeholder="e.g., {{ date('Y') }}"
+                                       placeholder="e.g., <?php echo e(date('Y')); ?>"
                                        required>
-                                <small class="help-text">Enter the fiscal year (e.g., {{ date('Y') }})</small>
-                                {{ hasErrorForField($errors, 'year') }}
+                                <small class="help-text">Enter the fiscal year (e.g., <?php echo e(date('Y')); ?>)</small>
+                                <?php echo e(hasErrorForField($errors, 'year')); ?>
+
                             </div>
 
-                            <div class="form-group {{ hasErrorForClass($errors, 'total') }}">
+                            <div class="form-group <?php echo e(hasErrorForClass($errors, 'total')); ?>">
                                 <label for="total">
                                     <i class="fa fa-money-bill-wave"></i> Budget Amount <span class="text-danger">*</span>
                                 </label>
@@ -173,14 +180,15 @@
                                            name="total" 
                                            id="total" 
                                            class="form-control" 
-                                           value="{{ old('total') }}"
+                                           value="<?php echo e(old('total')); ?>"
                                            step="0.01"
                                            min="0"
                                            placeholder="0.00"
                                            required>
                                 </div>
                                 <small class="help-text">Enter the total budget amount in Rands</small>
-                                {{ hasErrorForField($errors, 'total') }}
+                                <?php echo e(hasErrorForField($errors, 'total')); ?>
+
                             </div>
                         </fieldset>
 
@@ -193,7 +201,7 @@
                 </div>
             </div>
 
-            {{-- Budget Guidelines --}}
+            
             <div class="box box-warning">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-lightbulb"></i> Budget Guidelines</h3>
@@ -202,7 +210,7 @@
                     <p style="font-size: 13px; margin-bottom: 10px;"><strong>Best Practices:</strong></p>
                     <ul style="margin-left: 20px; font-size: 12px;">
                         <li>Create one budget per division per fiscal year</li>
-                        <li>Use actual fiscal year dates (e.g., {{ date('Y') }})</li>
+                        <li>Use actual fiscal year dates (e.g., <?php echo e(date('Y')); ?>)</li>
                         <li>Set realistic budget amounts based on historical data</li>
                         <li>Review and adjust budgets quarterly</li>
                     </ul>
@@ -217,23 +225,23 @@
                 </div>
             </div>
 
-            {{-- Quick Stats --}}
+            
             <div class="box box-info">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-chart-bar"></i> Budget Statistics</h3>
                 </div>
                 <div class="box-body">
-                    @php
+                    <?php
                         $totalBudget = $budgets->sum('total');
                         $currentYearBudgets = $budgets->where('year', date('Y'));
                         $currentYearTotal = $currentYearBudgets->sum('total');
-                    @endphp
+                    ?>
 
                     <div class="info-box bg-aqua" style="min-height: 80px; margin-bottom: 15px;">
                         <span class="info-box-icon"><i class="fa fa-money-bill-wave"></i></span>
                         <div class="info-box-content">
                             <span class="info-box-text">Total All Budgets</span>
-                            <span class="info-box-number">R {{ number_format($totalBudget, 2) }}</span>
+                            <span class="info-box-number">R <?php echo e(number_format($totalBudget, 2)); ?></span>
                             <span class="progress-description">
                                 All fiscal years
                             </span>
@@ -243,10 +251,10 @@
                     <div class="info-box bg-green" style="min-height: 80px; margin-bottom: 0;">
                         <span class="info-box-icon"><i class="fa fa-calendar"></i></span>
                         <div class="info-box-content">
-                            <span class="info-box-text">{{ date('Y') }} Budgets</span>
-                            <span class="info-box-number">R {{ number_format($currentYearTotal, 2) }}</span>
+                            <span class="info-box-text"><?php echo e(date('Y')); ?> Budgets</span>
+                            <span class="info-box-number">R <?php echo e(number_format($currentYearTotal, 2)); ?></span>
                             <span class="progress-description">
-                                {{ $currentYearBudgets->count() }} division(s)
+                                <?php echo e($currentYearBudgets->count()); ?> division(s)
                             </span>
                         </div>
                     </div>
@@ -256,9 +264,9 @@
     </div>
 </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
     $(document).ready(function() {
         // Initialize Select2
@@ -348,6 +356,8 @@
         }, 5000);
     });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
 
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\Project\ITQuty\quty2\resources\views/budgets/index.blade.php ENDPATH**/ ?>
