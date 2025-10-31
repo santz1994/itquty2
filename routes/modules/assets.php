@@ -20,8 +20,11 @@ Route::middleware(['web', 'auth', 'role:admin|super-admin'])->group(function () 
     Route::get('/assets/categories', [\App\Http\Controllers\InventoryController::class, 'categories'])->name('assets.categories');
     Route::get('/assets/requests', [\App\Http\Controllers\InventoryController::class, 'requests'])->name('assets.requests');
     Route::get('/assets/scan-qr', [\App\Http\Controllers\AssetsController::class, 'scanQR'])->name('assets.scan-qr');
+    Route::post('/assets/search-by-qr', [\App\Http\Controllers\AssetsController::class, 'searchByQR'])->name('assets.search-by-qr');
     Route::post('/assets/process-scan', [\App\Http\Controllers\AssetsController::class, 'processScan'])->name('assets.process-scan');
     Route::get('/assets/my-assets', [\App\Http\Controllers\AssetsController::class, 'myAssets'])->name('assets.my-assets');
+    Route::post('/assets/{asset}/update-condition', [\App\Http\Controllers\AssetsController::class, 'updateCondition'])->name('assets.update-condition');
+    Route::post('/assets/my-assets/update-all-conditions', [\App\Http\Controllers\AssetsController::class, 'updateAllConditions'])->name('assets.update-all-conditions');
     Route::get('/assets/{asset}/qr-code', [\App\Http\Controllers\AssetsController::class, 'generateQR'])->name('assets.qr-code');
     Route::get('/assets/{asset}/qr-download', [\App\Http\Controllers\AssetsController::class, 'downloadQR'])->name('assets.qr-download');
     Route::get('/assets/{asset}/history', [\App\Http\Controllers\AssetsController::class, 'history'])->name('assets.history');

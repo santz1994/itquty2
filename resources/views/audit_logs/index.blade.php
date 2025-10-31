@@ -238,11 +238,13 @@
                         </div>
 
                         <!-- Summary -->
+                        @if(method_exists($auditLogs, 'total'))
                         <div class="text-center text-muted">
                             <small>
                                 Showing {{ $auditLogs->firstItem() }} to {{ $auditLogs->lastItem() }} of {{ $auditLogs->total() }} logs
                             </small>
                         </div>
+                        @endif
                     @else
                         <div class="alert alert-info">
                             <i class="fa fa-info-circle"></i> No audit logs found matching your criteria.

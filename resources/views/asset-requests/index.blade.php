@@ -174,7 +174,7 @@
             <div class="box box-primary">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-clipboard-list"></i> Asset Requests</h3>
-                    <span class="count-badge">{{ $requests->total() }}</span>
+                    <span class="count-badge">{{ method_exists($requests, 'total') ? $requests->total() : count($requests) }}</span>
                 </div>
                 <div class="box-body">
                     <div class="table-responsive">
@@ -310,63 +310,6 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Enhanced DataTable with export buttons
-    var table = $('#requests-table').DataTable({
-        responsive: true,
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '<i class="fa fa-file-excel"></i> Excel',
-                className: 'btn btn-success btn-sm',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                }
-            },
-            {
-                extend: 'csvHtml5',
-                text: '<i class="fa fa-file-csv"></i> CSV',
-                className: 'btn btn-info btn-sm',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="fa fa-file-pdf"></i> PDF',
-                className: 'btn btn-danger btn-sm',
-                orientation: 'landscape',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                }
-            },
-            {
-                extend: 'copy',
-                text: '<i class="fa fa-copy"></i> Copy',
-                className: 'btn btn-default btn-sm',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                }
-            }
-        ],
-        order: [[0, 'desc']],
-        pageLength: 25,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search requests...",
-            lengthMenu: "Show _MENU_ requests",
-            info: "Showing _START_ to _END_ of _TOTAL_ requests",
-            infoEmpty: "No requests to show",
-            infoFiltered: "(filtered from _MAX_ total requests)",
-            paginate: {
-                first: '<i class="fa fa-angle-double-left"></i>',
-                last: '<i class="fa fa-angle-double-right"></i>',
-                next: '<i class="fa fa-angle-right"></i>',
-                previous: '<i class="fa fa-angle-left"></i>'
-            }
-        }
-    });
-
     // Move export buttons to header
     table.buttons().container()
         .appendTo($('.box-header .box-title').parent());

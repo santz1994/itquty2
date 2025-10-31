@@ -16,6 +16,8 @@
         if (overlay) {
             overlay.querySelector('p').textContent = message;
             overlay.style.display = 'flex';
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
     };
     
@@ -23,7 +25,14 @@
         const overlay = document.getElementById(id);
         if (overlay) {
             overlay.style.display = 'none';
+            overlay.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
         }
     };
+    
+    // Ensure loading overlay is hidden on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        hideLoading('{{ $id ?? 'loading-overlay' }}');
+    });
 </script>
 @endpush

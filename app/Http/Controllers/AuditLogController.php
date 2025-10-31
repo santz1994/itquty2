@@ -83,8 +83,8 @@ class AuditLogController extends Controller
         // Order by latest
         $query->orderBy('created_at', 'desc');
 
-        // Paginate results
-        $auditLogs = $query->paginate(50);
+        // Paginate results with eager loading
+        $auditLogs = $query->with('user')->paginate(50);
 
         // Get filter options
         $users = User::orderBy('name')->get();

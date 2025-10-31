@@ -15,14 +15,33 @@ return new class extends Migration
      */
     public function up()
     {
-        // Get existing foreign keys
-        $foreignKeys = DB::select("
-            SELECT CONSTRAINT_NAME
-            FROM information_schema.TABLE_CONSTRAINTS
-            WHERE TABLE_SCHEMA = DATABASE()
-            AND TABLE_NAME = 'assets'
-            AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-        ");
+        // Get existing foreign keys (cross-database compatible)
+        $driver = DB::connection()->getDriverName();
+        $foreignKeys = [];
+        
+        if ($driver === 'mysql') {
+            $foreignKeys = DB::select("
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'assets'
+                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+            ");
+        } elseif ($driver === 'sqlite') {
+            // SQLite: Parse PRAGMA foreign_key_list
+            $fks = DB::select("PRAGMA foreign_key_list(assets)");
+            // SQLite foreign keys don't have constraint names, use column names
+            $foreignKeys = collect($fks)->map(function($fk) {
+                return (object)['CONSTRAINT_NAME' => 'assets_' . $fk->from . '_foreign'];
+            })->all();
+        } elseif ($driver === 'pgsql') {
+            $foreignKeys = DB::select("
+                SELECT constraint_name AS CONSTRAINT_NAME
+                FROM information_schema.table_constraints
+                WHERE table_name = 'assets'
+                AND constraint_type = 'FOREIGN KEY'
+            ");
+        }
         
         $existingFKs = array_column($foreignKeys, 'CONSTRAINT_NAME');
         
@@ -58,6 +77,19 @@ return new class extends Migration
             }
         });
 
+        // First, ensure warranty_type_id and invoice_id are unsigned if they exist
+        Schema::table('assets', function (Blueprint $table) {
+            if (Schema::hasColumn('assets', 'warranty_type_id')) {
+                // Change to unsigned integer to match warranty_types.id
+                $table->unsignedInteger('warranty_type_id')->nullable()->change();
+            }
+            
+            if (Schema::hasColumn('assets', 'invoice_id')) {
+                // Change to unsigned integer to match invoices.id
+                $table->unsignedInteger('invoice_id')->nullable()->change();
+            }
+        });
+        
         // Add new FKs with proper onDelete rules
         Schema::table('assets', function (Blueprint $table) {
             // RESTRICT - Prevent deletion if assets exist

@@ -141,7 +141,7 @@
         // Enhanced DataTable with export buttons
         var table = $('#table').DataTable({
             responsive: true,
-            dom: 'Bfrtip',
+            dom: 'lfrtip', // Remove 'B' to prevent duplicate buttons
             buttons: [
                 {
                     extend: 'excelHtml5',

@@ -44,8 +44,8 @@ class BulkOperationController extends Controller
             /** @var \App\User $user */
             $user = Auth::user();
 
-            // Check authorization for each ticket
-            $tickets = Ticket::whereIn('id', $ticketIds)->get();
+            // Check authorization for each ticket with eager loading
+            $tickets = Ticket::withRelations()->whereIn('id', $ticketIds)->get();
             
             foreach ($tickets as $ticket) {
                 // Only allow if user can update the ticket
@@ -125,8 +125,8 @@ class BulkOperationController extends Controller
             /** @var \App\User $user */
             $user = Auth::user();
 
-            // Check authorization
-            $tickets = Ticket::whereIn('id', $ticketIds)->get();
+            // Check authorization with eager loading
+            $tickets = Ticket::withRelations()->whereIn('id', $ticketIds)->get();
             
             foreach ($tickets as $ticket) {
                 if (!$user->hasRole('super-admin') && !$user->hasRole('admin') && $ticket->assigned_to != $user->id) {
@@ -211,8 +211,8 @@ class BulkOperationController extends Controller
             /** @var \App\User $user */
             $user = Auth::user();
 
-            // Check authorization
-            $tickets = Ticket::whereIn('id', $ticketIds)->get();
+            // Check authorization with eager loading
+            $tickets = Ticket::withRelations()->whereIn('id', $ticketIds)->get();
             
             foreach ($tickets as $ticket) {
                 if (!$user->hasRole('super-admin') && !$user->hasRole('admin') && $ticket->assigned_to != $user->id) {
@@ -290,8 +290,8 @@ class BulkOperationController extends Controller
             /** @var \App\User $user */
             $user = Auth::user();
 
-            // Check authorization
-            $tickets = Ticket::whereIn('id', $ticketIds)->get();
+            // Check authorization with eager loading
+            $tickets = Ticket::withRelations()->whereIn('id', $ticketIds)->get();
             
             foreach ($tickets as $ticket) {
                 if (!$user->hasRole('super-admin') && !$user->hasRole('admin') && $ticket->assigned_to != $user->id) {
@@ -375,8 +375,8 @@ class BulkOperationController extends Controller
                 ], 403);
             }
 
-            // Get tickets for logging
-            $tickets = Ticket::whereIn('id', $ticketIds)->get();
+            // Get tickets for logging with eager loading
+            $tickets = Ticket::withRelations()->whereIn('id', $ticketIds)->get();
 
             // Soft delete tickets (if using soft deletes)
             $deletedCount = Ticket::whereIn('id', $ticketIds)->delete();

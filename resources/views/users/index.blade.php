@@ -37,7 +37,7 @@
             <div class="col-lg-3 col-xs-6">
                 <div class="small-box bg-aqua" onclick="filterByStatus('all')">
                     <div class="inner">
-                        <h3>{{ $users->total() }}</h3>
+                        <h3>{{ method_exists($users, 'total') ? $users->total() : count($users) }}</h3>
                         <p>Total Users</p>
                     </div>
                     <div class="icon">
@@ -208,7 +208,7 @@
                     <div class="box-header with-border">
                         <h3 class="box-title">
                             <i class="fa fa-users"></i> Users List
-                            <span class="badge bg-blue" id="user-count">{{ $users->total() }}</span>
+                            <span class="badge bg-blue" id="user-count">{{ method_exists($users, 'total') ? $users->total() : count($users) }}</span>
                         </h3>
                     </div>
                     <div class="box-body">
@@ -375,7 +375,7 @@
                         </div>
 
                         {{-- Enhanced Pagination --}}
-                        @if($users->hasPages())
+                        @if(method_exists($users, 'hasPages') && $users->hasPages())
                         <div class="row" style="margin-top: 20px;">
                             <div class="col-sm-5">
                                 <div class="dataTables_info">

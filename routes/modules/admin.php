@@ -49,6 +49,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
         // Daily Activities
         Route::get('/daily-activities/calendar', [\App\Http\Controllers\DailyActivityController::class, 'calendar'])->name('daily-activities.calendar');
+        Route::get('/daily-activities/calendar-data', [\App\Http\Controllers\DailyActivityController::class, 'calendarData'])->name('daily-activities.calendar-data');
         Route::get('/daily-activities/calendar-events', [\App\Http\Controllers\DailyActivityController::class, 'getCalendarEvents'])->name('daily-activities.calendar-events');
         Route::get('/daily-activities/date-activities', [\App\Http\Controllers\DailyActivityController::class, 'getDateActivities'])->name('daily-activities.date-activities');
         Route::get('/daily-activities/daily-report', [\App\Http\Controllers\DailyActivityController::class, 'today'])->name('daily-activities.daily-report');

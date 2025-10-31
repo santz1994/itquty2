@@ -449,4 +449,47 @@ class DailyActivityController extends Controller
 
         return $icons[$activityType] ?? 'fa fa-cog';
     }
+
+    /**
+     * Get calendar data for FullCalendar
+     * Returns activities between start and end dates as JSON
+     */
+    public function calendarData(Request $request)
+    {
+        $query = DailyActivity::with('user');
+
+        // Filter by user role - non-admins see only their activities
+        if (!$this->hasAnyRole(['admin', 'super-admin'])) {
+            $query->where('user_id', Auth::id());
+        }
+
+        // Filter by date range if provided
+        if ($request->has('start') && $request->has('end')) {
+            $start = Carbon::parse($request->start)->startOfDay();
+            $end = Carbon::parse($request->end)->endOfDay();
+            $query->whereBetween('activity_date', [$start, $end]);
+        }
+
+        $activities = $query->get();
+
+        // Transform activities for FullCalendar format
+        $events = $activities->map(function($activity) {
+            return [
+                'id' => $activity->id,
+                'title' => $activity->title ?: $activity->description,
+                'start' => $activity->activity_date,
+                'allDay' => true,
+                'backgroundColor' => $this->getActivityColor($activity->type),
+                'borderColor' => $this->getActivityColor($activity->type),
+                'extendedProps' => [
+                    'type' => $activity->type,
+                    'user' => $activity->user->name ?? 'Unknown',
+                    'duration' => $activity->duration_minutes ? $activity->duration_minutes . ' min' : 'N/A',
+                    'description' => $activity->description
+                ]
+            ];
+        });
+
+        return response()->json($events);
+    }
 }

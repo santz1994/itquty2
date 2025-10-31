@@ -514,6 +514,44 @@ fieldset legend {
 }
 
 /* ============================================
+   LOADING OVERLAY
+   ============================================ */
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 99999; /* Very high z-index to cover everything when showing */
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Allow clicks through when hidden */
+}
+
+.loading-overlay.active {
+    pointer-events: all; /* Block all clicks when active */
+}
+
+/* Ensure sidebar is always accessible and not affected by loading overlay */
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.loading-spinner i {
+    margin-bottom: 20px;
+}
+
+.loading-spinner p {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* ============================================
    DARK MODE SUPPORT (Optional)
    ============================================ */
 

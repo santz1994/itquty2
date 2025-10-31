@@ -13,12 +13,14 @@ use App\Status;
 use App\AssetModel;
 use Illuminate\Support\Facades\Storage;
 use App\Division;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Supplier;
 use App\Invoice;
 use App\WarrantyType;
 use App\PurchaseOrder;
 use Illuminate\Support\Facades\Response;
 use App\Traits\RoleBasedAccessTrait;
+use Illuminate\Support\Facades\Log;
 
 class AssetsController extends Controller
 {
@@ -360,6 +362,47 @@ class AssetsController extends Controller
     }
 
     /**
+     * Search for asset by QR code, asset tag, or serial number
+     */
+    public function searchByQR(Request $request)
+    {
+        $request->validate([
+            'search_term' => 'required|string'
+        ]);
+
+        $searchTerm = trim($request->search_term);
+
+        // Search by QR code, asset tag, or serial number
+        $asset = Asset::where('qr_code', $searchTerm)
+            ->orWhere('asset_tag', $searchTerm)
+            ->orWhere('serial_number', $searchTerm)
+            ->with(['model', 'location', 'division', 'assignedTo', 'status'])
+            ->first();
+
+        if ($asset) {
+            return response()->json([
+                'success' => true,
+                'asset' => [
+                    'id' => $asset->id,
+                    'asset_tag' => $asset->asset_tag,
+                    'serial_number' => $asset->serial_number,
+                    'qr_code' => $asset->qr_code,
+                    'model_name' => optional($asset->model)->asset_model,
+                    'location_name' => optional($asset->location)->location_name,
+                    'division_name' => optional($asset->division)->division_name,
+                    'assigned_to_name' => optional($asset->assignedTo)->name,
+                    'status_name' => optional($asset->status)->status,
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Asset not found'
+        ], 404);
+    }
+
+    /**
      * Process QR Code scan result
      */
     public function processScan(Request $request)
@@ -492,7 +535,16 @@ class AssetsController extends Controller
     {
         $asset = Asset::withRelations()->findOrFail($id);
         
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('assets.print', compact('asset'));
+        // Generate QR code as base64 image for PDF
+        $qrCode = null;
+        if ($asset->qr_code) {
+            $qrCode = base64_encode(QrCode::format('png')
+                ->size(150)
+                ->errorCorrection('H')
+                ->generate($asset->qr_code));
+        }
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('assets.print', compact('asset', 'qrCode'));
         
         return $pdf->stream('asset_' . $asset->asset_tag . '.pdf');
     }
@@ -613,5 +665,112 @@ class AssetsController extends Controller
         $pageTitle = 'Detail Aset - ' . $asset->asset_tag;
 
         return view('assets.user.show', compact('asset', 'ticketHistory', 'pageTitle'));
+    }
+
+    /**
+     * Update asset condition (for my-assets view)
+     */
+    public function updateCondition(Request $request, $id)
+    {
+        try {
+            $asset = Asset::findOrFail($id);
+            $user = auth()->user();
+            
+            // Verify the user is assigned to this asset (or is admin)
+            $isAdmin = user_has_any_role($user, ['admin', 'super-admin']);
+            if ($asset->assigned_to !== $user->id && !$isAdmin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You can only update condition for assets assigned to you.'
+                ], 403);
+            }
+            
+            $request->validate([
+                'condition' => 'required|in:Good,Fair,Poor,Needs Attention'
+            ]);
+            
+            // Update the condition field on the asset
+            $asset->condition = $request->condition;
+            $asset->condition_updated_at = now();
+            $asset->condition_updated_by = auth()->id();
+            $asset->save();
+            
+            // Log the activity
+            \App\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'Updated Asset Condition',
+                'description' => "Updated condition of asset {$asset->asset_tag} to: {$request->condition}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Asset condition updated successfully.',
+                'condition' => $request->condition
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error updating asset condition: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update condition: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update all user's assets to specified condition
+     */
+    public function updateAllConditions(Request $request)
+    {
+        try {
+            $request->validate([
+                'condition' => 'required|in:Good,Fair,Poor,Needs Attention'
+            ]);
+            
+            $userId = auth()->id();
+            
+            // Get all assets assigned to this user
+            $assets = Asset::where('assigned_to', $userId)->get();
+            
+            if ($assets->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No assets found assigned to you.'
+                ], 404);
+            }
+            
+            $updatedCount = 0;
+            foreach ($assets as $asset) {
+                $asset->condition = $request->condition;
+                $asset->condition_updated_at = now();
+                $asset->condition_updated_by = $userId;
+                $asset->save();
+                $updatedCount++;
+            }
+            
+            // Log the activity
+            \App\ActivityLog::create([
+                'user_id' => $userId,
+                'action' => 'Bulk Updated Asset Conditions',
+                'description' => "Updated condition of {$updatedCount} assets to: {$request->condition}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully updated {$updatedCount} assets to {$request->condition} condition.",
+                'count' => $updatedCount
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error updating all asset conditions: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update conditions: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

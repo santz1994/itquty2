@@ -515,7 +515,7 @@
             }
           },
           drawCallback: function() {
-            var info = table.page.info();
+            var info = this.api().page.info();
             $('#ticketCount').text(info.recordsDisplay + ' Tickets');
           }
         } );

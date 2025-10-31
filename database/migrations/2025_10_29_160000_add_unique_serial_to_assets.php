@@ -35,15 +35,25 @@ return new class extends Migration {
         }
 
         // Safe to add unique index
-        // Check for existing index first (MySQL)
+        // Check for existing index first (cross-database compatible)
         $indexExists = false;
+        
         try {
-            $existing = DB::select("SHOW INDEX FROM `assets` WHERE Key_name = ?", ['assets_serial_number_unique']);
-            if (is_array($existing) && count($existing) > 0) {
-                $indexExists = true;
+            $driver = DB::connection()->getDriverName();
+            
+            if ($driver === 'mysql') {
+                $existing = DB::select("SHOW INDEX FROM `assets` WHERE Key_name = ?", ['assets_serial_number_unique']);
+                $indexExists = is_array($existing) && count($existing) > 0;
+            } elseif ($driver === 'sqlite') {
+                $existing = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='assets' AND name=?", ['assets_serial_number_unique']);
+                $indexExists = is_array($existing) && count($existing) > 0;
+            } elseif ($driver === 'pgsql') {
+                $existing = DB::select("SELECT indexname FROM pg_indexes WHERE tablename = 'assets' AND indexname = ?", ['assets_serial_number_unique']);
+                $indexExists = is_array($existing) && count($existing) > 0;
             }
         } catch (\Exception $e) {
             // ignore - assume index doesn't exist
+            $indexExists = false;
         }
 
         if ($indexExists) {
@@ -57,7 +67,12 @@ return new class extends Migration {
                 $table->unique('serial_number', $name);
             });
         } catch (\Exception $e) {
-            // If index creation failed, throw with context
+            // If index creation failed, check if it's just duplicate index error
+            if (str_contains($e->getMessage(), 'already exists')) {
+                // Index was created by another process, safe to continue
+                return;
+            }
+            // Otherwise throw with context
             throw new \RuntimeException('Failed to add unique index on assets.serial_number: ' . $e->getMessage());
         }
     }

@@ -160,7 +160,7 @@ Enhanced Inventory Management
       <div class="box-header with-border">
         <h3 class="box-title">Assets Inventory</h3>
         <div class="box-tools pull-right">
-          <span class="label label-info">{{ $assets->total() }} Total Assets</span>
+          <span class="label label-info">{{ method_exists($assets, 'total') ? $assets->total() : count($assets) }} Total Assets</span>
         </div>
       </div>
       

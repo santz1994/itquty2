@@ -6,78 +6,93 @@
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('main-content'); ?>
-<?php echo $__env->make('components.loading-overlay', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
 <?php if(\Spatie\Permission\PermissionServiceProvider::bladeMethodWrapper('hasRole', ['super-admin', 'admin'])): ?>
-<!-- Compact Dashboard Section -->
+
+
+<?php $__env->startComponent('components.page-header'); ?>
+    <?php $__env->slot('icon'); ?> fa-dashboard <?php $__env->endSlot(); ?>
+    <?php $__env->slot('title'); ?> Dashboard <?php $__env->endSlot(); ?>
+    <?php $__env->slot('subtitle'); ?> Welcome back! Here's what's happening with your assets and tickets today. <?php $__env->endSlot(); ?>
+<?php echo $__env->renderComponent(); ?>
+
+
+<?php if(session('success')): ?>
+    <div class="alert alert-success alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <i class="fa fa-check-circle"></i> <?php echo e(session('success')); ?>
+
+    </div>
+<?php endif; ?>
+
+<!-- Dashboard Section -->
 <section class="dashboard-container">
 
-    <!-- Header -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <h1><i class="fas fa-chart-line"></i> Dashboard Analytics</h1>
-            <p class="dashboard-subtitle">Real-time metrics and data visualization</p>
-        </div>
-        <div class="header-actions">
-            <div class="server-time">
-                <i class="fas fa-clock"></i> <span id="server-time"><?php echo e(now()->format('Y-m-d H:i:s')); ?></span>
-            </div>
-            <?php if(Route::has('reports.index')): ?>
-                <a href="<?php echo e(route('reports.index')); ?>" class="btn btn-sm">
-                    <i class="fas fa-file-pdf"></i> Reports
+    
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-aqua" onclick="window.location.href='<?php echo e(route('assets.index')); ?>'" style="cursor: pointer;">
+                <div class="inner">
+                    <h3><?php echo e(isset($assetStats) ? $assetStats['total_assets'] : \App\Asset::count()); ?></h3>
+                    <p>Total Assets</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-cube"></i>
+                </div>
+                <a href="<?php echo e(route('assets.index')); ?>" class="small-box-footer">
+                    View Details <i class="fa fa-arrow-circle-right"></i>
                 </a>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Key Metrics - 4 Stats Cards -->
-    <div class="stats-grid">
-        <!-- Assets -->
-        <div class="stat-card stat-card-assets">
-            <div class="stat-card-icon">
-                <i class="fas fa-cube"></i>
             </div>
-            <div class="stat-label">Total Assets</div>
-            <h2 class="stat-value"><?php echo e(\App\Asset::count()); ?></h2>
-            <div class="stat-footer">Tracked items</div>
         </div>
 
-        <!-- Tickets -->
-        <div class="stat-card stat-card-tickets">
-            <div class="stat-card-icon">
-                <i class="fas fa-tasks"></i>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-yellow" onclick="window.location.href='<?php echo e(route('tickets.index')); ?>'" style="cursor: pointer;">
+                <div class="inner">
+                    <h3><?php echo e(\App\Ticket::where('ticket_status_id', '!=', \App\TicketsStatus::where('status', 'Closed')->value('id'))->count() ?? 0); ?></h3>
+                    <p>Open Tickets</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-ticket"></i>
+                </div>
+                <a href="<?php echo e(route('tickets.index')); ?>" class="small-box-footer">
+                    Manage Tickets <i class="fa fa-arrow-circle-right"></i>
+                </a>
             </div>
-            <div class="stat-label">Open Tickets</div>
-            <h2 class="stat-value"><?php echo e(\App\Ticket::where('ticket_status_id', '!=', \App\TicketsStatus::where('status', 'Closed')->value('id'))->count() ?? 0); ?></h2>
-            <div class="stat-footer">Active requests</div>
         </div>
 
-        <!-- Movements -->
-        <div class="stat-card stat-card-movements">
-            <div class="stat-card-icon">
-                <i class="fas fa-exchange-alt"></i>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-green">
+                <div class="inner">
+                    <h3><?php echo e(isset($movements) ? $movements->count() : 0); ?></h3>
+                    <p>Recent Movements</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-exchange"></i>
+                </div>
+                <a href="#movements-section" class="small-box-footer">
+                    View Activity <i class="fa fa-arrow-circle-right"></i>
+                </a>
             </div>
-            <div class="stat-label">Today Movements</div>
-            <h2 class="stat-value"><?php echo e(isset($movements) ? $movements->count() : 0); ?></h2>
-            <div class="stat-footer">Relocations</div>
         </div>
 
-        <!-- Critical -->
-        <div class="stat-card stat-card-critical">
-            <div class="stat-card-icon">
-                <i class="fas fa-exclamation-triangle"></i>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-red" onclick="window.location.href='<?php echo e(route('tickets.index')); ?>?filter=overdue'" style="cursor: pointer;">
+                <div class="inner">
+                    <?php
+                        $overdue = \App\Ticket::where('sla_due', '<', now())
+                            ->where('ticket_status_id', '!=', \App\TicketsStatus::where('status', 'Closed')->value('id'))
+                            ->count();
+                    ?>
+                    <h3><?php echo e($overdue ?? 0); ?></h3>
+                    <p>SLA Breaches</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-exclamation-triangle"></i>
+                </div>
+                <a href="<?php echo e(route('tickets.index')); ?>" class="small-box-footer">
+                    View Urgent <i class="fa fa-arrow-circle-right"></i>
+                </a>
             </div>
-            <div class="stat-label">SLA Breaches</div>
-            <h2 class="stat-value">
-                <?php
-                    $overdue = \App\Ticket::where('sla_due', '<', now())
-                        ->where('ticket_status_id', '!=', \App\TicketsStatus::where('status', 'Closed')->value('id'))
-                        ->count();
-                ?>
-                <?php echo e($overdue ?? 0); ?>
-
-            </h2>
-            <div class="stat-footer">Urgent</div>
         </div>
     </div>
 
@@ -212,184 +227,276 @@
         </div>
     </div>
 
-    <!-- Main Grid - Multi-Column Layout -->
-    <div class="dashboard-grid">
-        <!-- Left Column: Movement Activity -->
-        <div class="dashboard-column main-column">
-            <div class="card card-modern card-movement">
-                <div class="card-header card-header-modern">
-                    <h3 class="card-title">
-                        <i class="fas fa-history"></i> Asset Movement History
+    
+    <div class="row">
+        
+        <div class="col-md-8">
+            
+            
+            <div class="box box-primary" id="movements-section">
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        <i class="fa fa-clock-o"></i> Recent Activity
                     </h3>
-                    <p class="card-subtitle">Chronological record of relocations and status changes</p>
+                    <div class="box-tools pull-right">
+                        <span class="label label-primary">Last 5 actions</span>
+                    </div>
                 </div>
-                <div class="card-body card-body-movement">
+                <div class="box-body">
                     <?php if(isset($movements) && $movements->count() > 0): ?>
-                        <ul class="timeline">
+                        <ul class="timeline timeline-inverse">
                             <?php $__currentLoopData = $movements; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $movement): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <?php
                                     $createdDate = \Carbon\Carbon::parse($movement->created_at);
-                                    $asset = App\Asset::find($movement->asset_id);
+                                    $asset = $movement->asset ?? App\Asset::find($movement->asset_id);
                                 ?>
                                 
-                                <!-- Timeline Item -->
-                                <li class="timeline-item">
-                                    <div class="timeline-marker" title="<?php echo e($createdDate->format('Y-m-d H:i:s')); ?>">
-                                        <?php echo e($loop->iteration); ?>
+                                <li>
+                                    <i class="fa fa-exchange bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i> <?php echo e($createdDate->diffForHumans()); ?>
 
-                                    </div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-header">
-                                            <div class="timeline-user">
-                                                <h4 class="user-name"><?php echo e($movement->user->name); ?></h4>
-                                                <span class="user-action">Moved Asset</span>
-                                            </div>
-                                            <span class="timeline-time">
-                                                <?php echo e($createdDate->format('H:i')); ?>
-
-                                                <br>
-                                                <small><?php echo e($createdDate->diffForHumans()); ?></small>
-                                            </span>
-                                        </div>
+                                        </span>
+                                        <h3 class="timeline-header">
+                                            <strong><?php echo e(optional($movement->user)->name ?? 'System'); ?></strong> moved asset 
+                                            <a href="<?php echo e(url('/assets/' . $movement->asset_id)); ?>"><?php echo e($asset->asset_tag ?? 'N/A'); ?></a>
+                                        </h3>
                                         <div class="timeline-body">
-                                            <div class="movement-details">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Asset Tag</span>
-                                                    <span class="detail-value"><?php echo e($asset->asset_tag ?? 'N/A'); ?></span>
-                                                </div>
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Model</span>
-                                                    <span class="detail-value">
-                                                        <?php echo e(($asset->model ? $asset->model->manufacturer->name . ' ' . $asset->model->asset_model : 'N/A')); ?>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <strong>Asset:</strong> <?php echo e($asset->name ?? 'N/A'); ?><br>
+                                                    <strong>Model:</strong> <?php echo e(optional($asset->model)->asset_model ?? 'N/A'); ?>
 
-                                                    </span>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Location</span>
-                                                    <span class="detail-value"><?php echo e($movement->location->location_name ?? 'N/A'); ?></span>
-                                                </div>
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Status</span>
-                                                    <span class="detail-value"><?php echo e($movement->status->name ?? 'N/A'); ?></span>
+                                                <div class="col-sm-6">
+                                                    <strong>Location:</strong> <?php echo e(optional($movement->location)->location_name ?? 'N/A'); ?><br>
+                                                    <strong>Status:</strong> 
+                                                    <?php if($movement->status): ?>
+                                                        <span class="label" style="background-color: <?php echo e($movement->status->color ?? '#999'); ?>">
+                                                            <?php echo e($movement->status->name); ?>
+
+                                                        </span>
+                                                    <?php else: ?>
+                                                        N/A
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </li>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            
+                            <li>
+                                <i class="fa fa-clock-o bg-gray"></i>
+                            </li>
                         </ul>
                     <?php else: ?>
                         <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>No movements recorded today</p>
-                            <small>Asset movements will appear in chronological order</small>
+                            <i class="fa fa-history fa-3x text-muted"></i>
+                            <p class="lead">No Recent Activity</p>
+                            <p class="text-muted">Asset movements and changes will appear here</p>
                         </div>
                     <?php endif; ?>
                 </div>
+                <?php if(isset($movements) && $movements->count() > 0): ?>
+                <div class="box-footer text-center">
+                    <a href="<?php echo e(route('assets.index')); ?>" class="btn btn-default">View All Activity</a>
+                </div>
+                <?php endif; ?>
             </div>
+
+            
+            <div class="box box-success">
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        <i class="fa fa-cube"></i> Recently Added Assets
+                    </h3>
+                    <div class="box-tools pull-right">
+                        <span class="badge count-badge bg-green"><?php echo e(isset($recentAssets) ? $recentAssets->count() : 0); ?></span>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <?php if(isset($recentAssets) && $recentAssets->count() > 0): ?>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Asset Tag</th>
+                                    <th>Model</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Added</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $__currentLoopData = $recentAssets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $asset): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <tr>
+                                    <td><strong class="text-primary"><?php echo e($asset->asset_tag); ?></strong></td>
+                                    <td><?php echo e(optional($asset->model)->asset_model ?? 'N/A'); ?></td>
+                                    <td>
+                                        <?php if($asset->location): ?>
+                                            <i class="fa fa-map-marker text-primary"></i> <?php echo e($asset->location->location_name); ?>
+
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if($asset->status): ?>
+                                            <span class="label" style="background-color: <?php echo e($asset->status->color ?? '#999'); ?>">
+                                                <?php echo e($asset->status->name); ?>
+
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo e($asset->created_at->diffForHumans()); ?></td>
+                                    <td>
+                                        <a href="<?php echo e(url('/assets/' . $asset->id)); ?>" class="btn btn-xs btn-info">
+                                            <i class="fa fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <div class="empty-state" style="padding: 30px;">
+                            <i class="fa fa-cube fa-3x text-muted"></i>
+                            <p class="text-muted">No recent assets</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php if(isset($recentAssets) && $recentAssets->count() > 0): ?>
+                <div class="box-footer text-center">
+                    <a href="<?php echo e(route('assets.index')); ?>" class="btn btn-success">View All Assets</a>
+                </div>
+                <?php endif; ?>
+            </div>
+
         </div>
 
-        <!-- Right Sidebar -->
-        <div class="dashboard-column sidebar-column">
-            <!-- Quick Actions Card -->
-            <div class="card card-modern">
-                <div class="card-header card-header-modern sidebar-card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-lightning-bolt"></i> Quick Actions
-                    </h3>
+        
+        <div class="col-md-4">
+            
+            
+            <div class="box box-solid box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-bolt"></i> Quick Actions</h3>
                 </div>
-                <div class="card-body sidebar-card-body">
-                    <div class="action-list">
-                        <a href="<?php echo e(route('assets.create') ?? '#'); ?>" class="action-item">
-                            <span class="action-icon">
-                                <i class="fas fa-plus"></i>
-                            </span>
-                            <span class="action-text">Add Asset</span>
-                            <span class="action-arrow">→</span>
-                        </a>
-                        <a href="<?php echo e(route('tickets.create') ?? '#'); ?>" class="action-item">
-                            <span class="action-icon">
-                                <i class="fas fa-plus"></i>
-                            </span>
-                            <span class="action-text">Create Ticket</span>
-                            <span class="action-arrow">→</span>
-                        </a>
-                        <a href="<?php echo e(route('assets.index') ?? '#'); ?>" class="action-item">
-                            <span class="action-icon">
-                                <i class="fas fa-list"></i>
-                            </span>
-                            <span class="action-text">View Assets</span>
-                            <span class="action-arrow">→</span>
-                        </a>
-                        <a href="<?php echo e(route('tickets.index') ?? '#'); ?>" class="action-item">
-                            <span class="action-icon">
-                                <i class="fas fa-list"></i>
-                            </span>
-                            <span class="action-text">View Tickets</span>
-                            <span class="action-arrow">→</span>
-                        </a>
-                    </div>
+                <div class="box-body">
+                    <a href="<?php echo e(route('assets.create')); ?>" class="btn btn-primary btn-block" style="margin-bottom: 10px;">
+                        <i class="fa fa-plus"></i> Add New Asset
+                    </a>
+                    <a href="<?php echo e(route('tickets.create')); ?>" class="btn btn-warning btn-block" style="margin-bottom: 10px;">
+                        <i class="fa fa-ticket"></i> Create Ticket
+                    </a>
+                    <a href="<?php echo e(route('assets.scan-qr')); ?>" class="btn btn-info btn-block" style="margin-bottom: 10px;">
+                        <i class="fa fa-qrcode"></i> Scan QR Code
+                    </a>
+                    <a href="<?php echo e(route('assets.index')); ?>" class="btn btn-default btn-block">
+                        <i class="fa fa-list"></i> View All Assets
+                    </a>
                 </div>
             </div>
 
-            <!-- System Status Card -->
-            <div class="card card-modern">
-                <div class="card-header card-header-modern sidebar-card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-heartbeat"></i> System Status
-                    </h3>
+            
+            <div class="box box-solid box-success">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-info-circle"></i> System Overview</h3>
                 </div>
-                <div class="card-body sidebar-card-body">
-                    <div class="status-list">
-                        <div class="status-item">
-                            <span class="status-indicator"></span>
-                            <span class="status-label">Database</span>
-                            <span class="status-value">Connected</span>
+                <div class="box-body">
+                    <div class="info-box bg-aqua">
+                        <span class="info-box-icon"><i class="fa fa-building"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Locations</span>
+                            <span class="info-box-number"><?php echo e(isset($locationCount) ? $locationCount : \App\Location::count()); ?></span>
                         </div>
-                        <div class="status-item">
-                            <span class="status-indicator"></span>
-                            <span class="status-label">Cache</span>
-                            <span class="status-value">Active</span>
+                    </div>
+                    
+                    <div class="info-box bg-green">
+                        <span class="info-box-icon"><i class="fa fa-sitemap"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Divisions</span>
+                            <span class="info-box-number"><?php echo e(isset($divisionCount) ? $divisionCount : \App\Division::count()); ?></span>
                         </div>
-                        <div class="status-item">
-                            <span class="status-indicator"></span>
-                            <span class="status-label">Storage</span>
-                            <span class="status-value">Available</span>
+                    </div>
+                    
+                    <div class="info-box bg-yellow">
+                        <span class="info-box-icon"><i class="fa fa-users"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Active Users</span>
+                            <span class="info-box-number"><?php echo e(\App\User::count()); ?></span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Performance Summary Card -->
-            <div class="card card-modern">
-                <div class="card-header card-header-modern sidebar-card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-chart-bar"></i> Today's Performance
-                    </h3>
+            
+            <div class="box box-solid box-info">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-heartbeat"></i> System Status</h3>
                 </div>
-                <div class="card-body sidebar-card-body">
-                    <div class="info-summary">
-                        <div class="summary-item">
-                            <span class="summary-icon">✓</span>
-                            <span class="summary-text">
-                                <strong>On Track:</strong> 80% of tickets handled within SLA
-                            </span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-icon">⚠</span>
-                            <span class="summary-text">
-                                <strong>At Risk:</strong> 15% of tickets near SLA threshold
-                            </span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-icon">★</span>
-                            <span class="summary-text">
-                                <strong>Overall Rating:</strong> Excellent Performance
-                            </span>
-                        </div>
-                    </div>
+                <div class="box-body">
+                    <ul class="list-unstyled" style="margin-bottom: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f4f4f4;">
+                            <i class="fa fa-check-circle text-green"></i> <strong>Database:</strong> 
+                            <span class="pull-right text-muted">Connected</span>
+                        </li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f4f4f4;">
+                            <i class="fa fa-check-circle text-green"></i> <strong>Storage:</strong> 
+                            <span class="pull-right text-muted">Available</span>
+                        </li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f4f4f4;">
+                            <i class="fa fa-clock-o text-blue"></i> <strong>Server Time:</strong> 
+                            <span class="pull-right text-muted" id="server-time-sidebar"><?php echo e(now()->format('H:i:s')); ?></span>
+                        </li>
+                        <li style="padding: 8px 0;">
+                            <i class="fa fa-calendar text-blue"></i> <strong>Today:</strong> 
+                            <span class="pull-right text-muted"><?php echo e(now()->format('d M Y')); ?></span>
+                        </li>
+                    </ul>
                 </div>
             </div>
+
+            
+            <div class="box box-solid box-warning">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-line-chart"></i> Performance Summary</h3>
+                </div>
+                <div class="box-body">
+                    <?php
+                        $totalTickets = \App\Ticket::count();
+                        $closedTickets = \App\Ticket::where('ticket_status_id', \App\TicketsStatus::where('status', 'Closed')->value('id'))->count();
+                        $onTimePercentage = $totalTickets > 0 ? round(($closedTickets / $totalTickets) * 100) : 0;
+                    ?>
+                    
+                    <p><i class="fa fa-check text-success"></i> <strong>Completed Tickets:</strong></p>
+                    <div class="progress" style="margin-bottom: 15px;">
+                        <div class="progress-bar progress-bar-success" style="width: <?php echo e($onTimePercentage); ?>%">
+                            <?php echo e($onTimePercentage); ?>%
+                        </div>
+                    </div>
+                    
+                    <p><i class="fa fa-star text-yellow"></i> <strong>Overall Rating:</strong></p>
+                    <p class="text-center" style="font-size: 24px; margin: 10px 0;">
+                        <?php if($onTimePercentage >= 80): ?>
+                            😊 Excellent
+                        <?php elseif($onTimePercentage >= 60): ?>
+                            🙂 Good
+                        <?php else: ?>
+                            😐 Needs Improvement
+                        <?php endif; ?>
+                    </p>
+                    
+                    <hr>
+                    
+                    <p class="text-muted text-center" style="margin: 0;">
+                        <small>Keep up the great work!</small>
+                    </p>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
@@ -399,21 +506,32 @@
 <?php $__env->startPush('scripts'); ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script>
-    // Auto-update server time
-    document.addEventListener('DOMContentLoaded', function() {
-        const timeElement = document.getElementById('server-time');
-        if (timeElement) {
-            setInterval(function() {
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                timeElement.textContent = hours + ':' + minutes + ':' + seconds;
+$(document).ready(function() {
+    // Auto-update server time in sidebar
+    const timeElement = document.getElementById('server-time-sidebar');
+    if (timeElement) {
+        setInterval(function() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            timeElement.textContent = hours + ':' + minutes + ':' + seconds;
+        }, 1000);
+    }
+    
+    // Smooth scroll for anchor links
+    $('a[href^="#"]').on('click', function(e) {
+        var target = $(this.getAttribute('href'));
+        if(target.length) {
+            e.preventDefault();
+            $('html, body').stop().animate({
+                scrollTop: target.offset().top - 70
             }, 1000);
         }
-
-        // Chart Color Palette
-        const chartColors = {
+    });
+    
+    // Chart Color Palette
+    const chartColors = {
             primary: '#3b82f6',
             secondary: '#8b5cf6',
             success: '#10b981',
@@ -630,7 +748,7 @@
                 }
             });
         }
-    });
+}); // End document.ready
 </script>
 <?php $__env->stopPush(); ?>
 

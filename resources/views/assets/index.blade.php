@@ -292,7 +292,7 @@
         <div class="box-header with-border">
           <h3 class="box-title"><i class="fa fa-table"></i> Assets List</h3>
           <div class="box-tools">
-            <span class="label label-primary" id="assetCount">{{ $assets->total() ?? count($assets) }} Assets</span>
+            <span class="label label-primary" id="assetCount">{{ method_exists($assets, 'total') ? $assets->total() : count($assets) }} Assets</span>
           </div>
         </div>
         <div class="box-body">
